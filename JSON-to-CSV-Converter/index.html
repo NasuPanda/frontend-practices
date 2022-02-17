@@ -10,7 +10,48 @@
 <body>
     <h1>JSON to CSV Online Converter</h1>
     <h2>JSONファイルをオンラインでCSVファイルに変換出来るツールです。</h2>
-    <p></p>
+    <ol>
+        <li>① JSON文字列を入力してください。<br>もしくは<br>JSONファイルをアップロードしてください。</li>
+        <li>② CSV変換結果が表示されます。ダウンロードも可能です。</li>
+    </ol>
+
+    <!-- タブ切り替え可能な入力ボックス -->
+    <div id="input-container">
+        <!-- JSON入力-->
+        <div id="input-json-container">
+            <label for="input-json-text">Input JSON:</label>
+            <!-- placeholderを使う場合、改行も入力とみなされるため閉じタグ前で改行しない -->
+            <textarea id="input-json-text" name="input-json-text" rows="5" cols="33" placeholder="{key : value}"></textarea>
+        </div>
+        <!-- ファイルアップロード -->
+        <div id="file-upload-container">
+            <input id="input-json-file" type='file' accept="application/json">
+        </div>
+    </div>
+
+    <!-- タブ切り替え可能な出力ボックス -->
+    <div id="output-container">
+        <!-- CSV出力 -->
+        <div id="output-csv-container">
+            <table id="csv">
+                <thead>
+                    <tr>
+                        <th>CSV</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>hoge</td>
+                        <td>hoge</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- ファイルダウンロード -->
+        <div id="file-download-container">
+            <a id="download" href="#" download="result.csv" onclick="handleDownload()">CSVダウンロード</a>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
