@@ -1,4 +1,8 @@
-# HTML/CSS/JavaScriptで何か10個(くらい)作ってみるチャレンジ
+# 10-Web-dev-Projects
+
+***
+HTML/CSS/JavaScriptで何か10個(くらい)作ってみるチャレンジ。
+***
 
 ## ルール
 
@@ -11,9 +15,9 @@
 
 ## 目的
 
-* HTML/CSS/JavaScriptによるコーディングで、0から手を動かせるようになること。
+- HTML/CSS/JavaScriptによるコーディングで、0から手を動かせるようになること。
 
 ## お題の参考
 
-[ポートフォリオに役立つJavaScriptプロジェクト40選（動画あり） - Qiita](https://qiita.com/baby-degu/items/33acb94e404feaf58d35)
-[JavaScript 30](https://javascript30.com/)
+- [ポートフォリオに役立つJavaScriptプロジェクト40選（動画あり） - Qiita](https://qiita.com/baby-degu/items/33acb94e404feaf58d35)
+- [JavaScript 30](https://javascript30.com/)
