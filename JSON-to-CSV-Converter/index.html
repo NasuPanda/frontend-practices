@@ -17,22 +17,32 @@
 
     <!-- タブ切り替え可能な入力ボックス -->
     <div id="input-container">
+        <!-- 切り替え用のタブ -->
+        <input type="radio" name="tab" id="input-json-tab" checked>
+        <label class="tab" for="input-json-tab">JSON入力</label>
+        <input type="radio" name="tab" id="upload-json-tab" checked>
+        <label class="tab" for="upload-json-tab">JSONアップロード</label>
         <!-- JSON入力-->
-        <div id="input-json-container">
+        <div id="input-json-container" class="content">
             <label for="input-json-text">Input JSON:</label>
             <!-- placeholderを使う場合、改行も入力とみなされるため閉じタグ前で改行しない -->
             <textarea id="input-json-text" name="input-json-text" rows="5" cols="33" placeholder="{key : value}"></textarea>
         </div>
         <!-- ファイルアップロード -->
-        <div id="file-upload-container">
+        <div id="upload-json-container" class="content">
             <input id="input-json-file" type='file' accept="application/json">
         </div>
     </div>
 
     <!-- タブ切り替え可能な出力ボックス -->
     <div id="output-container">
+        <!-- 切り替え用のタブ -->
+        <input type="radio" name="tab" id="output-csv-tab" checked>
+        <label class="tab" for="output-csv-tab">CSV出力</label>
+        <input type="radio" name="tab" id="download-csv-tab" checked>
+        <label class="tab" for="download-csv-tab">CSV出力</label>
         <!-- CSV出力 -->
-        <div id="output-csv-container">
+        <div id="output-csv-container" class="content">
             <table id="csv">
                 <thead>
                     <tr>
@@ -48,7 +58,7 @@
             </table>
         </div>
         <!-- ファイルダウンロード -->
-        <div id="file-download-container">
+        <div id="download-csv-container" class="content">
             <a id="download" href="#" download="result.csv" onclick="handleDownload()">CSVダウンロード</a>
         </div>
     </div>

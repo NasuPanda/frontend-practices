@@ -1,7 +1,62 @@
+/* 順序付きリスト */
 ol  {
     margin: 0;
     padding: 0
 }
 ol li  {
     list-style: none;
+}
+
+/* ------------------------------------------------------------------------ */
+/* タブ切り替え */
+/* ------------------------------------------------------------------------ */
+
+/* 入出力ボックスのコンテナ */
+#input-container {
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#output-container {
+    margin: auto;
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* label */
+.tab {
+    width: calc(100%/2);
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    display: block;
+    float: left;
+    text-align: center;
+    background-color: darkgrey;
+}
+.tab:hover {
+    opacity: 0.75;
+}
+
+input[name="tab"] {
+    display: none; /* ラジオボタンを非表示に */
+}
+
+/* 選択されたタブ */
+input:checked + .tab {
+    background-color: aquamarine;
+}
+
+.content {
+    display: none;
+}
+
+#input-json-tab:checked ~ #input-json-container,
+#upload-json-tab:checked ~ #upload-json-container,
+#output-csv-tab:checked ~ #output-csv-container,
+#download-csv-tab:checked ~ #download-csv-container {
+    display: block;
 }
