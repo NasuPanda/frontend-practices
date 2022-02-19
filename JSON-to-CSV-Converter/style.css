@@ -39,7 +39,7 @@ div#description {
 }
 
 /* 入出力のコンテナ */
-div#input-container {
+div.active {
     height: 600px;
     display: flex;
     flex-wrap: wrap;
@@ -47,7 +47,7 @@ div#input-container {
     background-color: #AEC4E5;
 }
 
-div#output-container {
+div.inactive {
     height: 600px;
     display: none;
     flex-wrap: wrap;
