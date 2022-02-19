@@ -8,12 +8,13 @@ const uploadJSONTab = document.getElementById("upload-json-tab");
 const outputCSVTab = document.getElementById("output-csv-tab");
 const downloadCSVTab = document.getElementById("download-csv-tab");
 const tabs = [inputJSONTab, uploadJSONTab, outputCSVTab, downloadCSVTab];
-// ボタン
-const conversionBtn = document.getElementById("conversion-btn");
 // 入力ファイル
 const fileInput = document.getElementById("input-json-file");
 // テーブル
 const csvTable = document.getElementById("output-csv");
+// ボタン
+const conversionBtn = document.getElementById("conversion-btn");
+const reloadBtn = document.getElementById("reload-btn");
 // ファイル読み込み結果
 let readResult = ""
 
@@ -26,13 +27,14 @@ conversionBtn.addEventListener("click", (e) => {
     // 変換処理開始(ローディングアニメーション表示)
     startLoad();
 
-    // 変換処理実行
+    // 入力の受け取り
     validatedInput = validateInput()
     if (!validatedInput) {
         suspendLoad();
         return
     }
 
+    // 変換処理実行
     const csvString = convertJsonToCsv(validatedInput);
     makeCSVDownloadable(csvString);
     const csvArray = csvConvertArray(csvString);
@@ -41,6 +43,8 @@ conversionBtn.addEventListener("click", (e) => {
     // 変換処理終了(ローディングアニメーション終了)
     finishLoad();
 })
+
+reloadBtn.addEventListener("click", () => location.reload() )
 
 // ------------------------------------
 // ユーザ入力の扱い
@@ -136,7 +140,7 @@ function createTableContent(csvArray) {
     return tableContent;
 }
 
-/** ダウンロードを扱う */
+/** ダウンロード出来るようにする */
 function makeCSVDownloadable(csvString) {
     // 日本語に対応させるため、BOMを付与する
     const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
