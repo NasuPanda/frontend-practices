@@ -38,7 +38,12 @@
         <div id="upload-json-container" class="content-container">
             <input id="input-json-file" type='file' accept="application/json">
         </div>
-        <button type="button" id="translate-btn">変換実行</button>
+        <button type="button" id="conversion-btn">変換実行</button>
+    </div>
+
+    <div class="loading" id="conversion-loading">
+        <div class="load-text load-blink">Loading...</div>
+        <div class="load-circle"></div>
     </div>
 
     <!-- タブ切り替え可能な出力ボックス -->
