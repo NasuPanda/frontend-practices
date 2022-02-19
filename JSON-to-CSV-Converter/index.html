@@ -5,44 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JSON to CSV online-converter</title>
     <link rel="stylesheet" href="style.css">
+    <!-- DEVICON -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.14.0/devicon.min.css">
 </head>
 
 <body>
-    <h1>JSON to CSV Online Converter</h1>
-    <h2>JSONファイルをオンラインでCSVファイルに変換出来るツールです。</h2>
-    <ol>
-        <li>① JSON文字列を入力してください。<br>もしくは<br>JSONファイルをアップロードしてください。</li>
-        <li>② CSV変換結果が表示されます。ダウンロードも可能です。</li>
-    </ol>
+    <header>
+        <h1>JSON to CSV Online Converter</h1>
+    </header>
+    <div id="description">
+        <h2>オンラインでJSON→CSVに変換出来るツールです。</h2>
+        <ol>
+            <li>JSON文字列を入力 or JSONファイルをアップロードしてください。</li>
+            <li>CSV変換結果が表示されます。ダウンロードも可能です。</li>
+        </ol>
+    </div>
 
     <!-- タブ切り替え可能な入力ボックス -->
     <div id="input-container">
         <!-- 切り替え用のタブ -->
         <input type="radio" name="tab" id="input-json-tab" checked>
         <label class="tab" for="input-json-tab">JSON入力</label>
-        <input type="radio" name="tab" id="upload-json-tab" checked>
+        <input type="radio" name="tab" id="upload-json-tab">
         <label class="tab" for="upload-json-tab">JSONアップロード</label>
         <!-- JSON入力-->
-        <div id="input-json-container" class="content">
-            <label for="input-json-text">Input JSON:</label>
+        <div id="input-json-container" class="content-container">
+            <label for="input-json-text">JSON文字列を入力してください</label>
             <!-- placeholderを使う場合、改行も入力とみなされるため閉じタグ前で改行しない -->
-            <textarea id="input-json-text" name="input-json-text" rows="5" cols="33" placeholder="{key : value}"></textarea>
+            <textarea id="input-json-text" name="input-json-text" rows="20" cols="50" placeholder="{key : value}"></textarea>
         </div>
         <!-- ファイルアップロード -->
-        <div id="upload-json-container" class="content">
+        <div id="upload-json-container" class="content-container">
             <input id="input-json-file" type='file' accept="application/json">
         </div>
+        <button type="button" id="translate-btn">変換実行</button>
     </div>
 
     <!-- タブ切り替え可能な出力ボックス -->
     <div id="output-container">
         <!-- 切り替え用のタブ -->
-        <input type="radio" name="tab" id="output-csv-tab" checked>
+        <input type="radio" name="tab" id="output-csv-tab">
         <label class="tab" for="output-csv-tab">CSV出力</label>
-        <input type="radio" name="tab" id="download-csv-tab" checked>
+        <input type="radio" name="tab" id="download-csv-tab">
         <label class="tab" for="download-csv-tab">CSV出力</label>
         <!-- CSV出力 -->
-        <div id="output-csv-container" class="content">
+        <div id="output-csv-container" class="content-container">
             <table id="csv">
                 <thead>
                     <tr>
@@ -58,10 +65,14 @@
             </table>
         </div>
         <!-- ファイルダウンロード -->
-        <div id="download-csv-container" class="content">
+        <div id="download-csv-container" class="content-container">
             <a id="download" href="#" download="result.csv" onclick="handleDownload()">CSVダウンロード</a>
         </div>
     </div>
+    <footer>
+        <i class="devicon-github-original"></i>
+        <a href="https://github.com/Westen0511/My-10-Web-Dev-Projects" class="github-link">Github-link</a>
+    </footer>
 
     <script src="app.js"></script>
 </body>
