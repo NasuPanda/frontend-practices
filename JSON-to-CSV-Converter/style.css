@@ -34,6 +34,22 @@ label, a {
     font-size: 1.2em;
 }
 
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-color: #C0C0C0;
+}
+
+thead {
+    background-color: #6088C6;
+}
+
+td {
+    font-size: 12px;
+    padding: .2em .5em;
+    border: solid 1px #ccc;
+}
+
 div#description {
     height: 150px;
 }

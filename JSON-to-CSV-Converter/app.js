@@ -17,6 +17,11 @@ const csvTable = document.getElementById("output-csv");
 // ファイル読み込み結果
 let readResult = ""
 
+
+// ------------------------------------
+// ボタンクリック時のイベント
+// ------------------------------------
+
 conversionBtn.addEventListener("click", (e) => {
     // 変換処理開始(ローディングアニメーション表示)
     startLoad();
@@ -28,15 +33,17 @@ conversionBtn.addEventListener("click", (e) => {
         return
     }
 
-    const convertedInput = convertJsonToCsv(validatedInput);
-    csvConvertArray(convertedInput);
+    const csvString = convertJsonToCsv(validatedInput);
+    makeCSVDownloadable(csvString);
+    const csvArray = csvConvertArray(csvString);
+    csvTable.innerHTML = createTableContent(csvArray);
 
     // 変換処理終了(ローディングアニメーション終了)
     finishLoad();
 })
 
 // ------------------------------------
-// 入力
+// ユーザ入力の扱い
 // ------------------------------------
 
 /** 入力の検証 */
@@ -97,13 +104,44 @@ function convertJsonToCsv(input) {
 // ------------------------------------
 
 /** CSVを配列に変換する */
-function csvConvertArray(csv) {
-    const dataArray = [];
-    const dataString = csv.split('\n');
+function csvConvertArray(csvString) {
+    const csvArray = [];
+    const dataString = csvString.split('\n');
     for (let i = 0; i < dataString.length; i++) {
-        dataArray[i] = dataString[i].split(',');
+        csvArray[i] = dataString[i].split(',');
     }
-    return dataArray
+    return csvArray
+}
+
+/** CSVテーブルのHTML要素を作成 */
+function createTableContent(csvArray) {
+    let tableContent = '';
+    let isFirst = true;
+
+    csvArray.forEach( (element) => {
+        if (isFirst) tableContent+= '<thead>';
+        tableContent += '<tr>';
+
+        element.forEach( (childElement) => {
+            tableContent += `<td>${childElement}</td>`
+        });
+
+        tableContent += '</tr>';
+
+        if (isFirst) {
+            tableContent += '</thead>';
+            isFirst = false;
+        }
+    });
+    return tableContent;
+}
+
+/** ダウンロードを扱う */
+function makeCSVDownloadable(csvString) {
+    // 日本語に対応させるため、BOMを付与する
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const blob = new Blob([bom, csvString], { "type": "text/csv" });
+    document.getElementById("download").href = window.URL.createObjectURL(blob);
 }
 
 // ------------------------------------
