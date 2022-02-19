@@ -1,42 +1,119 @@
-/* 順序付きリスト */
-ol  {
-    margin: 0;
-    padding: 0
+/*
+配色参考 : https://saruwakakun.com/design/gallery/palette
+#516C9D 濃い
+#4072B3 濃い青
+#6088C6 普通の青
+#AEC4E5 薄い青
+#EB8686 ピンク
+#C0C0C0 灰色
+*/
+
+/* ------------------------------------------------------------------------ */
+/* 一般 */
+/* ------------------------------------------------------------------------ */
+
+body {
+    margin: 0 auto;
 }
-ol li  {
-    list-style: none;
+
+h1 {
+    color: white;
+    font-weight: lighter;
+}
+
+h2 {
+    color: #4072b3;
+}
+
+header, footer {
+    background-color: #516C9D;
+}
+
+label, a {
+    color: white;
+    font-size: 1.2em;
+}
+
+div#description {
+    height: 150px;
+}
+
+/* 入出力のコンテナ */
+div#input-container {
+    height: 600px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    background-color: #AEC4E5;
+}
+
+div#output-container {
+    height: 600px;
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    background-color: #AEC4E5;
+}
+
+/* ------------------------------------------------------------------------ */
+/* 順序付きリスト */
+/* ------------------------------------------------------------------------ */
+
+ol {
+    list-style-type: none;
+    counter-reset: number;/* カウンターを初期化 */
+}
+
+li {
+    position: relative;
+}
+
+/* beforeでカウンターを作成 */
+li::before {
+    content: counter(number);
+    counter-increment: number;
+    padding: 0 0.20em;
+}
+
+/* afterで○を作る */
+li::after {
+    content: '';
+    /* 配置を調整 */
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    /* ○を作る */
+    width: 1em;
+    height: 1em;
+    border: 1px solid ;
+    border-radius: 50%;
 }
 
 /* ------------------------------------------------------------------------ */
 /* タブ切り替え */
 /* ------------------------------------------------------------------------ */
 
-/* 入出力ボックスのコンテナ */
-#input-container {
-    margin: auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-#output-container {
-    margin: auto;
+.content-container {
     display: none;
-    flex-wrap: wrap;
+    height: 80%;
+    width: 100%;
+    /* 位置合わせ */
+    align-items: center;
     justify-content: center;
+    flex-direction: column;
+    /* 配色 */
+    background-color: #AEC4E5;
 }
 
-/* label */
-.tab {
+label.tab {
     width: calc(100%/2);
-    height: 50px;
+    height: 10%;
     line-height: 50px;
     text-align: center;
-    display: block;
-    float: left;
-    text-align: center;
-    background-color: darkgrey;
+    background-color: #C0C0C0;
 }
+
 .tab:hover {
     opacity: 0.75;
 }
@@ -47,16 +124,29 @@ input[name="tab"] {
 
 /* 選択されたタブ */
 input:checked + .tab {
-    background-color: aquamarine;
+    background-color: #6088C6;
 }
 
-.content {
-    display: none;
+#translate-btn {
+    font-size: 1.2em;
+    height: 8%;
+    width: 20%;
+    background-color: #C0C0C0;
+    color: white;
 }
 
 #input-json-tab:checked ~ #input-json-container,
 #upload-json-tab:checked ~ #upload-json-container,
 #output-csv-tab:checked ~ #output-csv-container,
 #download-csv-tab:checked ~ #download-csv-container {
-    display: block;
+    display: flex;
+}
+
+/* ------------------------------------------------------------------------ */
+/* フッター */
+/* ------------------------------------------------------------------------ */
+.devicon-github-original,
+.github-link {
+    position: relative;
+    left: 80%;
 }
