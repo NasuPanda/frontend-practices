@@ -1,6 +1,6 @@
-{
-    "config": {
-        "key": "value",
-        "key2": "value2"
-    }
-}
+[
+    {"id":1, "name":"test", "address":"tokyo"},
+    {"id":2, "name":"hoge", "address":"osaka"},
+    {"id":3, "name":"hello"," address":"kyoto"},
+    {"id":4, "name":"world"," address":"saitama"}
+]
