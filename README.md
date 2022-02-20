@@ -24,5 +24,5 @@ HTML/CSS/JavaScriptで何か10個(くらい)作ってみるチャレンジ。
 
 ### 使用したツール
 
-keyNote : モックアップの作成
-LiveServer : HTML等の更新を自動で反映してくれる。「Live Server: Open with Live Server」で起動。
+* keyNote : モックアップの作成
+* LiveServer : HTML等の更新を自動で反映してくれる。「Live Server: Open with Live Server」で起動。
