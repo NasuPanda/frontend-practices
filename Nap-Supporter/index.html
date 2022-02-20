@@ -3,12 +3,60 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> title </title>
+    <title> Nap Supporter </title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <header>
+        <h1>Nap Supporter</h1>
+        <p>あなたのお昼寝をサポートします。</p>
+    </header>
+    <main>
+        <div id="timmer"></div>
 
+        <div id="button-container">
+            <button id="start-btn" class="highlight-btn">スタート</button>
+            <button id="reset-btn" class="normal-btn">リセット</button>
+            <button id="stop-btn" class="normal-btn">ストップ</button>
+        </div>
+
+        <p>お昼寝時間</p>
+        <label for="minutes">分</label>
+        <input type="range" name="minutes" id="minutes" min="0" max="60">
+        <label for="seconds">秒</label>
+        <input type="range" name="seconds" id="seconds" min="0" max="60">
+
+        <label for="nature-bgm-select">好きな自然音を選択</label>
+        <select name="nature-bgm" id="nature-bgm-select">
+            <option value="fire" data-bgm="nature-fire">焚き火の音</option>
+            <option value="insect" data-bgm="nature-insect">虫の声</option>
+            <option value="rain" data-bgm="nature-rain">雨の音</option>
+            <option value="sea" data-bgm="nature-sea">海の音</option>
+            <option value="water" data-bgm="nature-water">水の音</option>
+            <option value="wave" data-bgm="nature-wave">波の音</option>
+            <option value="wind" data-bgm="nature-wind">風の音</option>
+        </select>
+
+        <audio src="assets/Nature/fire.mp3" id="nature-fire"></audio>
+        <audio src="assets/Nature/insect.mp3 " id="nature-insect"></audio>
+        <audio src="assets/Nature/rain.mp3" id="nature-rain"></audio>
+        <audio src="assets/Nature/sea.mp3" id="nature-sea"></audio>
+        <audio src="assets/Nature/water.mp3" id="nature-water"></audio>
+        <audio src="assets/Nature/wave.mp3" id="nature-wave"></audio>
+        <audio src="assets/Nature/wind.mp3" id="nature-wind"></audio>
+
+        <audio src="assets/Alarm/Clock-Alarm-1.mp3" id="alarm-clock-1"></audio>
+        <audio src="assets/Alarm/Clock-Alarm-2.mp3" id="alarm-clock-2"></audio>
+        <audio src="assets/Alarm/chicken.mp3" id="alarm-chicken"></audio>
+        <audio src="assets/Alarm/morning.mp3" id="alarm-morning"></audio>
+
+    </main>
+    <footer>
+        <p>使用音源</p>
+        <a href="https://vsq.co.jp/plus/sound/category/environment/">環境音 | フリー音源・効果音 | VSQ plus+</a>
+        <a href="https://otologic.jp/free/se/clock01.html">フリー効果音:時計 | OtoLogic</a>
+    </footer>
 
     <script src="app.js"></script>
 </body>
