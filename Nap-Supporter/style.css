@@ -20,6 +20,9 @@ body {
 
 header, footer {
     background-color: #517d99;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 h1 {
@@ -148,6 +151,19 @@ select {
 #bgm-container,
 #alarm-container {
     padding: 10px;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Timer */
+/* ------------------------------------------------------------------------ */
+#timer-container {
+    width: 80%;
+    height: 300px;
+    margin: 0 auto;
+    align-items: center;
+}
+#timer {
+    font-size: 100px;
 }
 
 /* ------------------------------------------------------------------------ */
