@@ -116,13 +116,20 @@ input[type=range]::-webkit-slider-thumb{
 /* ------------------------------------------------------------------------ */
 /* 時間設定 */
 /* ------------------------------------------------------------------------ */
+#minutes-container,
+#seconds-container {
+    padding: 5px;
+}
 
 .time-range {
     width: 80%;
 }
 
-.display-time {
+.time-number {
     width: 10%;
+    text-align: left;
+    background-color: white;
+    border: solid 2px black;
 }
 
 /* ------------------------------------------------------------------------ */

@@ -26,16 +26,20 @@
 
         <h2>お昼寝時間</h2>
         <div id="minutes-container" class="container">
-            <div id="display-minutes" class="display-time"></div>
-            <label for="minutes">分</label>
-            <input id="minutes" class="time-range"
-                type="range" name="minutes" min="0" max="60">
+            <label for="minutes-number"></label>
+            <input type="number" name="minutes-number" min="0" max="60"
+                value="30" class="time-number" id="minutes-number">
+            <label for="minutes-range">分</label>
+            <input type="range" name="minutes-range" min="0" max="60"
+            value="30" id="minutes-range" class="time-range">
         </div>
         <div id="seconds-container" class="container">
-            <div id="display-seconds" class="display-time"></div>
-            <label for="seconds">秒</label>
-            <input id="seconds" class="time-range"
-                type="range" name="seconds" min="0" max="60">
+            <label for="seconds-number"></label>
+            <input type="number" name="seconds-number" min="0" max="60"
+                value="0" class="time-number" id="seconds-number">
+            <label for="seconds-range">秒</label>
+            <input type="range" name="seconds-range" min="0" max="60"
+                value="0" id="seconds-range" class="time-range">
         </div>
 
         <h2>BGM・アラームの選択</h2>
@@ -64,10 +68,10 @@
                 <option value="chicken" data-alarm="chicken">ニワトリ</option>
                 <option value="morning" data-alarm="morning">朝の訪れ</option>
             </select>
-            <label for="bgm-volume" class="volume-select-label">アラームの音量</label>
-            <input id="bgm-volume" class="volume-range"
-                type="range" name="bgm-volume" min="0" max="100">
-            <button type="button" id="bgm-volume-check" class="volume-check-btn">アラーム音量確認</button>
+            <label for="alarm-volume" class="volume-select-label">アラームの音量</label>
+            <input id="alarm-volume" class="volume-range"
+                type="range" name="alarm-volume" min="0" max="100">
+            <button type="button" id="alarm-volume-check" class="volume-check-btn">アラーム音量確認</button>
         </div>
 
 
