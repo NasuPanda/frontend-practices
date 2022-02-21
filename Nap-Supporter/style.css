@@ -1,0 +1,178 @@
+/*
+濃い
+#517D99
+#6AC1B7
+#BFE9DB
+#DFEFED
+薄い
+*/
+
+/* ------------------------------------------------------------------------ */
+/* 全体 */
+/* ------------------------------------------------------------------------ */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+header, footer {
+    background-color: #517d99;
+}
+
+h1 {
+    font-size: 2em;
+    color: #BFE9DB;
+}
+
+h2 {
+    color: #6ac1b7;
+}
+
+label {
+    text-align: right;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  line-height: 1.15; /* 1 */
+  margin: 0; /* 2 */
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+    -webkit-appearance: button;
+}
+
+a {
+    background-color: transparent;
+}
+
+/* ------------------------------------------------------------------------ */
+/* レイアウト */
+/* ------------------------------------------------------------------------ */
+
+.container {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+}
+
+/* ------------------------------------------------------------------------ */
+/* 時間管理 */
+/* ------------------------------------------------------------------------ */
+.time-manage-btn {
+    width: 20%;
+    height: 30px;
+}
+
+.highlight-btn {
+    background-color: #517d99;
+    color: white;
+}
+
+.normal-btn {
+    background-color: white;
+    color: black;
+}
+
+/* ------------------------------------------------------------------------ */
+/* スライダー */
+/* ------------------------------------------------------------------------ */
+input[type="range"] {
+    /* 独自のスタイルを適用させたい場合、appearanceをnoneに */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer; /* カーソルを見やすく */
+    height: 14px;
+
+    background: #BFE9DB; /* バーの背景色 */
+    border-radius: 10px; /* バー両端の丸み */
+    border: solid 3px #dfefed; /* バー周囲の線 */
+}
+
+/* ツマミのスタイル */
+input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    background:#517d99;
+    height:20px;
+    width:20px;
+    border-radius:50%;
+}
+
+/* ------------------------------------------------------------------------ */
+/* 時間設定 */
+/* ------------------------------------------------------------------------ */
+
+.time-range {
+    width: 80%;
+}
+
+.display-time {
+    width: 10%;
+}
+
+/* ------------------------------------------------------------------------ */
+/* BGM・アラーム */
+/* ------------------------------------------------------------------------ */
+
+select {
+    width: 20%;
+}
+
+.sound-select-label {
+    width: 15%;
+}
+.volume-select-label {
+    width: 15%;
+}
+.volume-range {
+    width: 30%;
+}
+.volume-check-btn {
+    width: 15%;
+    background-color: white;
+    color: black;
+}
+
+#bgm-container,
+#alarm-container {
+    padding: 10px;
+}
+
+/* ------------------------------------------------------------------------ */
+/* レスポンシブ対応 */
+/* ------------------------------------------------------------------------ */
+@media screen and (max-width: 480px) {
+    #bgm-container,
+    #alarm-container {
+        flex-wrap: wrap;
+    }
+    select {
+        width: 40%;
+    }
+    .sound-select-label {
+        width: 40%;
+        text-align: left;
+    }
+    .volume-select-label {
+        width: 40%;
+        padding-top: 10px;
+    }
+    .volume-range {
+        width: 70%;
+    }
+    .volume-check-btn {
+        width: 20%;
+    }
+}

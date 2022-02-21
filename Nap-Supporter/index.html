@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Nap Supporter </title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -15,10 +16,10 @@
     <main>
         <div id="timmer">⭐ここに選択した時間を表示⭐</div>
 
-        <div id="button-container">
-            <button id="start-btn" class="highlight-btn">スタート</button>
-            <button id="reset-btn" class="normal-btn">リセット</button>
-            <button id="stop-btn" class="normal-btn">ストップ</button>
+        <div class="container">
+            <button id="start-btn" class="highlight-btn time-manage-btn">スタート</button>
+            <button id="reset-btn" class="normal-btn time-manage-btn">リセット</button>
+            <button id="stop-btn" class="normal-btn time-manage-btn">ストップ</button>
         </div>
 
         <h2>お昼寝時間</h2>
@@ -37,7 +38,7 @@
 
         <h2>BGM・アラームの選択</h2>
         <div id="bgm-container" class="container">
-            <label for="nature-bgm-select">好きな自然音を選択</label>
+            <label for="nature-bgm-select" class="sound-select-label">好きな自然音を選択</label>
             <select name="nature-bgm" id="nature-bgm-select">
                 <option value="fire" data-bgm="fire">焚き火の音</option>
                 <option value="insect" data-bgm="insect">虫の声</option>
@@ -47,24 +48,24 @@
                 <option value="wave" data-bgm="wave">波の音</option>
                 <option value="wind" data-bgm="wind">風の音</option>
             </select>
-            <label for="bgm-volume">BGMの音量</label>
+            <label for="bgm-volume" class="volume-select-label">BGMの音量</label>
             <input id="bgm-volume" class="volume-range"
                 type="range" name="bgm-volume" min="0" max="100">
             <button type="button" id="bgm-volume-check" class="volume-check-btn">BGM音量確認</button>
         </div>
 
         <div id="alarm-container" class="container">
-            <label for="alarm-select">アラーム音を選択</label>
+            <label for="alarm-select" class="sound-select-label">アラーム音を選択</label>
             <select name="alarm" id="alarm-select">
                 <option value="clock-1" data-alarm="clock-1">時計の音(ピピピッ)</option>
                 <option value="clock-2" data-alarm="clock-2">時計の音(ジリリリ)</option>
                 <option value="chicken" data-alarm="chicken">ニワトリ</option>
                 <option value="morning" data-alarm="morning">朝の訪れ</option>
             </select>
-            <label for="bgm-volume">アラームの音量</label>
+            <label for="bgm-volume" class="volume-select-label">アラームの音量</label>
             <input id="bgm-volume" class="volume-range"
                 type="range" name="bgm-volume" min="0" max="100">
-            <button type="button" id="bgm-volume-check" class="volume-check-btn">BGM音量確認</button>
+            <button type="button" id="bgm-volume-check" class="volume-check-btn">アラーム音量確認</button>
         </div>
 
 
