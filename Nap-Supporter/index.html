@@ -13,7 +13,7 @@
         <p>あなたのお昼寝をサポートします。</p>
     </header>
     <main>
-        <div id="timmer"></div>
+        <div id="timmer">⭐ここに選択した時間を表示⭐</div>
 
         <div id="button-container">
             <button id="start-btn" class="highlight-btn">スタート</button>
@@ -21,22 +21,52 @@
             <button id="stop-btn" class="normal-btn">ストップ</button>
         </div>
 
-        <p>お昼寝時間</p>
-        <label for="minutes">分</label>
-        <input type="range" name="minutes" id="minutes" min="0" max="60">
-        <label for="seconds">秒</label>
-        <input type="range" name="seconds" id="seconds" min="0" max="60">
+        <h2>お昼寝時間</h2>
+        <div id="minutes-container" class="container">
+            <div id="display-minutes" class="display-time"></div>
+            <label for="minutes">分</label>
+            <input id="minutes" class="time-range"
+                type="range" name="minutes" min="0" max="60">
+        </div>
+        <div id="seconds-container" class="container">
+            <div id="display-seconds" class="display-time"></div>
+            <label for="seconds">秒</label>
+            <input id="seconds" class="time-range"
+                type="range" name="seconds" min="0" max="60">
+        </div>
 
-        <label for="nature-bgm-select">好きな自然音を選択</label>
-        <select name="nature-bgm" id="nature-bgm-select">
-            <option value="fire" data-bgm="nature-fire">焚き火の音</option>
-            <option value="insect" data-bgm="nature-insect">虫の声</option>
-            <option value="rain" data-bgm="nature-rain">雨の音</option>
-            <option value="sea" data-bgm="nature-sea">海の音</option>
-            <option value="water" data-bgm="nature-water">水の音</option>
-            <option value="wave" data-bgm="nature-wave">波の音</option>
-            <option value="wind" data-bgm="nature-wind">風の音</option>
-        </select>
+        <h2>BGM・アラームの選択</h2>
+        <div id="bgm-container" class="container">
+            <label for="nature-bgm-select">好きな自然音を選択</label>
+            <select name="nature-bgm" id="nature-bgm-select">
+                <option value="fire" data-bgm="fire">焚き火の音</option>
+                <option value="insect" data-bgm="insect">虫の声</option>
+                <option value="rain" data-bgm="rain">雨の音</option>
+                <option value="sea" data-bgm="sea">海の音</option>
+                <option value="water" data-bgm="water">水の音</option>
+                <option value="wave" data-bgm="wave">波の音</option>
+                <option value="wind" data-bgm="wind">風の音</option>
+            </select>
+            <label for="bgm-volume">BGMの音量</label>
+            <input id="bgm-volume" class="volume-range"
+                type="range" name="bgm-volume" min="0" max="100">
+            <button type="button" id="bgm-volume-check" class="volume-check-btn">BGM音量確認</button>
+        </div>
+
+        <div id="alarm-container" class="container">
+            <label for="alarm-select">アラーム音を選択</label>
+            <select name="alarm" id="alarm-select">
+                <option value="clock-1" data-alarm="clock-1">時計の音(ピピピッ)</option>
+                <option value="clock-2" data-alarm="clock-2">時計の音(ジリリリ)</option>
+                <option value="chicken" data-alarm="chicken">ニワトリ</option>
+                <option value="morning" data-alarm="morning">朝の訪れ</option>
+            </select>
+            <label for="bgm-volume">アラームの音量</label>
+            <input id="bgm-volume" class="volume-range"
+                type="range" name="bgm-volume" min="0" max="100">
+            <button type="button" id="bgm-volume-check" class="volume-check-btn">BGM音量確認</button>
+        </div>
+
 
         <audio src="assets/Nature/fire.mp3" id="nature-fire"></audio>
         <audio src="assets/Nature/insect.mp3 " id="nature-insect"></audio>
@@ -53,7 +83,7 @@
 
     </main>
     <footer>
-        <p>使用音源</p>
+        <h2>使用音源</h2>
         <a href="https://vsq.co.jp/plus/sound/category/environment/">環境音 | フリー音源・効果音 | VSQ plus+</a>
         <a href="https://otologic.jp/free/se/clock01.html">フリー効果音:時計 | OtoLogic</a>
     </footer>
