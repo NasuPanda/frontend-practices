@@ -12,7 +12,7 @@ function inputSlider() {
     console.log(this.value)
 }
 
-class Slider {
+class rangeNumberCorrespondence {
 	constructor(inputRange, inputNumber) {
 		this.inputRange = inputRange;
         this.inputNumber = inputNumber;
@@ -27,5 +27,5 @@ class Slider {
 	}
 }
 
-const minutesSlider = new Slider(minutesInputRange, minutesInputNumber);
-const secondsSlider = new Slider(secondsInputRange, secondsInputNumber);
+const minutesInput = new Input(minutesInputRange, minutesInputNumber);
+const secondsInput = new Input(secondsInputRange, secondsInputNumber);
