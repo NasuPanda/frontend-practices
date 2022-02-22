@@ -65,30 +65,41 @@ correspondInputTimer(correspondenceInputSecondsTimer);
 // 音声の制御
 // ------------------------------------------
 const startBtn = document.getElementById("start-btn");
-const resetBtn = document.getElementById("reset-btn");
 const stopBtn = document.getElementById("stop-btn");
+
+// ------------------------------------------
 // 音量チェック
+// ------------------------------------------
 const bgmCheck = document.getElementById("bgm-volume-check");
 const alarmCheck = document.getElementById("alarm-volume-check");
+const volumeCheckButtons = [bgmCheck, alarmCheck];
 
 function play(audio, volume) {
     audio.volume = volume;
     audio.play();
 }
 
-function pause(audio) {
-    audio.pause();
-    audio.currentTime = 0;
-}
-
 /** 一定時間再生する。 */
-function playVolumeCheck(audioId) {
+function playVolumeCheck(audioId, buttons) {
+    // 再生中はボタン操作が無効。
+    buttons.forEach(btn => {
+        btn.disabled = true;
+    });
+
     const selectedAudio = document.getElementById(`${audioId}-${selectedSounds[audioId]}`)
     // 入力レンジが0〜100でボリュームは0〜1なので100で割る
-    volume = document.getElementById(`${audioId}-volume`).value / 100;
+    const volume = document.getElementById(`${audioId}-volume`).value / 100;
     play(selectedAudio, volume);
-    window.setTimeout(pause, 5000, selectedAudio);
+
+    function pause(audio, buttons) {
+        audio.pause();
+        audio.currentTime = 0;
+        buttons.forEach(btn => {
+            btn.disabled = false;
+        });
+    }
+    setTimeout(pause, 5000, selectedAudio, buttons);
 }
 
-bgmCheck.addEventListener('click', () => { playVolumeCheck("bgm") })
-alarmCheck.addEventListener('click', () => { playVolumeCheck("alarm") })
+bgmCheck.addEventListener('click', () => { playVolumeCheck("bgm", volumeCheckButtons) })
+alarmCheck.addEventListener('click', () => { playVolumeCheck("alarm", volumeCheckButtons) })
