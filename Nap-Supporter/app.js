@@ -1,33 +1,55 @@
-const minutesInputRange = document.getElementById("minutes-range")
-const secondsInputRange = document.getElementById("seconds-range")
-const bgmVolumeSlider = document.getElementById("bgm-volume")
-const alarmVolumeSlider = document.getElementById("alarm-volume")
-const minutesInputNumber = document.getElementById("minutes-number")
-const secondsInputNumber = document.getElementById("seconds-number")
+// ボリュームの入力
+const bgmVolumeSlider = document.getElementById("bgm-volume");
+const alarmVolumeSlider = document.getElementById("alarm-volume");
+// ------------------------------------------
+// 音の選択
+// ------------------------------------------
+const natureSelect = document.getElementById("nature-bgm-select");
+const alarmSelect = document.getElementById("alarm-select");
+let selectedBGM = "";
+let selectedAlarm = "";
 
-/**
- * range ⇔ numberの対応が何回か出てくるので、クラスか何かで表したいです。
- * rangeクラス、numberクラスを作ってお互いがお互いを更新する、というのは
- * よろしくない感じがします。
- * そこで、対応関係のクラスを作ることで対処します。
- */
+natureSelect.addEventListener("change", () => {
+    let index = natureSelect.selectedIndex;
+    selectedBGM = natureSelect.options[index].dataset.bgm;
+})
+alarmSelect.addEventListener("change", () => {
+    let index = alarmSelect.selectedIndex;
+    selectedAlarm = alarmSelect.options[index].dataset.bgm;
+})
 
-
-/** input range⇔numberの対応を表すクラス */
-class inputRangeNumberCorrespondence {
-    constructor(inputRange, inputNumber) {
-        this.inputRange = inputRange;
-        this.inputNumber = inputNumber;
-
-        // rangeとnumberの値を対応させる
-        this.inputRange.addEventListener("input", () => {
-            this.inputNumber.value = this.inputRange.value
-        })
-        this.inputNumber.addEventListener("input", () => {
-            this.inputRange.value = this.inputNumber.value
-        })
-    }
+/** input⇔分タイマーの紐付け */
+const correspondenceInputMinutesTimer = {
+    "timer" : document.getElementById("timer-minutes"),
+    "range" : document.getElementById("minutes-range"),
+    "number" : document.getElementById("minutes-number")
 }
 
-const minutesInputs = new inputRangeNumberCorrespondence(minutesInputRange, minutesInputNumber);
-const secondsInputs = new inputRangeNumberCorrespondence(secondsInputRange, secondsInputNumber);
+/** input⇔秒タイマーの紐付け */
+const correspondenceInputSecondsTimer = {
+    "timer" : document.getElementById("timer-seconds"),
+    "range" : document.getElementById("seconds-range"),
+    "number" : document.getElementById("seconds-number")
+}
+
+function correspondInputTimer(correspond) {
+    // numberは値が表示されるため、0埋めしておく
+    correspond.number.value = correspond.number.value.padStart(2, "0");
+    correspond.timer.innerHTML = correspond.number.value;
+
+    correspond.range.addEventListener("input", () => {
+        // rangeの値を0埋めしてnumberに代入する
+        correspond.number.value = correspond.range.value.padStart(2, "0");
+        correspond.timer.innerHTML = correspond.range.value.padStart(2, "0");
+    })
+
+    correspond.number.addEventListener("input", () => {
+        // rangeにはそのまま値を代入すればいい
+        correspond.range.value = correspond.number.value;
+        correspond.number.value = correspond.number.value.padStart(2, "0");
+        correspond.timer.innerHTML = correspond.number.value
+    })
+}
+
+correspondInputTimer(correspondenceInputMinutesTimer);
+correspondInputTimer(correspondenceInputSecondsTimer);
