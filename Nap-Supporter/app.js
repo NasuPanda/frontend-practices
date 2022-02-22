@@ -1,13 +1,17 @@
 // ボリュームの入力
 const bgmVolumeSlider = document.getElementById("bgm-volume");
 const alarmVolumeSlider = document.getElementById("alarm-volume");
+
 // ------------------------------------------
 // 音の選択
 // ------------------------------------------
-const natureSelect = document.getElementById("nature-bgm-select");
+
+const natureSelect = document.getElementById("bgm-select");
 const alarmSelect = document.getElementById("alarm-select");
-let selectedBGM = "";
-let selectedAlarm = "";
+const selectedSounds = {
+    "bgm" : natureSelect.options[natureSelect.selectedIndex].dataset.bgm,
+    "alarm" : alarmSelect.options[alarmSelect.selectedIndex].dataset.alarm
+}
 
 natureSelect.addEventListener("change", () => {
     let index = natureSelect.selectedIndex;
@@ -18,6 +22,9 @@ alarmSelect.addEventListener("change", () => {
     selectedAlarm = alarmSelect.options[index].dataset.bgm;
 })
 
+// ------------------------------------------
+// 時間の表示
+// ------------------------------------------
 /** input⇔分タイマーの紐付け */
 const correspondenceInputMinutesTimer = {
     "timer" : document.getElementById("timer-minutes"),
@@ -53,3 +60,35 @@ function correspondInputTimer(correspond) {
 
 correspondInputTimer(correspondenceInputMinutesTimer);
 correspondInputTimer(correspondenceInputSecondsTimer);
+
+// ------------------------------------------
+// 音声の制御
+// ------------------------------------------
+const startBtn = document.getElementById("start-btn");
+const resetBtn = document.getElementById("reset-btn");
+const stopBtn = document.getElementById("stop-btn");
+// 音量チェック
+const bgmCheck = document.getElementById("bgm-volume-check");
+const alarmCheck = document.getElementById("alarm-volume-check");
+
+function play(audio, volume) {
+    audio.volume = volume;
+    audio.play();
+}
+
+function pause(audio) {
+    audio.pause();
+    audio.currentTime = 0;
+}
+
+/** 一定時間再生する。 */
+function playVolumeCheck(audioId) {
+    const selectedAudio = document.getElementById(`${audioId}-${selectedSounds[audioId]}`)
+    // 入力レンジが0〜100でボリュームは0〜1なので100で割る
+    volume = document.getElementById(`${audioId}-volume`).value / 100;
+    play(selectedAudio, volume);
+    window.setTimeout(pause, 5000, selectedAudio);
+}
+
+bgmCheck.addEventListener('click', () => { playVolumeCheck("bgm") })
+alarmCheck.addEventListener('click', () => { playVolumeCheck("alarm") })
