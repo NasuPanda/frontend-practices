@@ -5,27 +5,29 @@ const alarmVolumeSlider = document.getElementById("alarm-volume")
 const minutesInputNumber = document.getElementById("minutes-number")
 const secondsInputNumber = document.getElementById("seconds-number")
 
-const slides = [minutesInputRange, secondsInputRange, bgmVolumeSlider, alarmVolumeSlider];
-const numberInputs = [minutesInputNumber, secondsInputNumber];
+/**
+ * range ⇔ numberの対応が何回か出てくるので、クラスか何かで表したいです。
+ * rangeクラス、numberクラスを作ってお互いがお互いを更新する、というのは
+ * よろしくない感じがします。
+ * そこで、対応関係のクラスを作ることで対処します。
+ */
 
-function inputSlider() {
-    console.log(this.value)
-}
 
-class rangeNumberCorrespondence {
-	constructor(inputRange, inputNumber) {
-		this.inputRange = inputRange;
+/** input range⇔numberの対応を表すクラス */
+class inputRangeNumberCorrespondence {
+    constructor(inputRange, inputNumber) {
+        this.inputRange = inputRange;
         this.inputNumber = inputNumber;
 
-        // range⇔number の値を紐付ける
-        this.inputRange.addEventListener("input", (e) => {
-            this.inputNumber.value = this.inputRange.value;
-        });
-        this.inputNumber.addEventListener("input", (e) => {
-            this.inputRange.value = this.inputNumber.value;
-        });
-	}
+        // rangeとnumberの値を対応させる
+        this.inputRange.addEventListener("input", () => {
+            this.inputNumber.value = this.inputRange.value
+        })
+        this.inputNumber.addEventListener("input", () => {
+            this.inputRange.value = this.inputNumber.value
+        })
+    }
 }
 
-const minutesInput = new Input(minutesInputRange, minutesInputNumber);
-const secondsInput = new Input(secondsInputRange, secondsInputNumber);
+const minutesInputs = new inputRangeNumberCorrespondence(minutesInputRange, minutesInputNumber);
+const secondsInputs = new inputRangeNumberCorrespondence(secondsInputRange, secondsInputNumber);
