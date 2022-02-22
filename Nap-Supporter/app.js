@@ -42,19 +42,19 @@ const correspondenceInputSecondsTimer = {
 function correspondInputTimer(correspond) {
     // numberは値が表示されるため、0埋めしておく
     correspond.number.value = correspond.number.value.padStart(2, "0");
-    correspond.timer.innerHTML = correspond.number.value;
+    correspond.timer.textContent = correspond.number.value;
 
     correspond.range.addEventListener("input", () => {
         // rangeの値を0埋めしてnumberに代入する
         correspond.number.value = correspond.range.value.padStart(2, "0");
-        correspond.timer.innerHTML = correspond.range.value.padStart(2, "0");
+        correspond.timer.textContent = correspond.range.value.padStart(2, "0");
     })
 
     correspond.number.addEventListener("input", () => {
         // rangeにはそのまま値を代入すればいい
         correspond.range.value = correspond.number.value;
         correspond.number.value = correspond.number.value.padStart(2, "0");
-        correspond.timer.innerHTML = correspond.number.value
+        correspond.timer.textContent = correspond.number.value
     })
 }
 
@@ -67,6 +67,35 @@ correspondInputTimer(correspondenceInputSecondsTimer);
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
 
+const play = function(audio, volume) {
+    audio.volume = volume;
+    audio.play();
+}
+
+const start = function() {
+    let min = correspondenceInputMinutesTimer.number.value
+    let sec = correspondenceInputSecondsTimer.number.value
+    const minTimer = correspondenceInputMinutesTimer.timer
+    const secTimer = correspondenceInputSecondsTimer.timer
+
+    const id = setInterval( () => {
+        if (min == 0 && sec == 0) {
+            clearInterval(id)
+        } else if (sec == 0) {
+            sec = 59;
+            min -= 1;
+            minTimer.textContent = String(min).padStart(2, "0");
+            secTimer.textContent = String(sec).padStart(2, "0");
+        } else {
+            sec -= 1;
+            secTimer.textContent = String(sec).padStart(2, "0");
+        }
+    }, 1000);
+}
+
+startBtn.addEventListener("click", start)
+
+
 // ------------------------------------------
 // 音量チェック
 // ------------------------------------------
@@ -74,13 +103,8 @@ const bgmCheck = document.getElementById("bgm-volume-check");
 const alarmCheck = document.getElementById("alarm-volume-check");
 const volumeCheckButtons = [bgmCheck, alarmCheck];
 
-function play(audio, volume) {
-    audio.volume = volume;
-    audio.play();
-}
-
 /** 一定時間再生する。 */
-function playVolumeCheck(audioId, buttons) {
+const playVolumeCheck = function(audioId, buttons) {
     // 再生中はボタン操作が無効。
     buttons.forEach(btn => {
         btn.disabled = true;
@@ -101,5 +125,5 @@ function playVolumeCheck(audioId, buttons) {
     setTimeout(pause, 5000, selectedAudio, buttons);
 }
 
-bgmCheck.addEventListener('click', () => { playVolumeCheck("bgm", volumeCheckButtons) })
-alarmCheck.addEventListener('click', () => { playVolumeCheck("alarm", volumeCheckButtons) })
+bgmCheck.addEventListener('click', playVolumeCheck.bind(null, "bgm", volumeCheckButtons))
+alarmCheck.addEventListener('click', playVolumeCheck.bind(null, "alarm", volumeCheckButtons))
