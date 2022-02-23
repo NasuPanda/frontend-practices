@@ -1,29 +1,3 @@
-/**
- * 2022/02/23 昼
- * BGMの選択、ボリュームの部分リファクタリングした。
- * それらを参照している箇所(BGM音量チェックなど)も変更。
- *
- * ストップボタンを押したときにinputの表示も変更されるようにした。
- *
- * audioPlay, audioPause関数の導入により大幅にコード量削減！
- *
- * 音量チェック、再生で場合分けが必要(ループ有無)
- * → 通常の再生、一定時間再生する関数を作った。
- *
- * ☆ 以下リファクタリング
- *
- * disabledの名前変更、input要素も追加。
- *
- * bgmSelect, alarmSelect をbindでリファクタリング
- * イベントリスナーにおいて、thisはwindowを指す。
- * →bindを使ってthisの参照をselect要素にすることで対応。
- * https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
- *
- * ついでに、this使えばcorrespondenceもリファクタリング出来ること無い？
- * correspondenceにメソッドをもたせる→スプレッド構文で展開しつつプロパティを置き換え
- * 大本を作る→それぞれコピー・置換の方が良いだろうけど今回は2つのみので。
- */
-
 /** 選択された音声のHTML要素 */
 const selectedSounds = {
     "bgm" : document.getElementById("bgm-fire"),
@@ -81,7 +55,8 @@ const elementsDisabledPlayback = [
                                 correspondenceInputMinutesTimer.range,
                                 correspondenceInputMinutesTimer.number,
                                 correspondenceInputSecondsTimer.range,
-                                correspondenceInputSecondsTimer.number];
+                                correspondenceInputSecondsTimer.number
+                            ];
 
 let isStopClick = false;
 
