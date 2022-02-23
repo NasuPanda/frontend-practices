@@ -138,6 +138,7 @@ function start() {
     const secTimer = correspondenceInputSecondsTimer.timer
     isStopClick = false;
 
+    /** 再生終了時の処理 */
     function finishPlay() {
         clearInterval(id);
         setTimerInputs(min, sec);
