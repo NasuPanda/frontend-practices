@@ -40,4 +40,19 @@
     vertical-align: top;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+    /* capsLockのため */
+    position: relative;
+}
+
+.keyboard__key:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.keyboard__key--wide {
+    width: 12%;
+}
+
+.keyboard__key--extra-wide {
+    width: 36%;
+    max-width: 500px;
 }
