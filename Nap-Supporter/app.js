@@ -1,25 +1,30 @@
-// ボリュームの入力
-const bgmVolumeSlider = document.getElementById("bgm-volume");
-const alarmVolumeSlider = document.getElementById("alarm-volume");
-
 // ------------------------------------------
-// 音の選択
+// 音声制御
 // ------------------------------------------
 
-const natureSelect = document.getElementById("bgm-select");
+const bgmSelect = document.getElementById("bgm-select");
 const alarmSelect = document.getElementById("alarm-select");
+
+/** 選択された音声 */
 const selectedSounds = {
-    "bgm" : natureSelect.options[natureSelect.selectedIndex].dataset.bgm,
-    "alarm" : alarmSelect.options[alarmSelect.selectedIndex].dataset.alarm
+    "bgm" : bgmSelect.options[0],
+    "alarm" : alarmSelect.options[0]
+}
+/** ボリュームの入力 */
+const volumes = {
+    "bgm" : document.getElementById("bgm-volume"),
+    "alarm" : document.getElementById("alarm-volume")
 }
 
-natureSelect.addEventListener("change", () => {
-    let index = natureSelect.selectedIndex;
-    selectedBGM = natureSelect.options[index].dataset.bgm;
+bgmSelect.addEventListener("change", () => {
+    const index = bgmSelect.selectedIndex;
+    const bgmData = bgmSelect.options[index].dataset.bgm;
+    selectedSounds.bgm = document.getElementById(`$bgm-${bgmData}`);
 })
 alarmSelect.addEventListener("change", () => {
-    let index = alarmSelect.selectedIndex;
-    selectedAlarm = alarmSelect.options[index].dataset.bgm;
+    const index = alarmSelect.selectedIndex;
+    const alarmData = alarmSelect.options[index].dataset.alarm;
+    selectedSounds.alarm = document.getElementById(`alarm-${alarmData}`)
 })
 
 // ------------------------------------------
@@ -67,16 +72,20 @@ correspondInputTimer(correspondenceInputSecondsTimer);
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
 
-const play = function(audio, volume) {
+const audioPlay = function(audio, volume) {
     audio.volume = volume;
     audio.play();
 }
 
 const start = function() {
+    const selectedAudio = selectedSounds.bgm;
+    const volume = volumes.bgm.value / 100;
     let min = correspondenceInputMinutesTimer.number.value
     let sec = correspondenceInputSecondsTimer.number.value
     const minTimer = correspondenceInputMinutesTimer.timer
     const secTimer = correspondenceInputSecondsTimer.timer
+
+    audioPlay(selectedAudio, volume);
 
     const id = setInterval( () => {
         if (min == 0 && sec == 0) {
@@ -110,10 +119,10 @@ const playVolumeCheck = function(audioId, buttons) {
         btn.disabled = true;
     });
 
-    const selectedAudio = document.getElementById(`${audioId}-${selectedSounds[audioId]}`)
+    const selectedAudio = selectedSounds[audioId];
     // 入力レンジが0〜100でボリュームは0〜1なので100で割る
     const volume = document.getElementById(`${audioId}-volume`).value / 100;
-    play(selectedAudio, volume);
+    audioPlay(selectedAudio, volume);
 
     function pause(audio, buttons) {
         audio.pause();
