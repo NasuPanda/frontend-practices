@@ -33,7 +33,7 @@ const alarmSelect = document.getElementById("alarm-select");
 bgmSelect.addEventListener("change", () => {
     const index = bgmSelect.selectedIndex;
     const bgmData = bgmSelect.options[index].dataset.bgm;
-    selectedSounds.bgm = document.getElementById(`$bgm-${bgmData}`);
+    selectedSounds.bgm = document.getElementById(`bgm-${bgmData}`);
 })
 alarmSelect.addEventListener("change", () => {
     const index = alarmSelect.selectedIndex;
@@ -87,7 +87,7 @@ const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
 const bgmCheck = document.getElementById("bgm-volume-check");
 const alarmCheck = document.getElementById("alarm-volume-check");
-const playingDisabledButtons = [startBtn, bgmCheck, alarmCheck];
+const buttonsDisabledPlayback = [startBtn, bgmCheck, alarmCheck];
 let isStop = false;
 
 stopBtn.addEventListener("click", () => {
@@ -98,16 +98,22 @@ stopBtn.addEventListener("click", () => {
 function audioPlay(audio, volume) {
     audio.volume = volume;
     audio.play();
-    playingDisabledButtons.forEach(btn => {
+    buttonsDisabledPlayback.forEach(btn => {
         btn.disabled = true;
     });
 }
 
+/** 一定時間再生する。 */
+function audioPlayShort(audio, volume) {
+    audioPlay(audio, volume);
+    setTimeout(audioPause, 5000, audio);
+}
+
 /** audio要素をpauseし、ボタンを有効化する */
-function audioPause(audio, playingDisabledButtons) {
+function audioPause(audio) {
     audio.pause();
     audio.currentTime = 0;
-    playingDisabledButtons.forEach(btn => {
+    buttonsDisabledPlayback.forEach(btn => {
         btn.disabled = false;
     });
 }
@@ -125,15 +131,22 @@ function start() {
     let sec = correspondenceInputSecondsTimer.number.value
     const minTimer = correspondenceInputMinutesTimer.timer
     const secTimer = correspondenceInputSecondsTimer.timer
+    isStop = false;
 
-    audioPlay(selectedSounds.bgm,volumes.bgm.value/100);
+    function finishPlay() {
+        clearInterval(id);
+        setInput(min, sec);
+        audioPause(selectedSounds.bgm, buttonsDisabledPlayback);
+    }
+
+    audioPlay(selectedSounds.bgm, volumes.bgm.value/100);
 
     const id = setInterval( () => {
         if (min == 0 && sec == 0) {
-            clearInterval(id);
+            finishPlay();
+            audioPlayShort(selectedSounds.alarm, volumes.alarm.value/100);
         } else if (isStop) {
-            clearInterval(id);
-            setInput(min, sec)
+            finishPlay();
         } else if (sec == 0) {
             sec = 59;
             min -= 1;
@@ -152,13 +165,12 @@ startBtn.addEventListener("click", start)
 // 音量チェック
 // ------------------------------------------
 /** 一定時間再生する。 */
-const playVolumeCheck = function(audioId, playingDisabledButtons) {
+const playVolumeCheck = function(audioId, buttonsDisabledPlayback) {
     const selectedAudio = selectedSounds[audioId];
     // 入力レンジが0〜100でボリュームは0〜1なので100で割る
     const volume = volumes[audioId].value / 100;
-    audioPlay(selectedAudio, volume);
-    setTimeout(audioPause, 5000, selectedAudio, playingDisabledButtons);
+    audioPlayShort(selectedAudio, volume);
 }
 
-bgmCheck.addEventListener('click', playVolumeCheck.bind(null, "bgm", playingDisabledButtons))
-alarmCheck.addEventListener('click', playVolumeCheck.bind(null, "alarm", playingDisabledButtons))
+bgmCheck.addEventListener('click', playVolumeCheck.bind(null, "bgm"))
+alarmCheck.addEventListener('click', playVolumeCheck.bind(null, "alarm"))
