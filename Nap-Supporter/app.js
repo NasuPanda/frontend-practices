@@ -111,6 +111,7 @@ function start() {
     let sec = correspondenceInputSecondsTimer.number.value
     const minTimer = correspondenceInputMinutesTimer.timer
     const secTimer = correspondenceInputSecondsTimer.timer
+    stopBtn.classList.add("highlight-btn");
     isStopClick = false;
 
     /** 再生終了時の処理 */
@@ -155,4 +156,7 @@ bgmVolumeCheck.addEventListener('click', playVolumeCheck.bind(null, "bgm"))
 alarmVolumeCheck.addEventListener('click', playVolumeCheck.bind(null, "alarm"))
 
 startBtn.addEventListener("click", start)
-stopBtn.addEventListener("click", () => isStopClick = true )
+stopBtn.addEventListener("click", () => {
+    isStopClick = true
+    stopBtn.classList.remove("highlight-btn")
+} )

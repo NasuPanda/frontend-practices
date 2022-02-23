@@ -78,14 +78,14 @@ a {
     height: 30px;
 }
 
-.highlight-btn {
-    background-color: #517d99;
-    color: white;
-}
-
 .normal-btn {
     background-color: white;
     color: black;
+}
+
+.highlight-btn {
+    background-color: #517d99;
+    color: white;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -176,6 +176,22 @@ select {
 #timer-colon {
     font-size: 100px;
     margin: 0 20px;
+}
+
+/* ------------------------------------------------------------------------ */
+/* disabled */
+/* ------------------------------------------------------------------------ */
+
+input:disabled {
+    background-color: #ccc;
+}
+
+input:disabled::-webkit-slider-thumb{
+    background:#ccc;
+}
+
+button:disabled {
+    background-color: #ccc;
 }
 
 /* ------------------------------------------------------------------------ */
