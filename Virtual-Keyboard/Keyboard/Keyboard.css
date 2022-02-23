@@ -36,4 +36,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    /* アイコンの中央寄せ */
+    vertical-align: top;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
