@@ -10,13 +10,18 @@
  * 音量チェック、再生で場合分けが必要(ループ有無)
  * → 通常の再生、一定時間再生する関数を作った。
  *
+ * ☆ 以下リファクタリング
+ *
+ * disabledの名前変更、input要素も追加。
+ *
  * bgmSelect, alarmSelect をbindでリファクタリング
  * イベントリスナーにおいて、thisはwindowを指す。
  * →bindを使ってthisの参照をselect要素にすることで対応。
  * https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
  *
  * ついでに、this使えばcorrespondenceもリファクタリング出来ること無い？
- * 　
+ * correspondenceにメソッドをもたせる→スプレッド構文で展開しつつプロパティを置き換え
+ * 大本を作る→それぞれコピー・置換の方が良いだろうけど今回は2つのみので。
  */
 
 /** 選択された音声のHTML要素 */
@@ -30,7 +35,7 @@ const volumes = {
     "alarm" : document.getElementById("alarm-volume")
 }
 
-/** input⇔分タイマーの紐付け */
+/** input⇔分タイマーの対応 */
 const correspondenceInputMinutesTimer = {
     "timer" : document.getElementById("timer-minutes"),
     "range" : document.getElementById("minutes-range"),
@@ -54,7 +59,7 @@ const correspondenceInputMinutesTimer = {
         })
     }
 }
-/** input⇔秒タイマーの紐付け */
+/** input⇔秒タイマーの対応 */
 const correspondenceInputSecondsTimer = {
     ...correspondenceInputMinutesTimer,
     "timer" : document.getElementById("timer-seconds"),
@@ -71,7 +76,12 @@ const bgmVolumeCheck = document.getElementById("bgm-volume-check");
 const alarmVolumeCheck = document.getElementById("alarm-volume-check");
 
 /** 再生時無効にするHTML要素 */
-const elementsDisabledPlayback = [startBtn, bgmVolumeCheck, alarmVolumeCheck];
+const elementsDisabledPlayback = [
+                                startBtn, bgmVolumeCheck, alarmVolumeCheck,
+                                correspondenceInputMinutesTimer.range,
+                                correspondenceInputMinutesTimer.number,
+                                correspondenceInputSecondsTimer.range,
+                                correspondenceInputSecondsTimer.number];
 
 let isStopClick = false;
 
@@ -96,9 +106,7 @@ function audioPlay(audio, volume) {
 function audioPause(audio) {
     audio.pause();
     audio.currentTime = 0;
-    elementsDisabledPlayback.forEach(btn => {
-        btn.disabled = false;
-    });
+    elementsDisabledPlayback.forEach( btn => btn.disabled = false );
 }
 
 /** 一定時間再生する。 */
@@ -149,16 +157,12 @@ function start() {
             // 終了 : ストップボタンで終了(アラームは流れない)
             finishPlay();
         } else if (sec == 0) {
-            // 継続 : 「秒」の値が0になった
             sec = 59;
             min -= 1;
-            // タイマーの表示更新
             minTimer.textContent = String(min).padStart(2, "0");
             secTimer.textContent = String(sec).padStart(2, "0");
         } else {
-            // 継続 : それ以外
             sec -= 1;
-            // タイマーの表示更新
             secTimer.textContent = String(sec).padStart(2, "0");
         }
     }, 1000);
