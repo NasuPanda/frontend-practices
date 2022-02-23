@@ -2,6 +2,14 @@
  * 2022/02/23 昼
  * BGMの選択、ボリュームの部分リファクタリングした。
  * それらを参照している箇所(BGM音量チェックなど)も変更。
+ *
+ * ボリュームチェックのpause関数を無名関数にした。
+ *
+ * ストップボタンを押したときにinputの表示も変更されるようにした。
+ *
+ * audioPlay, audioPause関数の導入により大幅にコード量削減！
+ * TODO 音量チェック、再生で場合分けが必要
+ *      ループの有無
  */
 
 
@@ -77,33 +85,55 @@ correspondInputTimer(correspondenceInputSecondsTimer);
 // ------------------------------------------
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
-
+const bgmCheck = document.getElementById("bgm-volume-check");
+const alarmCheck = document.getElementById("alarm-volume-check");
+const playingDisabledButtons = [startBtn, bgmCheck, alarmCheck];
 let isStop = false;
+
 stopBtn.addEventListener("click", () => {
     isStop = true;
 })
 
-/** audio要素をplayする */
-const audioPlay = function(audio, volume) {
+/** audio要素をplayし、ボタンを無効化する */
+function audioPlay(audio, volume) {
     audio.volume = volume;
     audio.play();
+    playingDisabledButtons.forEach(btn => {
+        btn.disabled = true;
+    });
 }
 
-const start = function() {
+/** audio要素をpauseし、ボタンを有効化する */
+function audioPause(audio, playingDisabledButtons) {
+    audio.pause();
+    audio.currentTime = 0;
+    playingDisabledButtons.forEach(btn => {
+        btn.disabled = false;
+    });
+}
+
+/** 入力値をセットする */
+function setInput(min, sec) {
+    correspondenceInputMinutesTimer.number.value = String(min).padStart(2, "0");
+    correspondenceInputMinutesTimer.range.value = min;
+    correspondenceInputSecondsTimer.number.value = String(sec).padStart(2, "0");
+    correspondenceInputSecondsTimer.range.value = sec;
+}
+
+function start() {
     let min = correspondenceInputMinutesTimer.number.value
     let sec = correspondenceInputSecondsTimer.number.value
     const minTimer = correspondenceInputMinutesTimer.timer
     const secTimer = correspondenceInputSecondsTimer.timer
 
-    audioPlay(selectedSounds.bgm,
-            volumes.bgm.value/100
-            );
+    audioPlay(selectedSounds.bgm,volumes.bgm.value/100);
 
     const id = setInterval( () => {
         if (min == 0 && sec == 0) {
             clearInterval(id);
         } else if (isStop) {
             clearInterval(id);
+            setInput(min, sec)
         } else if (sec == 0) {
             sec = 59;
             min -= 1;
@@ -121,31 +151,14 @@ startBtn.addEventListener("click", start)
 // ------------------------------------------
 // 音量チェック
 // ------------------------------------------
-const bgmCheck = document.getElementById("bgm-volume-check");
-const alarmCheck = document.getElementById("alarm-volume-check");
-const volumeCheckButtons = [bgmCheck, alarmCheck];
-
 /** 一定時間再生する。 */
-const playVolumeCheck = function(audioId, buttons) {
-    // 再生中はボタン操作が無効。
-    buttons.forEach(btn => {
-        btn.disabled = true;
-    });
-
+const playVolumeCheck = function(audioId, playingDisabledButtons) {
     const selectedAudio = selectedSounds[audioId];
     // 入力レンジが0〜100でボリュームは0〜1なので100で割る
     const volume = volumes[audioId].value / 100;
     audioPlay(selectedAudio, volume);
-
-    function pause(audio, buttons) {
-        audio.pause();
-        audio.currentTime = 0;
-        buttons.forEach(btn => {
-            btn.disabled = false;
-        });
-    }
-    setTimeout(pause, 5000, selectedAudio, buttons);
+    setTimeout(audioPause, 5000, selectedAudio, playingDisabledButtons);
 }
 
-bgmCheck.addEventListener('click', playVolumeCheck.bind(null, "bgm", volumeCheckButtons))
-alarmCheck.addEventListener('click', playVolumeCheck.bind(null, "alarm", volumeCheckButtons))
+bgmCheck.addEventListener('click', playVolumeCheck.bind(null, "bgm", playingDisabledButtons))
+alarmCheck.addEventListener('click', playVolumeCheck.bind(null, "alarm", playingDisabledButtons))
