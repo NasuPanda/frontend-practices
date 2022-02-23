@@ -6,22 +6,21 @@
 
 
 // ------------------------------------------
-// 音声制御
+// audio 入力
 // ------------------------------------------
-
-const bgmSelect = document.getElementById("bgm-select");
-const alarmSelect = document.getElementById("alarm-select");
-
 /** 選択された音声 */
 const selectedSounds = {
-    "bgm" : bgmSelect.options[0],
-    "alarm" : alarmSelect.options[0]
+    "bgm" : document.getElementById("bgm-fire"),
+    "alarm" : document.getElementById("alarm-clock-1")
 }
 /** ボリュームの入力 */
 const volumes = {
     "bgm" : document.getElementById("bgm-volume"),
     "alarm" : document.getElementById("alarm-volume")
 }
+
+const bgmSelect = document.getElementById("bgm-select");
+const alarmSelect = document.getElementById("alarm-select");
 
 bgmSelect.addEventListener("change", () => {
     const index = bgmSelect.selectedIndex;
@@ -79,24 +78,32 @@ correspondInputTimer(correspondenceInputSecondsTimer);
 const startBtn = document.getElementById("start-btn");
 const stopBtn = document.getElementById("stop-btn");
 
+let isStop = false;
+stopBtn.addEventListener("click", () => {
+    isStop = true;
+})
+
+/** audio要素をplayする */
 const audioPlay = function(audio, volume) {
     audio.volume = volume;
     audio.play();
 }
 
 const start = function() {
-    const selectedAudio = selectedSounds.bgm;
-    const volume = volumes.bgm.value / 100;
     let min = correspondenceInputMinutesTimer.number.value
     let sec = correspondenceInputSecondsTimer.number.value
     const minTimer = correspondenceInputMinutesTimer.timer
     const secTimer = correspondenceInputSecondsTimer.timer
 
-    audioPlay(selectedAudio, volume);
+    audioPlay(selectedSounds.bgm,
+            volumes.bgm.value/100
+            );
 
     const id = setInterval( () => {
         if (min == 0 && sec == 0) {
-            clearInterval(id)
+            clearInterval(id);
+        } else if (isStop) {
+            clearInterval(id);
         } else if (sec == 0) {
             sec = 59;
             min -= 1;
@@ -110,7 +117,6 @@ const start = function() {
 }
 
 startBtn.addEventListener("click", start)
-
 
 // ------------------------------------------
 // 音量チェック
@@ -128,7 +134,7 @@ const playVolumeCheck = function(audioId, buttons) {
 
     const selectedAudio = selectedSounds[audioId];
     // 入力レンジが0〜100でボリュームは0〜1なので100で割る
-    const volume = document.getElementById(`${audioId}-volume`).value / 100;
+    const volume = volumes[audioId].value / 100;
     audioPlay(selectedAudio, volume);
 
     function pause(audio, buttons) {
