@@ -8,8 +8,9 @@
  * ストップボタンを押したときにinputの表示も変更されるようにした。
  *
  * audioPlay, audioPause関数の導入により大幅にコード量削減！
- * TODO 音量チェック、再生で場合分けが必要
- *      ループの有無
+ *
+ * 音量チェック、再生で場合分けが必要(ループ有無)
+ * → 通常の再生、一定時間再生する関数を作った。
  */
 
 
@@ -97,16 +98,11 @@ stopBtn.addEventListener("click", () => {
 /** audio要素をplayし、ボタンを無効化する */
 function audioPlay(audio, volume) {
     audio.volume = volume;
+    audio.loop = true;
     audio.play();
     buttonsDisabledPlayback.forEach(btn => {
         btn.disabled = true;
     });
-}
-
-/** 一定時間再生する。 */
-function audioPlayShort(audio, volume) {
-    audioPlay(audio, volume);
-    setTimeout(audioPause, 5000, audio);
 }
 
 /** audio要素をpauseし、ボタンを有効化する */
@@ -118,8 +114,14 @@ function audioPause(audio) {
     });
 }
 
-/** 入力値をセットする */
-function setInput(min, sec) {
+/** 一定時間再生する。 */
+function audioPlayShort(audio, volume) {
+    audioPlay(audio, volume);
+    setTimeout(audioPause, 5000, audio);
+}
+
+/** タイマーの入力値をセットする */
+function setTimerInput(min, sec) {
     correspondenceInputMinutesTimer.number.value = String(min).padStart(2, "0");
     correspondenceInputMinutesTimer.range.value = min;
     correspondenceInputSecondsTimer.number.value = String(sec).padStart(2, "0");
@@ -127,6 +129,7 @@ function setInput(min, sec) {
 }
 
 function start() {
+    // 1. 初期化
     let min = correspondenceInputMinutesTimer.number.value
     let sec = correspondenceInputSecondsTimer.number.value
     const minTimer = correspondenceInputMinutesTimer.timer
@@ -135,25 +138,33 @@ function start() {
 
     function finishPlay() {
         clearInterval(id);
-        setInput(min, sec);
+        setTimerInput(min, sec);
         audioPause(selectedSounds.bgm, buttonsDisabledPlayback);
     }
 
+    // 2. 音声を再生する
     audioPlay(selectedSounds.bgm, volumes.bgm.value/100);
 
+    // 3. タイマーを制御しつつ再生
     const id = setInterval( () => {
         if (min == 0 && sec == 0) {
+            // 終了 : タイマーで終了
             finishPlay();
             audioPlayShort(selectedSounds.alarm, volumes.alarm.value/100);
         } else if (isStop) {
+            // 終了 : ストップボタンで終了(アラームは流れない)
             finishPlay();
         } else if (sec == 0) {
+            // 継続 : 「秒」の値が0になった
             sec = 59;
             min -= 1;
+            // タイマーの表示更新
             minTimer.textContent = String(min).padStart(2, "0");
             secTimer.textContent = String(sec).padStart(2, "0");
         } else {
+            // 継続 : それ以外
             sec -= 1;
+            // タイマーの表示更新
             secTimer.textContent = String(sec).padStart(2, "0");
         }
     }, 1000);
@@ -164,7 +175,7 @@ startBtn.addEventListener("click", start)
 // ------------------------------------------
 // 音量チェック
 // ------------------------------------------
-/** 一定時間再生する。 */
+/** 音量チェックを一定時間再生する。 */
 const playVolumeCheck = function(audioId, buttonsDisabledPlayback) {
     const selectedAudio = selectedSounds[audioId];
     // 入力レンジが0〜100でボリュームは0〜1なので100で割る
