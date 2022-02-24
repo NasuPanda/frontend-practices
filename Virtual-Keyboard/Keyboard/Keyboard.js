@@ -24,6 +24,7 @@ const Keyboard = {
         // main要素をセットアップ
         this.elements.main.classList.add("keyboard", "1keyboard--hidden");
         this.elements.keysContainer.classList.add("keyboard__keys");
+        this.elements.keysContainer.appendChild(this._creatKeys());
 
         // DOMの追加
         this.elements.main.appendChild(this.elements.keysContainer);
@@ -42,7 +43,7 @@ const Keyboard = {
 
         // Create HTML for an icon
         const createIconHTML = (icon_name) => {
-            return `<i class="material-icons>${icon_name}</i>`
+            return `<i class="material-icons">${icon_name}</i>`;
         }
 
         keyLayout.forEach(key => {
@@ -56,7 +57,7 @@ const Keyboard = {
 
             switch(key) {
                 case "backspace":
-                    keyElement.classList.add("keyboard_key--wide");
+                    keyElement.classList.add("keyboard__key--wide");
                     keyElement.innerHTML = createIconHTML("backspace");
 
                     keyElement.addEventListener("click", () => {
@@ -66,7 +67,7 @@ const Keyboard = {
                     break;
 
                 case "caps":
-                    keyElement.classList.add("keyboard_key--wide", "keyboard__key-activatable");
+                    keyElement.classList.add("keyboard__key--wide", "keyboard__key--activatable");
                     keyElement.innerHTML = createIconHTML("keyboard_capslock");
 
                     keyElement.addEventListener("click", () => {
@@ -76,7 +77,7 @@ const Keyboard = {
                     break;
 
                 case "enter":
-                    keyElement.classList.add("keyboard_key--wide");
+                    keyElement.classList.add("keyboard__key--wide");
                     keyElement.innerHTML = createIconHTML("keyboard_return");
 
                     keyElement.addEventListener("click", () => {
@@ -86,7 +87,7 @@ const Keyboard = {
                     break;
 
                 case "space":
-                    keyElement.classList.add("keyboard_key--extra--wide");
+                    keyElement.classList.add("keyboard__key--extra--wide");
                     keyElement.innerHTML = createIconHTML("space_bar");
 
                     keyElement.addEventListener("click", () => {
@@ -96,7 +97,7 @@ const Keyboard = {
                     break;
 
                 case "done":
-                    keyElement.classList.add("keyboard_key--wide", "keyboard--dark");
+                    keyElement.classList.add("keyboard__key--wide", "keyboard--dark");
                     keyElement.innerHTML = createIconHTML("check_circle");
 
                     keyElement.addEventListener("click", () => {
@@ -131,6 +132,7 @@ const Keyboard = {
 
     _toggleCapsLock() {
         console.log("Caps Lock Toggled!");
+        this.properties.capsLock = !this.properties.capsLock;
     },
 
     open(initialValue, oninput, onclose) {
