@@ -22,13 +22,25 @@ const Keyboard = {
         this.elements.keysContainer = document.createElement("div");
 
         // main要素をセットアップ
-        this.elements.main.classList.add("keyboard", "1keyboard--hidden");
+        this.elements.main.classList.add("keyboard", "keyboard--hidden");
         this.elements.keysContainer.classList.add("keyboard__keys");
         this.elements.keysContainer.appendChild(this._creatKeys());
+
+        // keysにkeyElementを追加
+        this.elements.keys = this.elements.keysContainer.querySelectorAll(".keyboard__key");
 
         // DOMの追加
         this.elements.main.appendChild(this.elements.keysContainer);
         document.body.appendChild(this.elements.main);
+
+        // 特定のクラスを持つ要素では自動的にキーボードを使う
+        document.querySelectorAll(".use-keyboard-input").forEach(element => {
+            element.addEventListener("focus", () => {
+                this.open(element.value, currentValue => {
+                    element.value = currentValue;
+                });
+            });
+        })
     },
 
     _creatKeys() {
@@ -61,9 +73,9 @@ const Keyboard = {
                     keyElement.innerHTML = createIconHTML("backspace");
 
                     keyElement.addEventListener("click", () => {
-                        this.properties.value = this.properties.value.substring(0, this.properties.length - 1);
+                        this.properties.value = this.properties.value.substring(0, this.properties.value.length - 1);
                         this._triggerEvent("oninput");
-                    })
+                    });
                     break;
 
                 case "caps":
@@ -97,7 +109,7 @@ const Keyboard = {
                     break;
 
                 case "done":
-                    keyElement.classList.add("keyboard__key--wide", "keyboard--dark");
+                    keyElement.classList.add("keyboard__key--wide", "keyboard__key--dark");
                     keyElement.innerHTML = createIconHTML("check_circle");
 
                     keyElement.addEventListener("click", () => {
@@ -126,21 +138,37 @@ const Keyboard = {
         return fragment;
     },
 
+    /** valueをトリガーされたイベントに渡す */
     _triggerEvent(handlerName) {
-        console.log("Event Triggered! Event Name:" + handlerName);
+        if(typeof this.eventHandlers[handlerName] == "function") {
+            this.eventHandlers[handlerName](this.properties.value);
+        }
     },
 
     _toggleCapsLock() {
-        console.log("Caps Lock Toggled!");
         this.properties.capsLock = !this.properties.capsLock;
+
+        for (const key of this.elements.keys) {
+            if(key.childElementCount === 0) {
+                key.textContent = this.properties.capsLock ? key.textContent.toUpperCase() : key.textContent.toLowerCase();
+            }
+        }
     },
 
+    /** イベントハンドラ、キーボードの有効化 */
     open(initialValue, oninput, onclose) {
-
+        this.properties.value = initialValue || "";
+        this.eventHandlers.oninput = oninput;
+        this.eventHandlers.onclose = onclose;
+        this.elements.main.classList.remove("keyboard--hidden");
     },
 
+    /** イベントハンドラ、キーボードの無効化 */
     close() {
-
+        this.properties.value = "";
+        this.eventHandlers.oninput = oninput;
+        this.eventHandlers.onclose = onclose;
+        this.elements.main.classList.add("keyboard--hidden")
     }
 };
 
