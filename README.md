@@ -37,6 +37,8 @@ Pythonとの違いは**実際に手を動かしているかどうか**。
 
 - [ポートフォリオに役立つJavaScriptプロジェクト40選（動画あり） - Qiita](https://qiita.com/baby-degu/items/33acb94e404feaf58d35)
 - [JavaScript 30](https://javascript30.com/)
+- [20 Web Projects With Vanilla JavaScript | Udemy](https://www.udemy.com/course/web-projects-with-vanilla-javascript/learn/lecture/17846078#overview)
+  - [Githubのリンク](https://github.com/bradtraversy/vanillawebprojects)
 
 ### 使用したツール
 
