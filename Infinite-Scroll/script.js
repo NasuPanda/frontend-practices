@@ -5,7 +5,7 @@ const postContainer = document.getElementById("post-container"),
     filter = document.getElementById("filter");
 
 let limit = 5;
-let page = 3;
+let page = 1;
 
 /** Fetch posts from API */
 async function getPosts() {
@@ -69,7 +69,9 @@ function filterPosts(e) {
 showPosts()
 
 window.addEventListener("scroll", () => {
-    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+    const { scrollHTMLTop, scrollHeight, clientHeight } = document.documentElement;
+    const scrollBodyTop = document.body.scrollTop;
+    const scrollTop = scrollBodyTop || scrollHTMLTop;
 
     // TODO よくわからない条件
     if(scrollTop + clientHeight >= scrollHeight - 5) {
