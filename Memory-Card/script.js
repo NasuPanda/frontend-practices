@@ -9,6 +9,7 @@ const answerEl = document.getElementById('answer');
 const addCardBtn = document.getElementById('add-card');
 const clearBtn = document.getElementById('clear');
 const addContainer = document.getElementById('add-container');
+const deleteBtn = document.getElementById("delete");
 
 // Keep track of current card
 let currentActiveCard = 0;
@@ -145,4 +146,9 @@ clearBtn.addEventListener("click", () => {
   localStorage.clear();
   cardsContainer.innerHTML = "";
   window.location.reload();
+})
+
+deleteBtn.addEventListener("click", () => {
+  cardsData.splice(currentActiveCard, 1);
+  setCardsData(cardsData);
 })
