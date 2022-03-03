@@ -21,11 +21,6 @@ let dragStartIndex;
 
 createList();
 
-const numbers = [1, 3, 110, 40, 302];
-console.log(numbers.sort(function(a, b) {
-  return a - b;
-}))
-
 // Insert list items into DOM
 function createList() {
   [...richestPeople]
@@ -33,7 +28,6 @@ function createList() {
     .sort((a,b) => a.sort - b.sort)
     .map(a => a.value)
     .forEach((person, index) => {
-
       const listItem = document.createElement("li");
 
       listItem.setAttribute("data-index", index);
