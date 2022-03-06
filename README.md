@@ -39,3 +39,40 @@ Pythonとの違いは**実際に手を動かしているかどうか**。
 - [JavaScript 30](https://javascript30.com/)
 - [20 Web Projects With Vanilla JavaScript | Udemy](https://www.udemy.com/course/web-projects-with-vanilla-javascript/learn/lecture/17846078#overview)
   - [コースのリポジトリ](https://github.com/bradtraversy/vanillawebprojects)
+
+## 結果
+
+約2週間で終了。
+
+### JSONtoCSV・NapSupporter
+
+ゼロから自分で実装した。
+
+切替可能なタブやスライダーはどう実装すれば実現できるのか？
+
+はわかっても、そもそもデザインをどのように作ればいいのかわからず、
+HTML/CSSがかなりひどい仕上がりになっている。
+
+classもidもぐちゃぐちゃ。
+
+JSの扱いはそこそこ理解が進んだと思う。
+
+### 仮想キーボード
+
+HTML/CSSが全くと言っていいほどわからなかったため、まずは参考にしてみるところから始めることにした。
+その第1段。
+
+解説がかなり丁寧でわかりやすく、いい動画だった。
+
+キーボードをオブジェクトとして定義していく流れが綺麗で感動した。
+
+### 20 Web Projects with Vanilla JS
+
+Udemyのコース。
+ちょうど割引中だった＆VanillaJSを使って手を動かしつつ良い感じのデザインを学べそうだったので受講した。
+
+かなりいいコースだった。
+
+全て修了したわけではないので、機会があればまたやりたいと思う。
+
+デザインに共通点が多いように感じたため、記事としてまとめてみた。
