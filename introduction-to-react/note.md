@@ -549,3 +549,113 @@ const PublishButton = (props) => {
 // NG
 <PublishButton isPublished={isPublished} onClick={PublishArticle()} />
 ```
+
+# 7.頻出ユースケース
+
+## 引数を使って更新する
+
+入力フォームでよく使う。
+
+```jsx
+import React, {useState} from 'react';
+
+const TextInput = () => {
+  const [name, setName] = useState('')
+
+  const handleName = (event) => {
+    setName(event.target.value)
+  }
+
+  return (
+    <input
+      onChange={(event) => handleName(event)}
+      type={'text'}
+      value={name}
+    />
+  )
+}
+```
+
+- `onChange`イベントに `handleName` 関数を渡している
+- `handleName`関数の引数 `event` を更新関数に渡している
+
+## `prevState`の活用
+
+prevStateは `useState` の更新関数内で使える特殊な値。カウンターでよく使う。
+
+- `prevState` は更新前のstate
+- `prevState` に変更を加えて `return` する
+- React公式の書き方はあまりよろしくないので注意
+
+```jsx
+import React, {useState} from 'react';
+
+const Counter = () => {
+  const [count, setCount] = useState(0)
+  // prevStateによりカウンターを実現
+  const countUp = () => {
+    setCount(prevState => prevState + 1)
+  }
+  const countDown = () => {
+    setCount(prevState => prevState - 1)
+  }
+
+  return (
+    <div>
+      <p>カウント数: {count}</p>
+      <button onClick={countUp}>up</button>
+      <button onClick={countDown}>down</button>
+    </div>
+  )
+}
+
+export default Counter
+```
+
+### 注意点
+
+カウンターの実装の際、stateを直接操作しないように注意する。
+
+```jsx
+const Counter = () => {
+  const [count, setCount] = useState(0)
+
+  const countUp = () => {
+    setCount(count + 1)
+  }
+  const countDown = () => {
+    setCount(count - 1)
+  }
+  // ...
+}
+```
+
+↑のように書くと、処理が非同期のため、重い処理を挟む場合や、短時間で複数回操作が行われたときなどに、値がうまく反映されないことがある。
+prevStateを使えば以前の値を参照するため、そのような問題が発生しない。
+
+## ON/OFF切り替え
+
+`!` 演算子で真偽値を反転するだけ。
+三項演算子を使うと記述量を少なくできる。
+
+```jsx
+import React, {useState} from 'react';
+
+const ToggleButton = () => {
+  const [open, setOpen] = useState(false)
+
+  const toggle = () => {
+    setOpen(prevState => !prevState)
+  }
+
+  return (
+    <button onClick={toggle}>
+      {open ? 'open' : 'close'}
+    </button>
+  );
+};
+
+export default ToggleButton;
+```
+
+# 8.ライフサイクル useEffect
