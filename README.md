@@ -1,8 +1,12 @@
-# 10-Web-dev-Projects
+# Frontend practices
+
+フロントエンド関連の練習用リポジトリ。
 
 ***
-HTML/CSS/JavaScriptで何か10個(くらい)作ってみるチャレンジ。
-***
+
+# 10 vanilla projects
+
+HTML/CSS/VanillaJavaScriptで何か10個(くらい)作ってみるチャレンジ。
 
 ## 目的
 
