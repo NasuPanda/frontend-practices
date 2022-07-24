@@ -1,5 +1,7 @@
 import './App.css';
-import Article from "./components/Article.jsx"
+import Article from "./components/Article"
+import TextInput from './components/TextInput';
+import Counter from "./components/Counter"
 
 function App() {
   return (
@@ -8,6 +10,7 @@ function App() {
         title={"this is a title"}
         content={"contents"}
       />
+      <TextInput></TextInput>
     </div>
   );
 }
