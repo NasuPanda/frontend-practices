@@ -304,3 +304,119 @@ export default Article
 - 文字列、数値、真偽値、配列、オブジェクトなど何でもOK
 - 変数を渡せる
 - 文字列は `{}` 不要
+
+# 5.モジュール機能 import/export
+
+## コンポーネントを分けよう!
+
+- 1ファイル = 1コンポーネントにすべし
+- なぜ分けるのか?
+  - 責務を明確にする(なんのためのパーツ?)
+  - 大規模アプリでも管理しやすくするため
+  - 再利用するため
+
+## JSのモジュール機能
+
+- プロジェクトをモジュール単位に分割する
+- 原則1ファイル = 1モジュール
+- 必要なときに読み込んで使う(=import)
+
+## default import/export (名前無しexport)
+
+### default export
+
+- defaultという名前のモジュールとしてexportする
+- 推奨されるexport手法
+- 1ファイル = 1export
+- 二通りのパターンがある
+  - 1度宣言した関数を default export
+  - 名前付き関数宣言と同時に default export
+
+```jsx
+// 宣言した関数をexport
+const Title = (props) => {
+  return
+};
+export default Title;
+
+// 名前付き関数宣言と同時にexport
+export default function Title(props) {
+  return
+}
+```
+
+### default import
+
+- 1ファイル = 1import
+
+```jsx
+import モジュール名 from 'ファイルパス'
+```
+
+## 名前付きimport/export
+
+### 名前付きexport
+
+- 1ファイルから複数のモジュールをexportしたいときに使う
+  - ヘルパーモジュールなど
+- エントリーポイントでよく使う
+
+```jsx
+// helper.js
+export const addTax = (price) => {
+  return
+}
+export const getWild = () => {
+  return
+}
+
+// index.js
+export {default as Article} from './Article'
+export {default as Content} from './Content'
+```
+
+### 名前付きimport
+
+- 1ファイルから複数モジュールを読み込む
+- エントリーポイントから複数コンポーネントを読み込む
+
+```jsx
+import {Content, Title} from './index';
+```
+
+## エントリーポイント
+
+エントリーポイントを使うと、importするコンポーネントが増えてきても記述量が少なくて済む。
+慣例的に`index.js`という名前のファイルを使う。
+
+1. `components/`配下に `index.js` を配置
+2. `components/`配下の子コンポーネントを default export しておく
+3. `index.js`から名前付きexportする
+   1. モジュールから `default` モジュールを読み込む
+   2. `as` で別名を付けてexportする
+4. 親コンポーネントで名前付きimportする
+
+```js
+// 子コンポーネントでdefault export
+export default function Title(props) {
+  return
+}
+
+
+// index.jsで名前付きexport
+export {default as Article} from './Article'
+export {default as Content} from './Content'
+
+
+// 親コンポーネントで名前付きimport
+import {Content, Title} from "./index"
+
+const Article = (props) => {
+  return(
+    <div>
+      <Title title={props.title} />
+      <Content content={props.content} />
+    </div>
+  )
+}
+```
