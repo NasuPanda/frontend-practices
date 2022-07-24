@@ -76,6 +76,7 @@ React.createElement(
 ## 基礎文法
 
 - Reactライブラリを`import`する。
+  - バージョン17~ は不要。
 - `return`の中がJSXの構文。
   - `class` ではなく `className` にする。 `class` だとJSのクラスと見分けがつかないため。
 
@@ -205,3 +206,101 @@ react-scriptsにまとめられている。
 - Babel, webpackの設定を変えたいときに使う。
 - create-react-app コマンドで作られた環境は react-scripts でまとめられているが、それを解放し、必要なモジュールを一つ一つ手でインストールしたのと同じ状態にする。
 - **Note: this is a one-way operation. Once you `eject`, you can't go back!**
+
+# 4.コンポーネントとprops
+
+## コンポーネントとは
+
+- **見た目**と**機能**を持つUI部品
+- コンポーネントの組み合わせによりWebページを構成
+- 大きく2種類
+  - Class Component クラスコンポーネント
+  - Functional Component : 関数コンポーネント
+
+### Class vs Functional
+
+関数コンポーネントの方が記述量が少なく書ける。
+
+昔はクラスコンポーネントでしか出来ないことがあったため、クラスコンポーネントが主流だった。
+しかし、React hooksの登場により、classでしか出来ない主要機能を使えるようになったため現在は関数コンポーネントの方がよく使われる。
+
+### Why component used?
+
+要するにモジュール化・疎結合。
+
+- 再利用♲
+- コードの見通しを良くする👀
+  - 1コンポーネント = 1ファイル
+- 変更に強くするため🔧
+
+## コンポーネントの基本的な使い方
+
+- ファイル名はキャメルケース
+- 子コンポーネントで `export` して使えるように
+- 親コンポーネントで `import` して利用する
+
+```jsx
+// App.jsx(親)
+import Article from "./components/Article.jsx"
+
+function App() {
+  return (
+    <div>
+      <Article />
+    </div>
+  );
+}
+export default App;
+
+// components/Article.jsx(子)
+const Article = () => {
+  return <h2>Section1</h2>
+};
+
+export default Article
+```
+
+### 再利用
+
+- 同じコンポーネントを何回も呼び出せる
+- 配列データを `map` で処理するのが一般的
+
+## propsでデータの受け渡し
+
+- props = Properties の意
+- 子コンポーネントの引数に `props` を指定する
+- 親から子にデータを渡す
+
+```jsx
+// App.jsx(親)
+import Article from "./components/Article.jsx"
+
+function App() {
+  return (
+    <div>
+      <Article
+        title={"this is a title"}
+        content={"contents"}
+      />
+    </div>
+  );
+}
+export default App;
+
+// components/Article.jsx(子)
+const Article = (props) => {
+  return <div>
+    <h2>{props.title}</h2>
+    <p>{props.content}</p>
+  </div>
+};
+
+export default Article
+```
+
+### 渡せるデータ
+
+- データは `{}` 内に記述する
+- 文字列、数値、真偽値、配列、オブジェクトなど何でもOK
+- 変数を渡せる
+- 文字列は `{}` 不要
