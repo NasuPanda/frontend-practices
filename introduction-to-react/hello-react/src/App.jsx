@@ -11,6 +11,7 @@ function App() {
         content={"contents"}
       />
       <TextInput></TextInput>
+      <Counter></Counter>
     </div>
   );
 }
