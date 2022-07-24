@@ -420,3 +420,132 @@ const Article = (props) => {
   )
 }
 ```
+
+# 6.コンポーネントの状態管理
+
+## Hooksとは
+
+- クラスコンポーネントでしか使えなかったが、Hooksにより関数コンポーネントでも使えるようになった機能
+  - コンポーネント内で状態を管理する**state**
+  - コンポーネントの時間の流れに基づく**ライフサイクル**
+- Hooks = クラスコンポーネントの機能に接続するI/F
+
+## なぜステートが必要なのか
+
+インタラクティブなサイトを作るためには、ユーザの操作によりアプリケーションの状態を変更できる必要がある。
+そのためにステートが必要。
+
+ReactHooksでは、基本となるフックスである `useState` を使ってステートを管理する。
+
+### Reactコンポーネント内の値を書き換えたい
+
+例: YouTubeの再生ボタン
+
+Reactでは、DOMを直接書き換えるのではなく仮想DOMにより新しい値を使った再描画を行う。
+
+- ✗ : コンポーネント内の要素をDOMで直接書き換える
+- ○ : 新しい値を使って再描画する
+
+### Reactコンポーネントが再描画するきっかけは？
+
+- stateの変更
+- propsの変更
+
+## `useState`
+
+```jsx
+// useStateによりstateの宣言
+
+const [state, setState] = useState(initialState)
+// state : 現在の状態
+// setState : 更新関数(現在の値を更新するための関数)
+// initialState : 初期値
+
+
+// state更新
+setState(newState)
+
+
+// 例
+const [message, setMessage] = useState('Hello world')
+const [likes, setLikes] = useState(0)
+const [isPublished, setIsPublished] = useState(False)
+```
+
+### 具体例
+
+ボタンが押されると記事が公開( `published` が　`true` に )される。
+
+```jsx
+import { useState } from "react";
+
+const Article = (props) => {
+  const [isPublished, setIsPublished] = useState(false)
+
+  return (
+  <div>
+    <h2>{props.title}</h2>
+    <p>{props.content}</p>
+    {/* onClickにcallbackを登録 */}
+    <button onClick={() => setIsPublished(true)}>公開</button>
+  </div>
+  )
+};
+
+export default Article
+```
+
+## props vs state
+
+両者とも再描画のきっかけになるが、以下のような違いがある。
+
+- propsは必ず**親コンポーネントから渡される**
+- stateは**コンポーネント内部で宣言、制御される値**
+
+## stateをpropsに渡す
+
+NOTE: 基本的にはこの手法を取ることが多い。
+
+- 更新関数はそのままpropsとして渡さず、関数化する
+  - 下の例では `props.onClick` に渡している
+- 関数をpropsに渡すときは注意する
+
+```jsx
+// components/Article.jsx
+const Article = (props) => {
+  const [isPublished, setIsPublished] = useState(false)
+  const PublishArticle = () => {
+    setIsPublished(true)
+  }
+
+  return (
+    <div>
+      <Title title={props.title}/>
+      <Content content={props.title}/>
+      <PublishButton isPublished={isPublished} onClick={PublishArticle} />
+    </div>
+  );
+};
+
+// components/PublishButton.jsx
+const PublishButton = (props) => {
+  return(
+    <button onClick={() => props.onClick()}>
+      公開状態: {props.isPublished.toString()}
+    </button>
+  )
+}
+```
+
+### propsへ関数を渡す際の注意点
+
+あくまでもコールバックの登録なので、 `()` を付けて実行しないように注意する。
+
+```jsx
+// OK
+<PublishButton isPublished={isPublished} onClick={PublishArticle} />
+<PublishButton isPublished={isPublished} onClick={() => PublishArticle()} />
+
+// NG
+<PublishButton isPublished={isPublished} onClick={PublishArticle()} />
+```
