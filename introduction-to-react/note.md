@@ -550,7 +550,7 @@ const PublishButton = (props) => {
 <PublishButton isPublished={isPublished} onClick={PublishArticle()} />
 ```
 
-# 7.頻出ユースケース
+# 7. `useState` の頻出ユースケース
 
 ## 引数を使って更新する
 
@@ -659,6 +659,8 @@ export default ToggleButton;
 ```
 
 # 8.ライフサイクル useEffect
+
+[React hooksを基礎から理解する (useEffect編) - Qiita](https://qiita.com/seira/items/e62890f11e91f6b9653f)
 
 ## ライフサイクルとは
 
@@ -784,4 +786,56 @@ subscribe database!     // レンダリング時
 // close → open
 unsubscribe database!   // レンダリング前に呼ばれる
 current state is false  // レンダリング時
+```
+
+# 9. `useEffect` の頻出ユースケース
+
+## `useEffect` のユースケース
+
+- APIやDBから非同期通信でデータを取得(fetch)する
+- 特定の値が変わったらデータを再取得(refetch)する
+
+## fetch API
+
+- fetchAPIは非同期通信で外部APIにアクセスできる
+- GETであればURLを指定するだけ
+- `res.json()` で取得したデータをオブジェクト型に変換
+
+```js
+fetch("https://example.com/index/user1")
+  .then(res => res.json())
+  .thee(data => {console.log(data)})
+  .catch(error => { console.log(error) })
+```
+
+## `useEffect` からAPIを叩いてみる
+
+```jsx
+function App() {
+  const [id, setId] = useState('google')
+  const [name, setName] = useState('')
+
+  const ids = ['aws', 'google', 'facebook', 'deatiger', 'gaearon']
+  const getRandomId = () => {
+    const _id = ids[Math.floor(Math.random * ids.length)]
+    setId(_id)
+  }
+
+  useEffect(() => {
+    fetch(`https://api.github.com/users/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+        setName(data.name)
+      })
+      .catch(error => { console.log(error) })
+  }, [id])
+
+  return (
+    <div>
+      <p>{id}, {name}</p>
+      <button onClick={getRandomId}>ID変更</button>
+    </div>
+  );
+}
 ```
