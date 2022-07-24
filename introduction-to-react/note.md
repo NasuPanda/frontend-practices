@@ -133,3 +133,75 @@ return (
   </>
 )
 ```
+
+# 3.環境構築
+
+## `create-react-app`
+
+サクッとReactの開発環境を構築できるコマンド。
+
+本来のReactは以下の設定が必要。
+
+- トランスパイラーのBabel
+- バンドラーのWebpack
+
+### 要件
+
+既にnodenvを導入済だったので講座の環境構築は無視して進めた。
+
+- node 10.16以上
+- npm 5.6以上
+
+### `npx`
+
+ネットワーク上に存在するnpmコマンドを実行する。
+
+## ディレクトリ構成
+
+### `src`
+
+開発用ファイルが格納される。
+ReactコンポーネントのJSXファイルなどはここに置く。
+
+### `public`
+
+静的ファイル。
+htmlや画像ファイル。
+
+### `build`
+
+`npm run build` で生成される本番用のファイル。
+
+## スクリプト
+
+使い方などはだいたい`README.md`に書いてある。
+
+`package.json` を見に行くと以下のような感じ。
+react-scriptsにまとめられている。
+
+```json
+  // 省略...
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+```
+
+### `npm start`
+
+- ローカルサーバの起動。
+- ホットリロード(ファイルに変更を加えたとき自動更新される)に対応。
+
+### `npm run build`
+
+- `build` フォルダ配下に本番用ファイルを出力する。
+- `src` と `public` に含まれるファイルを1つにまとめる。(バンドル)
+- See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run eject`
+
+- Babel, webpackの設定を変えたいときに使う。
+- create-react-app コマンドで作られた環境は react-scripts でまとめられているが、それを解放し、必要なモジュールを一つ一つ手でインストールしたのと同じ状態にする。
+- **Note: this is a one-way operation. Once you `eject`, you can't go back!**
