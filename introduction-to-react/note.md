@@ -659,3 +659,129 @@ export default ToggleButton;
 ```
 
 # 8.ライフサイクル useEffect
+
+## ライフサイクルとは
+
+useEffect()では、副作用関数がクリーンアップ関数を返すことで、マウント時に実行した処理をアンマウント時に解除する。
+またその副作用関数は、毎回のレンダリング時に実行され、新しい副作用関数を実行する前に、ひとつ前の副作用処理をクリーンアップする。
+このようにマウント処理とアンマウント処理の繰り返し処理のことを「ライフサイクル」と言う。
+
+- **コンポーネントが生まれてから破棄されるまでの時間の流れ**。ライフサイクルメソッドを使うと、時点に応じた処理を実行できる。
+- Hooksにおいては `useEffect` でライフサイクルを表現する。
+
+
+クラスコンポーネントにおいては、以下の3メソッドが頻出だった。
+
+- `componentDidMount()`
+- `componentDidUpdate()`
+- `componentWillUnmount()`
+
+## 3種類のライフサイクル
+
+### Mounting
+コンポーネントが配置される(生まれる)期間
+
+1. 初期化
+2. レンダリング
+3. マウント後の処理
+
+### Updating
+コンポーネントが変更される(成長する)期間
+
+1. レンダリング
+2. 更新後の処理
+
+### Unmounting
+コンポーネントが破棄される(死ぬ)期間
+
+1. アンマウント前の処理
+
+## 副作用(effect)フックを使う
+
+- 関数コンポーネントでは `useEffect` という副作用フックを使う
+- 副作用 = **レンダリングにより引き起こされる処理**
+
+```jsx
+const Counter = () => {
+  const [count, setCount] = useState(0)
+  const countUp = () => {
+    setCount(prevState => prevState + 1)
+  }
+  const countDown = () => {
+    setCount(prevState => prevState - 1)
+  }
+
+  // useEffect
+  useEffect(() => {
+    console.log("current count is": count)
+  })
+
+  return (
+    <div>
+      <p>カウント数: {count}</p>
+      <button onClick={countUp}>up</button>
+      <button onClick={countDown}>down</button>
+    </div>
+  )
+}
+```
+
+## 第2引数の依存関係を理解する
+
+- 第2引数を省略すると、コンポーネントがレンダリングされる度に副作用関数が実行されることから、省略するケースは殆どない。
+- `useEffect` の第二引数には配列を渡すことができる
+- 第2引数は deps(dependencies) と呼ばれ、副作用が実行されるかどうかの依存関係を指定できる
+
+- `[]` を渡した場合
+  - 初回レンダリング時のみ実行される
+- `trigger` 変数(ステート)を渡した場合
+  - 変数(ステート)が変更される度に実行
+- `trigger1` `trigger2` 変数(ステート)を渡した場合
+  - どちらかの変数が変更される度に実行
+
+## クリーンアップを理解する
+
+- 例: コンポーネント内で外部DBを購読したい場合
+  - `useEffect` 内で購読処理を呼び出す
+  - クリーンアップ関数で購読解除する
+- 例: コンポーネントでイベント待ちする場合
+  - `useEffect` 内でイベントリスナーを登録
+  - クリーンアップ関数でイベントリスナーを解除
+- 必要なくなったらクリーンアップ関数を使って掃除する
+  - `useEffect` から返される関数
+  - **2度目以降のレンダリング時**に呼び出され、前回の副作用を消すことができる
+
+```jsx
+const ToggleButton = () => {
+  const [open, setOpen] = useState(false)
+
+  const toggle = () => {
+    setOpen(prevState => !prevState)
+  }
+
+  useEffect(() => {
+    console.log("current state is", open)
+
+    if (open) {
+      console.log("subscribe database!")
+    }
+    return () => {
+      console.log("unsubscribe database!")
+    }
+  })
+}
+
+// ページレンダリング時
+current state is false  // 初期化
+unsubscribe database!   // レンダリング前に呼ばれる
+current state is false  // レンダリング時
+
+// open → close
+unsubscribe database!   // レンダリング前に呼ばれる
+current state is true   // レンダリング時
+subscribe database!     // レンダリング時
+
+// close → open
+unsubscribe database!   // レンダリング前に呼ばれる
+current state is false  // レンダリング時
+```
