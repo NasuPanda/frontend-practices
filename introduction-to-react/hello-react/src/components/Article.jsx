@@ -1,17 +1,19 @@
 import { useState } from "react";
+import {Content, Title, PublishButton} from "./index"
 
 const Article = (props) => {
   const [isPublished, setIsPublished] = useState(false)
-  console.log(isPublished)
+  const PublishArticle = () => {
+    setIsPublished(true)
+  }
 
   return (
     <div>
-      <h2>{props.title}</h2>
-      <p>{props.content}</p>
-      {/* onClickにcallbackを登録 */}
-      <button onClick={() => setIsPublished(true)}>公開</button>
+      <Title title={props.title}/>
+      <Content content={props.content}/>
+      <PublishButton isPublished={isPublished} onClick={PublishArticle} />
     </div>
-  )
+  );
 };
 
 export default Article
