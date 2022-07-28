@@ -475,3 +475,42 @@ console.log(range(1, 101).filter((n) => n % 8 === 0));
 
 手続き型ではボトムアップ的に積み上げていき、最終成果物を完成させる。
 一方関数型では、最初から完成形を見据えた上で大雑把なところから絞り込んでいく形になる。
+
+## コレクションの反復処理
+
+基本となるのはコレクションの反復処理。
+`./works/3-fp/iterate.js`を参照。
+
+### `reduce`
+
+reduceの語源は re(再び、元に) + duce(導く)。
+第1引数に前回の処理の返り値が入り、第2引数には配列の要素が入る。
+
+### 破壊的メソッドを非破壊的に使う
+
+`slice` メソッドを挟むと良い。
+`slice` は配列から任意の葉にをシャローコピーして返すメソッド。引数を省略すると配列全体のコピーを返す。
+
+```js
+arr = [1, 5, 3];
+arr.slice().sort((n, m) => n < m ? -1 : 1);
+```
+
+## オブジェクトの反復処理
+
+`Object.keys` など、 `Object` が持つメソッドを使う。
+それぞれプロパティのキー、値、キー・値のペアの配列を返す。
+
+```js
+//　オブジェクトの反復処理
+const user = {
+  id: 3,
+  name: "Alice",
+  username: "Alice",
+  email: "alice@apple.com"
+}
+
+console.log(Object.keys(user))
+console.log(Object.values(user))
+console.log(Object.entries(user))
+```
