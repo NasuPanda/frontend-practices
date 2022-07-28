@@ -514,3 +514,73 @@ console.log(Object.keys(user))
 console.log(Object.values(user))
 console.log(Object.entries(user))
 ```
+
+***
+
+## 関数型プログラミング
+
+JavaScriptは第一級関数をサポートしている。
+そのため、支障がないレベルで関数型プログラミングを行う事ができる。
+
+関数型プログラミングのパラダイムでは主に次のようなことを行う。
+
+1. 名前を持たないその場限りの関数(無名関数)を定義できる
+2. 変数に関数を代入できる
+3. 関数の引数として関数を渡したり、戻り値として関数を返すことができる(高階関数)
+4. 関数に特定の引数を固定した新しい関数を作ることができる(部分適用)
+5. 複数の高階関数を合成してひとつの関数にできる(関数合成)
+
+### 高階関数
+
+引数に関数を取ったり、返り値に関数を返したりする関数。
+`map` に渡す無名関数や、コールバックは引数として渡される関数。
+
+関数を返す関数の場合、関数内部で宣言する関数に名前を付ける必要はない。
+そのため、無名関数として定義することが多い。以下のように書ける。
+
+```js
+const greeter = (target) => () => console.log(`Hi, ${target}!)`);
+```
+
+##　カリー化
+
+Haskell Curryという数学者・論理学者の名前を元にしている。
+Haskellは純粋関数型言語。
+
+カリー化とは、**複数の引数を取る関数を、より少ない引数を取る関数に分割して入れ子にすること**を指す。
+
+```js
+// Pre-curried
+{
+  const multiply = (n, m) => n * m;
+  console.log(multiply(2, 4));
+}
+
+// Curried
+{
+  const withMultiple = (n) => {
+    return (m) => n * m
+  }
+  console.log(withMultiple(2)(4));
+}
+
+// Curried with double arrow
+{
+  const withMultiple = (n) => (m) => n * m;
+  console.log(withMultiple(2)(4));
+}
+```
+
+### カリー化による部分適用
+
+カリー化は**部分適用**に使う。
+部分適用とは、特定の引数を固定した新しい関数を作ること。
+
+```js
+const withMultiple = (n) => (m) => n * m; console.log(withMultiple(3)(5)); //15
+const triple = withMultiple(3);
+console.log(triple(5)); // 15
+```
+
+引数により左右される何らかの共通処理 + 共通処理に対して引数を渡して出力を得たいような場合に使う。
+例) コンポーネントを返す関数があったとして、部分適用により特定コンポーネントを返す関数を作る。その関数に対してコンポーネントのスタイルなどのオプションを渡す。
