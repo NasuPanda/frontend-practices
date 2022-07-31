@@ -1043,3 +1043,26 @@ transform(new CrisisCompact());
 - 引数の型の指定は `implements` 元のオブジェクトの型(インターフェース)、クラスで指定できる。
 
 オーバーロードのときは `function` 文による関数宣言の方が可読性がいい。
+
+# 型アサーションと型ガード
+
+## `as` による型アサーション
+
+型がわからない値をTypeScriptでどう上手く扱うか。
+最も手っ取り早い解決方法は、 **型アサーション(Type Assertion)** を行うこと。
+
+※ assertion: 断定, annotation: 注釈。
+
+開発者が型を断定し、コンパイラに押し付けること。
+
+```ts
+type User = { username: string; address: { zipcode: string, town: string } }
+const str = `{'username': 'patty', 'town': 'Maple'}`;
+const data: unknown = JSON.parse(str);
+const user = data as User;
+
+user.address.town // TypeError: Cannot read property 'town' of undefined
+```
+
+上の例を見るとわかるように、型アサーションを使うと型安全性が保証されない。
+本当に最後の手段。
