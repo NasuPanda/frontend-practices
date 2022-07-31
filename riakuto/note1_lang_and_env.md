@@ -624,4 +624,116 @@ JavaScriptでは関数のスコープは **レキシカルスコープ** とい�
 
 例: 自由変数 `count` は `increment` により参照される。 `increment` は `counter` によって返され、グローバルスコープで生きている。
 
-## 次
+***
+
+## JavaScriptでの非同期処理
+
+### Promise
+
+`Promise` は非同期処理の最終的な処理結果の値を**約束**するもの。
+
+```js
+const isSucceeded = true;
+
+const promise = new Promise((resolve, reject) => {
+  if (isSucceeded) {
+    resolve('Success');
+  } else {
+    reject(new Error("Failure!"));
+  }
+});
+
+promise.then((value) => {
+  console.log("1", value);
+
+  return 'Success again';
+})
+.then((value) => {
+  console.log("2", value);
+})
+.catch((e) => {
+  console.error("3", e);
+})
+.finally(() => {
+  console.log("4", "Completed");
+});
+```
+
+関数型プログラミングの知識があると、上のサンプルをすんなり理解できる。
+
+- `Promise` のコンストラクタに渡しているのは、関数を引数に取り、内部でその関数を実行する関数。
+- メソッドチェーンで順に実行するための `then` に引数として渡されるのは関数。
+
+1. コールバック関数 `resolve` に渡した引数が、 `then` の引数の関数で `value` として受け取れる。
+2. `then` 内で `return` された値が次の `then` での `value` になる。
+3. エラーの場合、 `reject` に渡したエラーが `catch` の引数の関数で `error` として受け取れる。
+4. 結果が成功でも失敗でも最後には `finally` が実行される。
+
+### Promiseのハンドリング
+
+node-fetch ライブラリを使ってみる。
+
+`fetch` 関数も `json()` メソッドも `Promise` を返すので、 `then` で受け止めてやる。
+
+```js
+import fetch from 'node-fetch'
+
+const getUser = (userId) => fetch(`https://jsonplaceholder.typicode.com/users/${userId}`)
+  .then(
+    (res) => {
+      if (!res.ok) {
+        throw new Error(`${res.status} Error`);
+      } else {
+        return res.json();
+      }
+    },
+  );
+
+console.log("--start--")
+
+getUser(2)
+  .then((user) => { console.log(user); })
+  .catch((e) => { console.error(e); })
+  .finally(() => { console.log("--Completed--") })
+```
+
+ただし、コールバックの階層を重ねるような書き方は可読性を損なう上、テストも書きにくい。
+そこで、 `async/await` というシンタックスシュガーを使うといい。
+
+## `async/await`
+
+```js
+import fetch from 'node-fetch';
+
+const getUser = async (userId) => {
+  const response = await fetch(
+    `https://jsonplaceholder.typicode.com/users/${userId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(`${response.status} error`);
+  }
+
+  return response.json();
+}
+
+console.log("-start-")
+
+const main = async () => {
+  try {
+    const user = await getUser(2);
+    console.log(user)
+  } catch (error) {
+    console.log(error);
+  } finally {
+    console.log("-completed-");
+  }
+};
+
+main();
+```
+
+関数宣言の前に `async` キーワードを、 非同期関数呼び出しの前に `await` キーワードをつける。
+
+`async` キーワードをつけると、その関数は非同期関数となり、返り値が暗黙の内に `Promise.resolve` によりラップされたものになる。
+さらに、 非同期関数の中では他の非同期関数を `await` 演算子を付けて呼び出せる。
