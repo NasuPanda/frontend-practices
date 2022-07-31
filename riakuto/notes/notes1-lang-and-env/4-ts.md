@@ -522,3 +522,81 @@ interface User {
   age: number;
 }
 ```
+
+### 共用体型と交差型 (型の組み合わせ)
+
+TypeScriptでは、既存の型を組み合わせてより複雑な型を表現できる。
+
+まず、共用体型(Union Types)。
+
+```ts
+// union-type
+{
+  let id: number | string = 20;
+  id = 'abcdefg-1234567';
+}
+```
+
+演算子 `|` で型を並べることで、それらの内いずれかの型が適用される複合的な型になる。
+
+本来リテラル型は `dog` や `3.14` などの値に決め打ちで限定する方だが、共用体型と組み合わせることで列挙型のように扱う事ができる。(= 文字列リテラル型、正式には文字列リテラル共用体型と呼ぶべき )
+
+オブジェクト型も共用体型に適用できる。
+
+```ts
+type A = {
+  foo: number;
+  bar?: string;
+}
+type B = { foo: string };
+type C = { bar: string };
+type D = { bar: boolean };
+
+type AorB = A | B; // { foo: number | string; bar?: string }
+type AorC = A | C; // { foo: number, bar?: string or bar: string }
+type AorD = A | D; // { foo: number, bar?: string or bar: boolean }
+```
+
+次に、交差型 (Intersection Types)。
+共用体型が **AまたはBと適用範囲を増やしていく** のに対し、交差型は **AかつBと複数の型を一つに結合させるもの**。
+用途としては、もっぱらオブジェクト型の合成に使われる。
+
+※ プリミティブでは使わない。なぜなら、 `string` かつ `number` のような値は存在しないため。
+
+```ts
+type A = { foo: number };
+type B = { bar: string };
+type C = {
+  foo?: number;
+  baz: boolean;
+}
+
+type AnB = A & B; // {foo: number, bar: string}
+type AnC = A & C; // {foo: number, baz: boolean}
+
+// CnA or CnB になる
+type CnAorB = C & (A | B); // { foo: number, baz: boolean } or { foo?: number, bar: string, baz: boolean }
+```
+
+内部のプロパティの方が一つずつマージされるイメージ。
+`AnC` の `foo` プロパティのように、任意と必須が交差した場合は必須のほうが優先される。
+もしも同じプロパティで共通点がないものが指定されれば、 `never` 型になる。
+
+`&` を使うとインターフェースの拡張と同じ動作を実現できる。
+
+```ts
+type Unit = 'USD' | 'EUR' | 'JPY';
+interface Currency {
+  unit: Unit;
+  amount: number;
+}
+
+// I/Fによる拡張
+interface IPayment extends Currency {
+  date: Date;
+}
+// 型エイリアスによる拡張
+type TPayment = Currency & {
+  date: Date;
+}
+```
