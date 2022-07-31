@@ -79,6 +79,17 @@ JavaScriptはプロトタイプベース。
 オブジェクトは、**直接他のオブジェクトを継承する**。このときの継承元となったオブジェクトのことをプロトタイプと呼ぶ。
 プロトタイプは、クラスと異なり実体を持つ。
 
+### プロトタイプチェーン
+
+JavaScriptでは、プロトタイプチェーンにより継承を実現する。
+
+例えば、メソッドが呼び出されたときの動作。
+
+1. メソッドを呼び出したインスタンスの元となったオブジェクトにそのメソッドが存在するか判定し、存在すれば呼び出す
+2. 存在しなかった場合、オブジェクトの `__proto__` を参照し( = 親オブジェクト )、メソッドが存在するか判定、存在すれば呼び出す
+3. 存在しなかった場合、親オブジェクトの `__proto__` を参照し、 ...
+4. プロトタイプチェーンは、最後には必ず `null` に到達する。`null` に到達するまでにメソッドが存在しない場合、 `undefined` を返す。
+
 ## 分割代入とスプレッド構文
 
 ### プロパティ名のショートハンド
@@ -130,7 +141,7 @@ email: 'bobby@maple.town', },
 const { data: users = [] } = response;
 ```
 
-###　コレクションの中身を展開する(スプレッド構文)
+### コレクションの中身を展開する(スプレッド構文)
 
 本質的にはレストパラメータと同じ。
 
@@ -158,7 +169,7 @@ console.log(id, userWithoutId);
 ### コレクションのコピー
 
 シャローコピーであることに注意。
-再帰的にコピーしたい場合、https://lodash.com/docs/#cloneDeepなどを使う。
+再帰的にコピーしたい場合、https://lodash.com/docs/#cloneDeep などを使う。
 
 ```js
 const original = { a: 1, b: 2, c: 3 };
@@ -177,7 +188,7 @@ const hello = undefined || null || 0 || NaN || '' || 'Hello!';
 const chao = '' && 100 && [] && {} && 'Chao!';
 
 true&&console.log('1.',hello); //1.Hello!
-false&&console.log('2.',hello); //(nooutput)
+false&&console.log('2.',hello); //(no output)
 true || console.log('3.', chao); // (no output)
 false||console.log('4.',chao); //4.Chao!
 ```
