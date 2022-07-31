@@ -991,3 +991,55 @@ type C2 = Uppercase<Company>;     // 'APPLE' | 'IBM' | 'GITHUB'
 type C3 = Uncapitalize<Company>;  //'apple'|'iBM'|'gitHub'
 type C4 = Capitalize<C3>;         // 'Apple' | 'IBM' | 'GitHub';
 ```
+
+## 関数のオーバーロード
+
+メソッドの**オーバーロード**とは、同じメソッド名でも、引数の型や個数に応じて異なるメソッドが実行されること。
+多重定義とも。
+
+```ts
+class Brooch {
+  pentagram = 'Silver';
+}
+
+type Compact = {
+  silver: boolean;
+};
+
+class CosmicCompact implements Compact {
+  silver = true;
+  cosmicPower = true;
+}
+
+class CrisisCompact implements Compact {
+  silver = true;
+  moonChalice = true;
+}
+
+function transform(): void;
+function transform(item: Brooch): void;
+function transform(item: Compact): void;
+function transform(item?: Brooch | Compact): void {
+  if (item instanceof Brooch) {
+    console.log('Mooncrystal power ,makeup!!'); }
+  else if (item instanceof CosmicCompact) {
+    console.log('Mooncosmic power ,makeup!!!');
+  } else if (item instanceof CrisisCompact) {
+    console.log('Mooncrisis ,makeup!');
+  } else if (!item) {
+    console.log('Moonprisim power ,makeup!');
+  } else {
+    console.log('Item is fake... ');
+  }
+}
+transform();
+transform(new Brooch());
+transform(new CosmicCompact());
+transform(new CrisisCompact());
+```
+
+- TypeScriptで型が異なる関数宣言を重複させることで、オーバーロードができる。
+- 中の実装は１つの関数に集約される。
+- 引数の型の指定は `implements` 元のオブジェクトの型(インターフェース)、クラスで指定できる。
+
+オーバーロードのときは `function` 文による関数宣言の方が可読性がいい。
