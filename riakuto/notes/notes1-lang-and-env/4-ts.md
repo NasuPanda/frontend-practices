@@ -32,6 +32,7 @@ Deno でも直接実行できる。
 `tsconfig.json` に記述する。
 
 - `noImplicitAny` : `true` にすると引数の型定義が必須になる(デフォルトでは指定がない場合 `any` が割り当てられる)
+- `strictNullCheck` : `true` にすると通常の型への `null` , `undefined` の代入が許容されなくなる。
 
 ## 基本的な型
 
@@ -600,3 +601,46 @@ type TPayment = Currency & {
   date: Date;
 }
 ```
+
+### Null安全性の保証
+
+Null安全性を担保していないと、以下のようなコードでコンパイルエラーが出ない。
+
+```ts
+const foo: string = null;
+const bar: number = undefined;
+```
+
+チェックするには、`tsconfig.json` の `strictNullChecks` を `true` にしておく。
+
+`null` を許容する場合は共用体型で明示する。
+
+```ts
+let foo: string | null = null;
+foo = 'foo';
+```
+
+`strictNullChecks` オプションが `true` になっていると、 `undefined` である可能性のあるコードで警告を出してくれる。
+
+```ts
+type Resident = {
+  familyName: string;
+  lastName: string;
+  mom?: Resident;
+};
+
+// resident.mom.lastNameの箇所でコンパイルエラーが出る ( `mom` プロパティは省略可能なため )
+const getMomName = (resident: Resident): string => resident.mom.lastName;
+const patty = { familyName: 'Hope-Rabbit', lastName: 'patty' };
+getMomName(patty);
+```
+
+なお、上のコードは以下のようにするとコンパイルを通すことができる。
+
+```ts
+- const getMomName = (resident: Resident): string => resident.mom.lastName;
++ const getMomName = (resident: Resident): string => resident.mom!.lastName;
+```
+
+`!.` は非Nullアサーション演算子。
+コンパイルを強引に黙らせることができるもの。開発中の一時的な確認などを除いて使うべきではない。
