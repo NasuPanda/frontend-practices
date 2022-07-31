@@ -27,6 +27,12 @@ Deno でも直接実行できる。
 
 ブラウザで実行したいときは [TypeScript: プレイグラウンド - TypeScriptとJavascriptを探求するためのオンラインエディタ](https://www.typescriptlang.org/ja/play) や [RunKit + npm: typescript](https://npm.runkit.com/typescript) を使うと良い。
 
+## 設定
+
+`tsconfig.json` に記述する。
+
+- `noImplicitAny` : `true` にすると引数の型定義が必須になる(デフォルトでは指定がない場合 `any` が割り当てられる)
+
 ## 基本的な型
 
 ### 型アノテーションと型推論
@@ -242,4 +248,223 @@ const greet = (friend: 'Serval' | 'Caracal' | 'Cheetah') => {
   }
 };
 console.log(greet('Serval')); // Hello, Serval!
+```
+
+## 関数とクラスの型
+
+## 関数の型定義
+
+何も返さない場合は `void` を指定する。それ以外は普通。
+
+```ts
+// function declaration statement
+{
+  function add(n: number, m: number): number {
+    return n + m;
+  }
+}
+
+// function keyword expression
+{
+  const add = function(n: number, m: number): number {
+    return n + m;
+  };
+}
+
+// arrow function expression
+{
+  const add = (n: number, m: number): number => n + m;
+  // type void when return none
+  const hello = (): void => {
+    console.log('hello');
+  };
+}
+```
+
+### 関数の型定義: 呼び出し可能オブジェクト
+
+呼び出し可能オブジェクト(Callable)として定義する方法もある。
+
+```ts
+// callable by interface
+{
+  interface NumOp {
+    (n: number, m: number): number;
+  }
+
+  const add: NumOp = function(n, m) {
+    return n + m;
+  };
+  const subtract: NumOp = (n, m) => n - m;
+}
+
+// callable by allow inline
+{
+  const add: (n: number, m: number) => number = function(n, m) {
+    return n + m;
+  };
+  const subtract: (n: number, m: number) => number = (n, m) => m - m;
+}
+```
+
+前者がインターフェース、後者がアロー型アノテーションによりインラインで定義する方法。
+インラインは可読性が低いので、あまり使われない。
+
+### 関数の型定義: ジェネリクスの利用
+
+`T` は型引数(Type Parameter)。
+関数に渡す引数と同じく、任意の型を `<>` によって引数として渡すことで、その関数の引数の型や戻り値の型に適用できるようになる。
+
+次に示す例では型推論により① `number` ② `string` ③統一されていないためエラー となっている。
+
+```ts
+const toArray = <T>(arg1: T, arg2: T) => [arg1, arg2];
+
+toArray(1, 2)         // [1, 2]
+toArray('foo', 'bar') // ['foo', 'bar']
+toArray(1, 'foo')     // Error
+```
+
+データの方に束縛されないように型を抽象化することでコードの再利用性を向上させつつ、静的型付け言語の持つ型安全性を維持する手法を **ジェネリックプログラミング** と呼ぶ。
+そして、型引数を用いて表現するデータ構造のことを**ジェネリクス**と呼ぶ。
+
+型引数の名前に大文字1文字を使うのは、他言語でも共通する慣例。
+1つ目が type の頭文字 `T` で、2つ目がアルファベット順に `U` のときもあれば、意味をもたせてkeyの頭文字 `K` のように使うこともある。
+
+
+可変長引数も利用可能。
+
+```ts
+const toArray = <T>(...args: T[]): T[] => [...args];
+
+toArray(1, 2, 3)       // [1, 2, 3]
+toArray(1, 2, 3, 4, 5) // [1, 2, 3, 4, 5]
+// toArray(1, 'foo')   // Error
+```
+
+## クラスの型定義
+
+```ts
+class Rectangle {
+  // プロパティ初期化子(Property Initializer)
+  readonly name = 'rectangle';
+  sideA: number;
+  sideB: number;
+  constructor(sideA: number, sideB: number) {
+    this.sideA = sideA;
+    this.sideB = sideB;
+  }
+  getArea = (): number => this.sideA * this.sideB;
+}
+```
+
+- TypeScriptのクラスにおけるメンバー変数は、ES2015と異なりクラスの最初で宣言しておく必要がある
+- プロパティ初期化子という機能(上の例では `name` )を使い、プロパティ値を初期化できる。
+- アクセス修飾子をつけることでメンバーへのアクセシビリティを制御できる。
+
+### クラス: アクセス修飾子
+
+- `public` ...... 自クラス、子クラス、インスタンスすべてからアクセス可能。デフォルトでは全てのメンバーがこの `public` になる
+- `protected` ...... 自クラスおよび子クラスからアクセス可能。インスタンスからはアクセス不可
+- `private` ...... 自クラスからのみアクセス可能。子クラスおよびインスタンスからはアクセス不可
+
+### クラス: 補足 継承より合成
+
+最近トレンドの言語であるGoやRustは、そもそも実装を伴った継承が存在しない。
+これは、現在では**継承そのものを避け、独立性を固めた部品を組み合わせる設計をすべき**という認識が広まりつつあるため。
+
+継承の主な問題点を以下に示す。
+
+- 暗黙の内に不必要な公開メンバー変数を継承してしまい、バグの芽になりかねない
+- 子クラスが親クラスに強く依存するため、親の変更が子孫に影響する範囲を予測することが難しい。親の実装を不用意に変更できない
+- 親と子で名前空間を共有しているせいで、責任の境界線が曖昧になりがち
+
+合成では、それぞれのクラスを独立したただの部品、APIとして扱う。
+
+- 開発者はクラス内部の実装を知る必要はなく、ただそのAPIとしての入出力の仕様を知っていればいい
+- 依存がないゆえに、使用しているクラス内部の変更に影響されにくく、個々のモジュールの独立性が高い
+
+### クラス: インターフェースの利用
+
+クラスの型を抽象化して定義する方法が2つ。
+
+まず `abstract` を使って抽象クラスを定義するもの。
+抽象クラスとは、それ自身がインスタンスを生成できず、継承されることを前提としたクラス。
+抽象クラスはその定義に実装を含むことが出来てしまう。実装を伴った継承ができてしまうため、あまり使うべきではない。
+
+そこで、2つ目の選択肢であるインターフェースを使う。
+`implements` キーワードにより、そのクラスがどのインターフェースの実装なのか示す。
+
+```ts
+interface Shape {
+  readonly name: string;
+  getArea: () => number;
+}
+
+interface Quadrangle {
+  sideA: number;
+  sideB?: number;
+  sideC?: number;
+  sideD?: number;
+}
+
+class Rectangle implements Shape, Quadrangle {
+  readonly name = 'rectangle';
+  sideA: number;
+  sideB: number;
+
+  constructor(sideA: number, sideB: number) {
+    this.sideA = sideA;
+    this.sideB = sideB;
+  }
+
+  getArea = (): number => this.sideA * this.sideB;
+}
+```
+
+ここでは `getArea` の定義にアロー構文を使っているが、 `getArea(): number` という書き方もできる。
+この2つには微妙な差分があり、アロー構文だと **オーバーロード** が出来ない。
+
+### クラス: インターフェース型宣言 / コンストラクタ関数の宣言
+
+TypeScriptでクラスを定義すると、実際には2つの宣言が同時にされる。
+
+1. クラスインスタンスのインターフェース型宣言
+2. コンストラクタ関数の宣言
+
+そのため、
+型のコンテキストではインターフェース型宣言として、
+通常のコンテキストではコンストラクタ関数として扱われる。
+
+```ts
+class Point {
+  x: number = 0;
+  y: number = 0;
+}
+
+// インスタンスの生成(コンストラクタ関数)
+const pointA = new Point();
+
+// 変数の型として適用(インターフェース型宣言)
+const pointB: Point = { x: 2, y: 4 };
+
+// インターフェースの拡張元(インターフェース型宣言)
+interface Point3d extends Point {
+  z: number;
+}
+
+const pointC: Point3d = { x: 5, y: 5, z: 10 }
+```
+
+なお、通常のインターフェースの拡張は以下の様に書く。
+
+```ts
+interface Point {
+  x: number;
+  y: number;
+}
+interface Point3d extends Point {
+  z: number
+}
+const point: Point3d = { x: 5, y: 5, z: 10 }
 ```
