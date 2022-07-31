@@ -668,3 +668,122 @@ foo = 'foo';
 
 # 高度な型表現
 
+## 型表現に使う演算子
+
+### `typeof`
+
+通常の式では渡された値の方の名前を返す。
+型のコンテキストで用いると変数から型を抽出してくれる。
+
+```ts
+console.log(typeof 100);
+
+const arr = [1, 2, 3];
+console.log(typeof arr);
+
+type NumArr = typeof arr;
+
+const val: NumArr = [4, 5, 6];
+// const val2: NumArr = ['foo', 'bar', 'baz']; // error!
+```
+
+### `in`
+
+通常の式では指定した値がオブジェクトのキーとして存在するかどうかを表す真偽値を返す。
+型のコンテキストでは、列挙された型の中から各要素の型の値を抜き出してマップ型(Mapped Types)というものを作る。
+
+```ts
+// 通常の式
+const obj = { a: 1, b: 2, c: 3 };
+console.log('a' in obj); // => true
+
+// マップ型
+type Fig = 'one' | 'two' | 'three';
+type FigMap = { [k in Fig]?: number };
+
+const figMap: FigMap = {
+  one: 1,
+  two: 2,
+}
+// figMap.four = 4; // Error
+```
+
+上の例では、 `Fig` から文字列リテラル型の共用体型を渡し、それぞれのキーに対して `number` 型の任意値を設定している。
+
+### `keyof`
+
+型のコンテキストのみで使われる演算子。
+文字通りオブジェクトの方からキーを抜き出してくる。
+
+```ts
+const permissions = {
+  r: 0b100,
+  w: 0b010,
+  x: 0b001,
+};
+
+type PermsChar = keyof typeof permissions // 'r' | 'w' | 'x'
+const readable: PermsChar = 'r';
+// const writable: PermsChar = 'z'; // error
+```
+
+`typeof` と組み合わせると、既存オブジェクトからキーの型を抽出できる。
+
+`valueof` は無いが、インデックスアクセス演算子を使えばやりたいことができる。
+
+### インデックスアクセス演算子 `[]`
+
+通常の式でオブジェクトに `[]` 演算子で指定キーのプロパティにアクセスできるように、
+型コンテキストの式でもキーの型を渡すとプロパティ値の型が返ってくる。
+
+```ts
+const permissions = {
+  r: 0b100 as const,
+  w: 0b010 as const,
+  x: 0b001 as const,
+};
+
+type PermsChar = keyof typeof permissions      // 'r' | 'w' | 'x'
+type PermsNum = typeof permissions[PermsChar]; // 1 | 2 | 4
+```
+
+### `valueof` っぽい挙動をするユーティリティ型
+
+汎用的な `ValueOf` を作ると以下のようになる。
+
+```ts
+type ValueOf<T> = T[keyof T];
+type PermsNum = ValueOf<typeof permissions>; // 1 | 2 | 4
+```
+
+### Const アサーション
+
+定数としての型注釈を付与するもの。
+
+```ts
+{
+  const permissions = {
+    r: 0b100 as const,
+    w: 0b010 as const,
+    x: 0b001 as const,
+  };
+}
+
+// まとめて書く事もできる
+{
+  const permissions = {
+    r: 0b100,
+    w: 0b010,
+    x: 0b001,
+  } as const;
+}
+```
+
+### 配列の要素から型を作る
+
+```ts
+const species = ['rabbit', 'bear', 'fox', 'dog'];
+type Species = typeof species[number]; // 'rabbit' | 'bear' | 'fox' | 'dog'
+```
+
+## 条件付き型とテンプレートリテラル型
