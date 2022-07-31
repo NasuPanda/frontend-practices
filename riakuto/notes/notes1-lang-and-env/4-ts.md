@@ -340,7 +340,7 @@ toArray('foo', 'bar') // ['foo', 'bar']
 toArray(1, 'foo')     // Error
 ```
 
-データの方に束縛されないように型を抽象化することでコードの再利用性を向上させつつ、静的型付け言語の持つ型安全性を維持する手法を **ジェネリックプログラミング** と呼ぶ。
+データの型に束縛されないように型を抽象化することでコードの再利用性を向上させつつ、静的型付け言語の持つ型安全性を維持する手法を **ジェネリックプログラミング** と呼ぶ。
 そして、型引数を用いて表現するデータ構造のことを**ジェネリクス**と呼ぶ。
 
 型引数の名前に大文字1文字を使うのは、他言語でも共通する慣例。
@@ -488,7 +488,7 @@ const point: Point3d = { x: 5, y: 5, z: 10 }
 
 ## 型エイリアス vs インターフェース
 
-オブジェクト・クラスの型定義ができるインターフェースとは別に、任意の方に別名を与えて再利用できる **型エイリアス** という機能がある。
+オブジェクト・クラスの型定義ができるインターフェースとは別に、任意の型に別名を与えて再利用できる **型エイリアス** という機能がある。
 
 ```ts
 type Unit = 'USD' | 'EUR' | 'JRY' | 'GBP';
@@ -597,7 +597,7 @@ type AnC = A & C; // {foo: number, baz: boolean}
 type CnAorB = C & (A | B); // { foo: number, baz: boolean } or { foo?: number, bar: string, baz: boolean }
 ```
 
-内部のプロパティの方が一つずつマージされるイメージ。
+内部のプロパティの型が一つずつマージされるイメージ。
 `AnC` の `foo` プロパティのように、任意と必須が交差した場合は必須のほうが優先される。
 もしも同じプロパティで共通点がないものが指定されれば、 `never` 型になる。
 
@@ -672,7 +672,7 @@ foo = 'foo';
 
 ### `typeof`
 
-通常の式では渡された値の方の名前を返す。
+通常の式では渡された値の型の名前を返す。
 型のコンテキストで用いると変数から型を抽出してくれる。
 
 ```ts
@@ -713,7 +713,7 @@ const figMap: FigMap = {
 ### `keyof`
 
 型のコンテキストのみで使われる演算子。
-文字通りオブジェクトの方からキーを抜き出してくる。
+文字通りオブジェクトの型からキーを抜き出してくる。
 
 ```ts
 const permissions = {
@@ -884,4 +884,110 @@ const q2 = 'SELECT id, body, createdAt FROM posts';
 const q3 = 'SELECT userId, postId FROM comments';
 type PickTable<T extends string> = T extends `SELECT ${string} FROM ${infer U}` ? U : never;
 type Tables=PickTable<typeof q1|typeof q2|typeof q3>; //'users'|'posts'|'comments'
+```
+
+## 組み込みユーティリティ型
+
+### オブジェクト: プロパティの属性をまとめて変更
+
+- `Partial<T>` ...... T のプロパティをすべて省略可能にする
+- `Required<T>` ...... T のプロパティをすべて必須にする
+- `Readonly<T>` ...... T のプロパティをすべて読み取り専用にする
+  - `readonly` で個別のプロパティを、 `ReadOnly<T>` でオブジェクト全体を変更不可にできる。
+
+
+自分で書くこともできる。
+※ `in` 演算子はマップ型を作る
+
+```ts
+type Partial<T> = { [K in keyof T]?: T[K] };
+type Required<T> = { [K in keyof T]: T[K] };
+type Readonly<T> = { readonly [K in keyof T]: T[K] };
+```
+
+### オブジェクト: オブジェクトの型からプロパティを取捨選択
+
+- `Pick<T,K>` ...... `T` から `K` が指定するキーのプロパティだけを抽出する
+- `Omit<T,K>` ...... `T` から `K` が指定するキーのプロパティを省く
+
+```ts
+type Todo = {
+  title: string;
+  description: string;
+  isDone: boolean;
+};
+
+// どちらも { title: string, isDone: boolean }
+type PickedTodo = Pick<Todo, 'title' | 'isDone'>;
+type OmittedTodo = Omit<Todo, 'description'>;
+```
+
+### 列挙的な型を加工
+
+- `Extract<T,U>` ...... `T` から `U` の要素だけを抽出する
+- `Exclude<T,U>` ...... `T` から `U` の要素を省く
+
+```ts
+type Permission = 'r' | 'w' | 'x';
+
+// どちらも r | w
+type RW1 = Extract<Permission, 'r' | 'w'>;
+type RW2 = Exclude<Permission, 'x'>;
+```
+
+### `null` 非許容にする
+
+- `NonNullable<T>` ...... `T` から `null` と `undefined` を省く
+
+```ts
+type T1 = NonNullable<string | number | undefined>;
+type T2 = NonNullable<number[] | null | undefined>;
+
+const str: T1 = undefined; // Error
+const arr: T2 = null;      // Error
+```
+
+### 列挙タイプの型をキーとしたオブジェクトの型を作成
+
+- `Record<K, T>` ...... `K` の要素をキーとし、プロパティ値の型を `T` としたオブジェクトの型を作成
+
+```ts
+type Animal = 'cat' | 'dog' | 'rabbit';
+type AnimalNote = Record<Animal, string>;
+
+const animalKanji: AnimalNote = {
+  cat: '猫',
+  dog: '犬',
+  rabbit: '兎',
+}
+```
+
+### 関数を扱う
+
+- `Parameters<T>` ...... `T` の引数の型を抽出し、タプル型で返す
+- `ReturnType<T>` ...... `T` の戻り値の型を返す
+
+```ts
+const f1 = (a: number, b: string) => console.log(a, b);
+const f2 = () => ({x: 'hello', y: true});
+
+type P1 = Parameters<typeof f1>; // [number, string]
+type P2 = Parameters<typeof f2>; // []
+type R1 = ReturnType<typeof f1>; // void
+type R2 = ReturnType<typeof f2>; // {x: string, y: boolean}
+```
+
+### 文字列リテラル関連
+
+- `Uppercase<T>` ...... `T` の各要素の文字列をすべて大文字にする
+- `Lowercase<T>` ...... `T` の各要素の文字列をすべて小文字にする
+- `Capitalize<T>` ...... `T` の各要素の文字列の頭を大文字にする
+- `Uncapitalize<T>` ...... `T` の各要素の文字列の頭を小文字にする
+
+```ts
+type Company = 'Apple' | 'IBM' | 'GitHub';
+type C1 = Lowercase<Company>;     // 'apple' | 'ibm' | 'github'
+type C2 = Uppercase<Company>;     // 'APPLE' | 'IBM' | 'GITHUB'
+type C3 = Uncapitalize<Company>;  //'apple'|'iBM'|'gitHub'
+type C4 = Capitalize<C3>;         // 'Apple' | 'IBM' | 'GitHub';
 ```
