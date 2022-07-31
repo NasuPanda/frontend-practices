@@ -787,3 +787,101 @@ type Species = typeof species[number]; // 'rabbit' | 'bear' | 'fox' | 'dog'
 ```
 
 ## 条件付き型とテンプレートリテラル型
+
+### `extends` による条件付き型
+
+クラスやインターフェースの拡張に使う `extends` は型引数の表現にも適用できる。
+
+```ts
+const override = <T, U extends T>(obj1: T, obj2: U): T & U => ({
+  ...obj1,
+  ...obj2,
+})
+
+override({a: 1}, {a: 24, b: 5}); // {a: 24, b: 5}
+// override({a: 2}, {x: 53}) // error
+```
+
+ここでの `extends` は、`override` の第2引数 `obj2` の型を定義している型引数 `U` が、
+第1引数の型 `T` と同じか拡張したものでなければならないことを示すもの。
+
+さらに、この `extends` は三項演算子を併用することで任意の条件による型の割り振りが可能。
+型 `T` が 型 `U` を拡張していた場合は 型 `X` を、それ以外の場合は 型 `Y` となる型の記述は以下となる。
+
+```ts
+T extends U ? X : Y
+```
+
+これを **条件付き型 (Conditional Types)** と呼ぶ。
+オブジェクトの型から任意のプロパティの型を抽出するときや、関数の型から任意の引数の型を抽出するときなどに使える。
+
+```ts
+type User = { id: unknown };
+
+type NewUser = User & { id: string };
+type OldUser = User & { id: number };
+type Book = { isbn: string };
+
+// Userか、Userを拡張した型以外なら `never` になる
+type UserIdOf<T> = T extends User ? T['id'] : never;
+
+type NewUserId = UserIdOf<NewUser>; // string
+type OldUserId = UserIdOf<OldUser>; // number
+type BookId = UserIdOf<Book>; // string
+```
+
+### `infer`
+
+条件付き型における型のマッチングに使う。
+
+1. Tが型の配列だった場合 ..... その配列の中身の型を U として取得
+2. Tが配列でない場合 ...... その型をそのまま出力
+
+```ts
+// Tが型の配列だった場合  : その配列の中身の型を U として取得
+// Tが配列でない場合     : その型をそのまま出力
+type Flatten<T> = T extends Array<infer U> ? U : T;
+
+const num = 5
+const numArr = [1, 2, 3];
+type A = Flatten<typeof numArr>; // number
+type N = Flatten<typeof num>; // number
+
+// 渡された文字列が有効なSQLクエリなら、 FROM テーブル名 のテーブル名を取得する
+type PickTable<T extends string> = T extends `SELECT ${string} FROM ${infer U}` ? U : never;
+```
+
+### テンプレートリテラル型
+
+JavaScriptのテンプレートリテラルによる文字列を型として扱えるもの。
+
+```ts
+type DateFormat = `${number}-${number}-${number}`;
+
+const validDate: DateFormat = '2020-12-06';
+// const invalidDate: DateFormat = 'Dec. 5, 2020'; // Error
+```
+
+### テンプレートリテラル型と `infer` の組み合わせ
+
+テンプレートリテラル型と `infer` を組み合わせることで、以下のようなこともできる。
+
+```ts
+const tables = ['users', 'posts', 'comments'] as const;
+type Table = typeof tables[number];
+type AllSelect = `SELECT * FROM ${Table}`;
+type LimitSelect = `${AllSelect} LIMIT ${number}`;
+const createQuery = (table: Table, limit?: number): AllSelect | LimitSelect =>
+  limit ? `SELECT * FROM ${table} LIMIT ${limit}` as const :
+  `SELECT * FROM ${table}` as const;
+
+const query = createQuery('users', 20);
+console.log(query);
+
+// inferにより、クエリからテーブル名の型を取得
+const q1 = 'SELECT * FROM users';
+const q2 = 'SELECT id, body, createdAt FROM posts';
+const q3 = 'SELECT userId, postId FROM comments';
+type PickTable<T extends string> = T extends `SELECT ${string} FROM ${infer U}` ? U : never;
+type Tables=PickTable<typeof q1|typeof q2|typeof q3>; //'users'|'posts'|'comments'
+```
