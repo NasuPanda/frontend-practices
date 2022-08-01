@@ -37,6 +37,7 @@ Deno でも直接実行できる。
 
 - `noImplicitAny` : `true` にすると引数の型定義が必須になる(デフォルトでは指定がない場合 `any` が割り当てられる)
 - `strictNullCheck` : `true` にすると通常の型への `null` , `undefined` の代入が許容されなくなる。
+- `declaration` : `true` にすると型定義ファイルをコンパイル時一緒に生成するようになる。モジュールに使う。
 
 # 基本的な型
 
@@ -1265,3 +1266,97 @@ const patty: Resident = {
 
 console.log(patty);
 ```
+
+## JavaScriptモジュールをTypeScriptから読み込む
+
+npmのリポジトリで提供されている多くのパッケージは、TypeScriptのまま提供されているものはあまりない。
+各パッケージの中身は全てJavaScriptになっている。
+
+JavaScript形式になっていたほうがJavaScript環境との相互運用が簡単な上、 `.ts` ファイルが配布パッケージ内にあるとコンパイラがそれを見つけてアプリと一緒にコンパイルしてしまう。
+そこで、JavaScriptにコンパイル済みのファイル + **宣言ファイル(Declaration File)** というTypeScriptの型情報を定義したファイルをパッケージングして配布する。
+
+### JavaScriptモジュールの作成
+
+`tsconfig.json` を以下のようにする。
+`declaration` オプションを `true` にすることで型定義ファイルが生成されるようになる。
+
+```json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "strict": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true
+  }
+}
+```
+
+`tsc` コマンドで実際にコンパイルすると、 `module-name.d.ts` というファイルが作られる。
+
+```ts
+declare class Brooch {
+    pentagram: string;
+}
+declare type Compact = {
+    silverCrystal: boolean;
+};
+declare class CosmicCompact implements Compact {
+    silverCrystal: boolean;
+    cosmicPower: boolean;
+}
+declare class CrisisCompact implements Compact {
+    silverCrystal: boolean;
+    moonChalice: boolean;
+}
+declare function transform(): void;
+declare function transform(item: Brooch): void;
+declare function transform(item: Compact): void;
+export { transform, Brooch, CosmicCompact, CrisisCompact };
+```
+
+TypeScriptからJavaScriptモジュールをただインポートすると、実装だけあって型がない状態になる。
+そこでTypeScriptのコンパイラに型の存在をおしえてあげて、宣言空間にそれらを定義するための構文が `declare` 。
+このように既存のJavaScriptモジュールにたか情報を付加する形の宣言のことを、 **アンビエント宣言(Ambient Declarations)** という。
+
+## 型定義ファイルについて
+
+### 公式が配布してくれている場合
+
+最近のnpmパッケージには、型定義ファイルを含めているものが少なくない。
+型定義ファイルのプロジェクトとの関連付け方法は2つある。
+
+1. JavaScriptファイルと同じ階層に同じ名前で `.d.ts` ファイルを置く。
+2. パッケージルートの `package.json` に型定義ファイルの情報を書く。
+
+### 第三者が作成している型定義ファイルの利用
+
+公式が親切に型定義ファイルを配布してくれているケースもあるが、その逆もある。例えばReact。
+[DefinitelyTyped/DefinitelyTyped: The repository for high quality TypeScript type definitions.](https://github.com/DefinitelyTyped/DefinitelyTyped)というプロジェクトで有志の第三者が型定義ファイルを作ってくれていることも多いらしい。
+
+目当ての型定義ファイルを探すなら、[TypeScript: Search for typed packages](https://www.typescriptlang.org/dt/search?search=)で検索したほうが早い。
+また、命名規則として DefinitelyTyped で配布されているパッケージは頭に `@types/` がつくので、npm からでも `@types/` をつければ大抵見つかる。
+
+### 野良の型定義ファイル or 自作の型定義ファイルの適用
+
+`src/` ディレクトリに適当な名前で `.d.ts` を置く。
+
+例えば awesomelib というパッケージがあったとすると、 `src/types.d.ts` というファイルを次のようなフォーマットで作る。
+
+```ts
+declare module awesomelib {
+  export type Amazing = { ... };
+  // ...
+  export default fabulous;
+}
+```
+
+### 探索順序
+
+1. ローカルでの型宣言
+2. モジュールがパッケージ内に持っている型ファイル
+3. `node_modules/@types/` のファイル
