@@ -1149,3 +1149,119 @@ doDivide(new Bar());
 これは **型述語 (Type Predicate)** という表現で、この関数が `true` を返す場合に引数 `arg` の型が `User` であることがコンパイラに示される。
 
 更に厳密にオブジェクトの構造をチェックしたい場合は Ajv のようなスキーマのバリデーションライブラリを使う方法もある。
+
+# モジュールと型定義
+
+## TypeScriptのインポート/エクスポート
+
+TypeScriptはモジュールについては言語レベルで ES Modules の構文を標準採用していて、コンパイル先の設定を変更することで CommonJS や AMD などの他のモジュールシステムにも対応する形になっている。
+JavaScriptと異なる点は、パスにおける拡張子の扱い。TypeScriptではファイルの拡張子を省略できる。というか、書くとエラーになる。
+
+インターフェースや型エイリアスも `import` / `export` の対象になる。
+通常の構文の `import` / `export` では、方も変数や関数と区別なく扱われる。
+
+```ts
+type Species = 'rabbit' | 'bear' | 'dog' | 'fox';
+
+interface Resident {
+  name: string; age: number; species: Species;
+}
+
+const isCanine = (resident: Resident): boolean =>
+  ['dog', 'fox'].includes(resident.species);
+
+export { Species, Resident, isCanine };
+```
+
+### 変数宣言空間と型宣言空間 : コンビネーション
+
+TypeScriptでは、 `import` / `export` 時に同じ名前のオブジェクト・型が両方とも同時に `import` / `export` される。
+
+
+TypeScriptでは、同じ名前空間の中に **変数宣言空間(Variable Declaration Space)** と **型宣言空間(Type Declaration Space)** という2つの宣言空間が存在していて、名前の管理が別々になっている。
+そのため、変数や関数 / 型 で同じ名前を持つことができる。
+
+```ts
+const rate: { [unit: string]: number } = {
+  USD: 1,
+  EUR: 0.9,
+  JPY: 108,
+  GBP: 0.8,
+};
+
+type Unit = keyof typeof rate;
+// 型エイリアス Currency
+type Currency = {
+  unit: Unit;
+  amount: number;
+};
+
+// オブジェクト Currency
+const Currency = {
+  exchange: (currency: Currency, unit: Unit): Currency => {
+    const amount = currency.amount / rate[currency.unit] * rate[unit];
+
+    return { unit, amount };
+  },
+};
+
+export { Currency };
+```
+
+上の例では、型エイリアス・オブジェクトの `Currency` がそれぞれ存在する。
+`export` すると、同時に両方ともエクスポートされる。
+
+型と同じ名前のオブジェクトを定義することを公式ドキュメントでは **コンビネーション** と呼んでいる。
+インポートすると、型・オブジェクトのどちらも使えることが確認できる。
+
+```ts
+import { Currency } from "./currency-export";
+
+const dollars: Currency = {
+  unit: 'USD',
+  amount: 100,
+}
+
+console.log(dollars);
+console.log(Currency.exchange(dollars, 'JPY'));
+```
+
+コンビネーションは意味的に同じ型とオブジェクトの情報をグループ化でき、まとめて import/export 出来るので意図的に使われることがある。
+
+なお、型とオブジェクトで同じ名前を定義するというのは、組み込みで同じことが行われている。
+例えばクラス(インターフェース型・コンストラクタ関数の宣言)。クラスを import/export するときも、暗黙の内に型とオブジェクトの両方を同時に import/export している。
+
+### 型のみ import / export
+
+TypeScript3.9~ は 型のみインポート(Type-Only Imports) と 型のみエクスポート(Type-Only Exports)が追加された。
+
+```ts
+// Type-Only Imports
+import type { TypeName } from 'modulePath';
+
+// Type-Only Exports
+export type { TypeName }
+```
+
+```ts:type-only-export.ts
+type Species = 'rabbit' | 'bear' | 'dog';
+
+class Resident {
+  name = '';
+  age = 0;
+  species: Species | null = null;
+}
+
+export type { Species, Resident }
+```
+
+```ts:type-only-import.ts
+import { Resident } from "./type-only-export";
+
+// const resident = new Resident(); // Error(オブジェクトは import していないため)
+const patty: Resident = {
+  name: 'Patty rabbit', age: 5, species: 'rabbit',
+};
+
+console.log(patty);
+```
