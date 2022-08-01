@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+    // 追加
+    // インポートのパス指定に絶対パスを使えるようにしつつ、その起点となるディレクトリを指定
+    "baseUrl": "src",
+    // コンパイルターゲットがES5以前に設定されている場合も、ES2015から導入された便利な構文を実行できるようにしてくれるオプション
+    "downlevelIteration": true
+  },
+  "include": [
+    "src"
+  ]
+}

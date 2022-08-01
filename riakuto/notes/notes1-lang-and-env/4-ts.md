@@ -37,7 +37,30 @@ Deno でも直接実行できる。
 
 - `noImplicitAny` : `true` にすると引数の型定義が必須になる(デフォルトでは指定がない場合 `any` が割り当てられる)
 - `strictNullCheck` : `true` にすると通常の型への `null` , `undefined` の代入が許容されなくなる。
-- `declaration` : `true` にすると型定義ファイルをコンパイル時一緒に生成するようになる。モジュールに使う。
+- `declaration` : `true` にすると型定義ファイルをコンパイル時一緒に生成するようになる。モジュール作成時に使う。
+- `strict` : `true` にすると複数のオプションが有効になる。
+  - `noImplicitAny` ...... 暗黙的に `any` が指定されている式や宣言があればエラーになる
+  - `noImplicitThis` ...... `this` が暗黙的に `any` を表現していればエラーになる
+  - `alwaysStrict` ...... すべてのソースファイルの先頭に `'use strict'` が記述されているものとみな し、ECMAScript の strict モード 242 でパースする
+  - `strictBindCallApply` ...... `bind()` `call()` `apply()` メソッド使用時に、その関数に渡される引数 の型チェックを行う
+  - `strictNullChecks` ...... 他のすべての型から `null` および `undefined` が代入不可になる
+  - `strictFunctionTypes` ...... 関数の引数の型チェックが「共変的(Covariant)」ではなく、「反変的 (Contravariant) に行われるようになる
+  - `strictPropertyInitialization` ...... 宣言だけで初期化されないクラスプロパティ(=メンバー変 数)があるとエラーになる(※ `strictNullChecks` も併せて有効にしておく必要あり)
+- `target` : コンパイル先のJavaScriptバージョンを指定する。
+  - `esnext` を指定すると、TypeScriptがサポートしているECMAScriptの最新バージョンを示す。
+- `lib` : コンパイルに含めるライブラリの指定。
+  - ReactではDOM操作が必須なので `dom` と `dom.iterable` 、それに加えて最新のECMAScript構文をサポートするライブラリ `esnext` が含まれるように設定されている。
+  この `esnext` はCRAで使ったテンプレート次第。TypeScriptのバージョンが3.7以前ならES2020がサポートされておらず、ES2019になる。
+- `module` : コンパイル後のモジュール構文のどのモジュールシステム形式にするか。
+  - `es2015` が ES Modules 、 `es2020` が動的インポートのサポートがある ES Modules 、 動作環境がNode.jsなら `commonjs` 。
+- `noEmit` : ファイルを出力しないようにするオプション。 CRAのデフォルトは `true` で、 `tsc` は構文チェックしか行わず、実際のTypeScriptコンパイルはBabelが行っている。
+- `jsx` : JSX構文をそのままにするかReactの構文に書き換えるかを指定。
+- `include` : コンパイル対象となるファイルの指定。
+  - `exclude` : `include` の逆。
+- `baseUrl` : モジュールのインポートパス指定に絶対パスを使えるようにしつつ、その起点となるディレクトリを指定する。
+  - VSCodeと相性が悪いのか、新規作成したファイルなどが上手く読み込まれないことがある。その場合は ①コマンドパレットを開き `>type` と入力、 `TypeScript: Reload Project` を選択 ② `touch tsconfig.json` を実行 すれば反映される。
+- `downlevelIteration` : コンパイルターゲットがES5以前に設定されている場合も、ES2015から導入された便利な構文を実行できるようにしてくれるオプション。
+
 
 # 基本的な型
 
@@ -1360,3 +1383,84 @@ declare module awesomelib {
 1. ローカルでの型宣言
 2. モジュールがパッケージ内に持っている型ファイル
 3. `node_modules/@types/` のファイル
+
+# TypeScriptの環境設定
+
+## TypeScriptのコンパイルオプション
+
+`tsc --help` で確認できる。
+`tsc` はTypeScriptのコンパイルコマンド。 ts-node でTypeScriptを実行するとき、実際には内部で `tsc` コマンドが走ってコンパイルが行われている。
+
+`tsconfig.json` は、TypeScriptのコンパイル設定を保存しておくためのファイル。
+コンパイル時、プロジェクトルートから親ディレクトリへさかのぼっていき、最初に見つかった `tsconfig.json` が読み込まれる。
+
+### Reactの `tsconfig.json`
+
+Reactの場合、デフォルトでは以下のようになっている。
+`strict` というオプションを `true` にすると、複数のオプションがまとめて有効になる。
+
+```json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+    "baseUrl": "src",
+    "downlevelIteration": true
+  },
+  "include": [
+    "src"
+  ]
+}
+```
+
+## `tsconfig.json` のカスタマイズ
+
+- `noImplicitAny` : `true` にすると引数の型定義が必須になる(デフォルトでは指定がない場合 `any` が割り当てられる)
+- `strictNullCheck` : `true` にすると通常の型への `null` , `undefined` の代入が許容されなくなる。
+- `declaration` : `true` にすると型定義ファイルをコンパイル時一緒に生成するようになる。モジュール作成時に使う。
+- `strict` : `true` にすると複数のオプションが有効になる。
+  - `noImplicitAny` ...... 暗黙的に `any` が指定されている式や宣言があればエラーになる
+  - `noImplicitThis` ...... `this` が暗黙的に `any` を表現していればエラーになる
+  - `alwaysStrict` ...... すべてのソースファイルの先頭に `'use strict'` が記述されているものとみな し、ECMAScript の strict モード 242 でパースする
+  - `strictBindCallApply` ...... `bind()` `call()` `apply()` メソッド使用時に、その関数に渡される引数 の型チェックを行う
+  - `strictNullChecks` ...... 他のすべての型から `null` および `undefined` が代入不可になる
+  - `strictFunctionTypes` ...... 関数の引数の型チェックが「共変的(Covariant)」ではなく、「反変的 (Contravariant) に行われるようになる
+  - `strictPropertyInitialization` ...... 宣言だけで初期化されないクラスプロパティ(=メンバー変 数)があるとエラーになる(※ `strictNullChecks` も併せて有効にしておく必要あり)
+- `target` : コンパイル先のJavaScriptバージョンを指定する。
+  - `esnext` を指定すると、TypeScriptがサポートしているECMAScriptの最新バージョンを示す。
+- `lib` : コンパイルに含めるライブラリの指定。
+  - ReactではDOM操作が必須なので `dom` と `dom.iterable` 、それに加えて最新のECMAScript構文をサポートするライブラリ `esnext` が含まれるように設定されている。
+  この `esnext` はCRAで使ったテンプレート次第。TypeScriptのバージョンが3.7以前ならES2020がサポートされておらず、ES2019になる。
+- `module` : コンパイル後のモジュール構文のどのモジュールシステム形式にするか。
+  - `es2015` が ES Modules 、 `es2020` が動的インポートのサポートがある ES Modules 、 動作環境がNode.jsなら `commonjs` 。
+- `noEmit` : ファイルを出力しないようにするオプション。 CRAのデフォルトは `true` で、 `tsc` は構文チェックしか行わず、実際のTypeScriptコンパイルはBabelが行っている。
+- `jsx` : JSX構文をそのままにするかReactの構文に書き換えるかを指定。
+- `include` : コンパイル対象となるファイルの指定。
+  - `exclude` : `include` の逆。
+- `baseUrl` : モジュールのインポートパス指定に絶対パスを使えるようにしつつ、その起点となるディレクトリを指定する。
+- `downlevelIteration` : コンパイルターゲットがES5以前に設定されている場合も、ES2015から導入された便利な構文を実行できるようにしてくれるオプション。
+
+### `baseUrl` の注意点
+
+VSCodeと相性が悪いのか、新規作成したファイルなどが上手く読み込まれないことがある。
+以下のようにすれば解決する。
+
+1. コマンドパレットを開き `>type` と入力、 `TypeScript: Reload Project` を選択
+2. `touch tsconfig.json` を実行
