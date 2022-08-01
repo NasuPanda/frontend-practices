@@ -1066,3 +1066,86 @@ user.address.town // TypeError: Cannot read property 'town' of undefined
 
 上の例を見るとわかるように、型アサーションを使うと型安全性が保証されない。
 本当に最後の手段。
+
+## 型ガードで型安全を保証する
+
+下の例では、 `typeof` により `string` 型だと判断されたブロック内では、変数 `foo` から `string` のメソッドである `split` を利用できている。
+このように、 あるスコープ内での型を保証するチェックを行う式のことを **型ガード** と言う。
+
+```ts
+const foo: unknown = '1, 2, 3, 4';
+
+if (typeof foo === 'string') {
+  console.log(foo.split(''));
+}
+
+console.log(foo.split('')); // error
+```
+
+プリミティブ型の場合は `typeof` に型ガードできる。
+プリミティブ型以外の場合は別の方法を使う。( `typeof null` は `object` が返るので `null` も例外 )
+
+### `instanceof` による型ガード
+
+クラスの場合は `instanceof` が使える。
+
+```ts
+class Base { common = 'common' };
+class Foo extends Base { foo = () => { console.log('foo'); } }
+class Bar extends Base { bar = () => { console.log('bar'); } }
+
+const doDivide = (arg: Foo | Bar) => {
+  if (arg instanceof Foo) {
+    arg.foo();
+    arg.bar(); //compile error!
+  } else{
+    arg.bar();
+    arg.foo(); //compile error!
+  }
+  console.log(arg.common);
+};
+
+doDivide(new Foo());
+doDivide(new Bar());
+```
+
+### ユーザ定義の型ガード
+
+クラスを下敷きにしていないただのオブジェクトでは `instanceof` を使った方法は適用できない。
+そこで、自前で型を絞り込む仕組みを作る必要がある。
+それが **ユーザ定義の型ガード** と呼ばれる方法。
+
+```ts
+  type Address = { zipcode: string; town: string };
+  type User = { username: string; address: Address };
+
+  const isUser = (arg: unknown): arg is User => {
+    const u = arg as User;
+
+    return (
+      typeof u?.username === 'string' &&
+      typeof u?.address?.zipcode === 'string' &&
+      typeof u?.address?.town === 'string'
+    );
+  };
+
+  const u1: unknown = JSON.parse('{}');
+  const u2: unknown = JSON.parse('{ "username": "patty", "address": "Maple Town" }');
+  const u3: unknown = JSON.parse(
+    '{ "username": "patty", "address": { "zipcode": "111", "town": "Maple Town" } }',
+  );
+
+  [u1, u2, u3].forEach((u) => {
+    if (isUser(u)) {
+      console.log(`${u.username} lives in ${u.address.town}`);
+    } else {
+      console.log("It's not User");
+  //  console.log(`${u.username} lives in ${u.address.town}`);  /* compile error */
+    }
+  })
+```
+
+関数 `isUser` の返り値がの型定義が `arg is User` という記述になっている。
+これは **型述語 (Type Predicate)** という表現で、この関数が `true` を返す場合に引数 `arg` の型が `User` であることがコンパイラに示される。
+
+更に厳密にオブジェクトの構造をチェックしたい場合は Ajv のようなスキーマのバリデーションライブラリを使う方法もある。
