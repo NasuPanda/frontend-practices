@@ -15,14 +15,17 @@ Node.js = JavaScriptをPCのターミナル上で動かす事ができるよう�
 
 ### 必要性
 
-- それなりの規模のアプリケーションになってくると、サードパーティ製のライブラリを複数使う。また、それらは相互に特定のバージョンに依存しあっていたりする。
-パッケージのインストール、整合性の管理を担ってくれる**npm**を利用するために必要。
-- JSやCSSを少数のファイルにまとめるバンドル
-- ES6の構文をブラウザに対応した構文にコンパイル
-- 開発時にローカルでサーバを立ち上げ、テストする
-- テストツールや静的構文解析をローカルで実施する
+- パッケージのインストール、整合性の管理を担ってくれる**npm**を利用するために必要。
+  - 以下のような理由からnpmが必要。
+  - それなりの規模のアプリケーションになってくると、サードパーティ製のライブラリを複数使う。
+  - それらは相互に特定のバージョンに依存しあっていたりする。
+- パッケージマネージャとしてだけでなく、以下のような機能も持つ。
+  - JSやCSSを少数のファイルにまとめるバンドル
+  - ES6の構文をブラウザに対応した構文にコンパイル
+  - 開発時にローカルでサーバを立ち上げ、テストする
+  - テストツールや静的構文解析をローカルで実施する
 
-### インストール
+### インストール 及び プラグイン紹介
 
 anyenv + nodenv によるインストールが推奨されている。
 導入済みのため割愛。
@@ -34,6 +37,8 @@ mkdir -p $(anyenv root)/plugins
 git clone https://github.com/znz/anyenv-update.git $(anyenv root)/plugins/anyenv-update
 mkdir -p "$(nodenv root)"/plugins
 git clone https://github.com/nodenv/nodenv-default-packages.git "$(nodenv root)/plugins/nodenv-default-packages"
+
+# デフォルトでインストールするパッケージの設定
 touch $(nodenv root)/default-packages
 vi $(nodenv root)/default-packages
 cat $(nodenv root)/default-packages
@@ -70,14 +75,12 @@ ReactはUI構築のための必要最小限のライブラリ。そのため、�
 npxを使う。
 
 ```zsh
-npx create-react-app hello-react --template=typescript
+npx create-react-app <project-name> --template=typescript
+# サーバのスタート
+yarn start
 ```
 
 `--template=typescript` はTypeScriptのためのテンプレート。
-
-```zsh
-yarn start
-```
 
 ### バンドラとコンパイラ
 
@@ -85,9 +88,7 @@ CRAで作成したプロジェクトでは、ソースコードはBabelにより
 
 ***
 
-アプリを管理するためのコマンドやスクリプト
-
-***
+## アプリを管理するためのコマンドやスクリプト
 
 ## Yarn
 
