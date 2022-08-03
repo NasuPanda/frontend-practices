@@ -1,5 +1,7 @@
 # 5. JSXでUIを表現する
 
+***
+
 # 5-1. なぜReactはJSXを使うのか
 
 ## JSXの本質を理解する
@@ -106,3 +108,178 @@ import ReactDom from 'react-dom';
 // ...
 ReactDOM.render(<App />, document.getElementById('root'));
 ```
+
+# 5-2. JSXの書き方
+
+## JSXの基本的な文法
+
+### 不要な `import React from 'react'`
+
+`import React from 'react'` は実は不要。
+
+```tsx
+// これ
+import React from 'react';
+import logo from './logo.svg';
+import './App.css';
+
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+      </header>
+    </div>
+  );
+}
+
+export default App;
+```
+
+1つ実験をしてみる。
+
+`tsconfig.json` を以下のように変更。
+
+```json
+{
+  "compilerOptions": {
+    // ...
+    + "jsx": "react"
+    - "jsx": "react-jsx"
+  },
+}
+```
+
+この状態で `src/App.tsx` の `import React ...` を消すと、JSXの記述部分でエラーが出る。
+これは、JSXはあくまで `React.CreateElement` のシンタックスシュガーであり、実際には `React` モジュールが使われているため。
+
+ただし、 TypeScript4.1以降は新しいJSX変換形式に対応していて、 `tsconfig.json` の `jsx` が `react-jsx` になっているとそれが有効になる。
+その場合はインポート文込みで変換されるので、 `import React from 'react'` が省略出来る。
+
+つまり、CRAで作成されたプロジェクトの `import React from 'react'` は全て省略可能。
+
+### JSXの性質
+
+JSXは最終的に `ReactElement` オブジェクトの生成式になる。
+式であるがゆえに、変数に代入したり、オブジェクトのプロパティ値にしたり、関数の引数・戻り値にすることが出来る。
+
+テンプレート形式では文による制御が多用されるが、JSXでは値を返す式でなければならない。
+関数型プログラミングの風味が強い。
+
+### `{}` による式の埋め込み
+
+JSXの中に別の式を埋め込む事もできる。 `{}` を使う。
+JavaScript・TypeScriptのコードをそのまま書ける・・・わけではなく、書けるのは式。つまり値を返す表現のみ。
+
+```tsx
+const name = 'Patty';
+const greet = (name: string) => <p>Hello, {name || 'Guest'}</p>;
+
+return <div>{greet(name)}</div>;
+```
+
+### `if-else` 文
+
+`null` `undefined` `true` `false` は `{}` の中では何も出力されない。
+
+```tsx
+// 全部 ``
+<div />
+<div></div>
+<div>{undefined}</div>
+<div>{null}</div>
+<div>{true}</div>
+<div>{false}</div>
+```
+
+それを利用して、任意の条件によりレンダリングするものを分ける事ができる。
+`n > threshold` の箇所が `if` の代用。 `&&` 演算子によるショートサーキット評価を使っている。
+`n % 2 == 0` の箇所が `if-else` の代用。 三項演算子を使う。
+
+```tsx
+const n = Math.floor(Math.random() * 10);
+const threshold = 5;
+
+return(
+  <div>
+    {n > threshold && <p>`n`` is lather than {threshold}</p>}
+    <p>`n` is {n % 2 == 0 ? 'even' : 'odd'}</p>
+  </div>
+)
+```
+
+### 繰り返し処理
+
+JSXでは文は書けず、常に値を返す式でなければならない。
+例えば繰り返し処理は以下のようになる。
+
+```tsx
+const list = [1, 2, 3];
+
+return (
+  <ul>
+    {list.map((name) => (
+      <li>Number: {name}</li>
+    ))}
+  </ul>
+)
+```
+
+### コメント
+
+```tsx
+<div>
+  {
+    3 > 1 && 'foo' // インラインコメント
+  }
+  {
+    // インラインコメント
+    /*
+      複数行に渡る
+      長いコメント
+    */
+  }
+</div>
+```
+
+### トップレベル要素の成約
+
+複数の要素が含まれる時、トップレベルは1つの要素でなければいけない。
+
+下のコードはコンパイルエラーになる。
+
+```tsx
+const elements = {
+  <div>foo</div>
+  <div>bar</div>
+  <div>baz</div>
+}
+```
+
+解決方法はこれをさらに `div` で囲むこと。
+
+```tsx
+const elements = {
+  <div>
+    <div>foo</div>
+    <div>bar</div>
+    <div>baz</div>
+  </div>
+}
+```
+
+ただし、上の方法だと無意味なノード階層ができてしまう。
+そこで **フラグメント** を使うことで、不要なノードを追加せず複数要素をまとめて扱える。
+
+`<React.Fragment>` というコンポーネントだが、省略記法で空タグが使える。
+
+```tsx
+const elements = {
+  <>
+    <div>foo</div>
+    <div>bar</div>
+    <div>baz</div>
+  </>
+}
+```
+
+
