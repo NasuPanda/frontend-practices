@@ -282,4 +282,73 @@ const elements = {
 }
 ```
 
+## JSXとコンポーネントの関係
+
+JSXの構文は `React.createElement` のメソッドコールに変換され、最終的に `ReactElement` オブジェクトを生成する。
+`ReactElement` オブジェクトはそのコンポーネント関数を特定の引数でコールするための実行リンクのようなものだと言える。
+
+```tsx
+<MyComponent foo="bar">baz</MyComponent>
+
+↓
+
+React.createElement(MyComponent, { foo: 'bar' }, 'baz');
+
+↓
+
+{
+type: 'MyComponent',
+props: { foo: 'bar', children: 'baz' }, key: null,
+ref: null,
+}
+```
+
+### `props`
+
+`props` とは、 `Properties` の略。
+コンポーネントを関数として考えた時、その引数に相当するもの。
+
+```tsx
+import React from 'react';
+
+type Props = { name: string; times?: number };
+
+const Greets: React.FunctionComponent<Props> = (props) => {
+  const { name, times = 1, children } = props;
+  return (
+    <>
+      {[...Array(times)].map((_) => (
+        <p>Hello, {name}! {children}</p>
+      ))}
+    </>
+  );
+};
+```
+
+上のサンプルでは、 `Greets` を関数コンポーネントとして定義するため、 `React.FunctionComponent` インターフェースを適用している。
+このジェネリクスとなっている `P` が `props` の型となる。ここでは `Props` という型エイリアスで定義している。
+
+- `name` と `times` が `Greets` に props として渡される
+- `times` にデフォルト値 `1` が設定されている
+- `children` は `React.createElement` の第3引数に相当するもの
+
+`React.createElement` の第3引数は子要素。
+呼ばれた側のコンポーネントでは暗黙の `props` として渡されるようになっている。
+
+※ 通常のHTMLタグの子要素 = <p>子要素</p>
+
+なおJSX構文における属性値としての props は、通常は `times={4}` のように `{}` による式埋め込みで値を渡す。
+ただ、値が文字列の場合は `name="patty"` のようにクォーテーションで囲む形式により渡すことも出来る。
+
+### 注意が必要な挙動
+
+- HTMLエスケープされた文字列を `props` として渡すと受け取ったコンポーネント側で元の文字列に復元される。
+- JSXで**子要素として文字列を記述するとき**、行の先頭と末尾の空白文字が削除され、空白行も削除される。
+- Boolean値で `true` の場合、値を省略出来る。
+
+```tsx
+// true の省略
+<MyButton color="blue" disable={true} />
+<MyButton color="blue" disable />
+```
 
