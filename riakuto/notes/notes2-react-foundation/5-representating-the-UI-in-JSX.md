@@ -352,3 +352,69 @@ const Greets: React.FunctionComponent<Props> = (props) => {
 <MyButton color="blue" disable />
 ```
 
+## Reactの組み込みコンポーネント
+
+JSXによるタグ記述は実際にはコンポーネントの呼び出しになっている。
+では、 `<div>` や `<p>` といった標準HTMLタグがコンポーネントとして扱われないのはなぜか。
+
+### ユーザ定義コンポーネント と 組み込みコンポーネント
+
+Reactのコンポーネントには「ユーザ定義コンポーネント」と「組み込みコンポーネント」の2種類がある。
+
+ユーザが自前のコンポーネントを定義するときには命名規則があり、コンポーネント名を**必ず大文字から**始めなければならない。
+小文字から始まる名前でコンポーネントを定義すると、コンポーネントとして呼べなくなる。
+JSXでは小文字から始まる名前のタグ記述はすべて組み込みコンポーネントとして解釈されるから。
+
+### `JSX.IntrinsicElements` インターフェース
+
+TypeScriptなら `JSX.IntrinsicElements` インターフェースにおいて、キーがタグ名として登録されているものが組み込みコンポーネントに当たる。
+組み込みコンポーネント用のタグとして登録されているのは現在のところ、HTML要素とSVG要素の合計175個。
+
+※ Intrinsic : 本来備わっている、固有の
+
+このインターフェースをたどれば、各要素に `props` として渡せる固有の属性も確認できる。
+
+### HTML標準属性と `props` のキー比較
+
+例えば `<img>` なら `props` として渡せる値は以下のようになる。
+
+```tsx
+interface ImgHTMLAttributes<T> extends HTMLAttributes<T> {
+alt?: string;
+crossOrigin?: "anonymous" | "use-credentials" | "";
+decoding?: "async" | "auto" | "sync";
+height?: number | string;
+loading?: "eager" | "lazy";
+referrerPolicy?: "no-referrer" | "origin" | "unsafe-url";
+sizes?: string;
+src?: string;
+srcSet?: string;
+useMap?: string;
+width?: number | string;
+}
+```
+
+- HTML標準と比較すると、主要な属性を網羅していて、属性名もほぼ1対1で対応している。
+- `crossorigin` が `crossOrigin` になっているなど、JavaScriptの命名規則に合わせて複合語は書き直されているため注意が必要。
+- `aria-*` と `data-*` 属性はHTMLと同じケバブケース。
+- JavaScriptの予約語とかぶってしまったせいで名前を変更せざるを得なかったものがある。
+  - `class` => `className`
+  - `for` => `htmlFor`
+- HTMLと異なり、値がBoolean担っている属性が3つ。
+  - `checked`
+  - `disabled`
+  - `selected`
+- `textarea` と `select` が `value` 属性を持てるようになっている。
+  - `select` は `value` に `option` と同じ値を設定すると、その要素が選択された状態になる。
+- HTMLに存在しないが、組み込みコンポーネントが持つ属性が2つ。
+  - `ref` : リアルDOMへの参照
+    - フォーカス、テキスト選択、アニメーション発火、動画・音楽再生
+  -`key` : Reactが再レンダリングのための差分検出を効率的に行うために必要とするもの
+    - `key` にインデックスを使うべきではない
+    - 例えば外部APIから取得したコレクションデータをリスト表示する場合なら、そのデータが持つユニークIDを `key` に使うのが良い。
+
+## 5-2 要点まとめ
+
+- JSXは `ReactElement` オブジェクトを生成するシンタックスシュガー
+- `<div>` などのHTMLタグっぽい記述は、実際にはReactの組み込みコンポーネントとして扱われる
+- 属性値や子要素はコンポーネントに `props` として渡される。関数に対する引数のようなイメージ
