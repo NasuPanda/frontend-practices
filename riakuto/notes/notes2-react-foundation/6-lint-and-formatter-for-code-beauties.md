@@ -24,6 +24,25 @@ lintはそもそもC言語のソースコードに対して、コンパイラよ
 `npm info パッケージ名 peerDependencies` でリストアップされる。
 また、npm公式サイトの該当ページにもインストール方法が書いてあるのでそれを参考に。
 
+## ESLintのエコシステム
+
+ESLint本体を除くエコシステムのパッケージは主に3種類に分類される。
+
+### パーサ(Parser)
+
+ソースコードを特定の言語仕様に沿って解析してくれるライブラリ。
+ESLintにはJavaScriptのパーサが組み込まれているが、標準はTypeScriptに対応していないのでTypeScriptパーサの導入が必要。
+
+### プラグイン(Plugin)
+
+ESLint組み込みルール以外に独自のルールを追加するもの。
+それらを適用した推奨の共有設定とパッケージングして提供されることが多い。
+
+### 共有設定(Shareable Config)
+
+複数ルールの適用をまとめて設定するもの。
+ESLintに同梱される eslint:recommended や Airbnbが提供している eslint-config-airbnb が有名。
+
 ## ESLintの環境を作る
 
 ESLintについては CRA で作成したプロジェクトには最初からパッケージがインストールされている。
@@ -87,4 +106,255 @@ eslint-plugin-react eslint-plugin-react-hooks @typescript-eslint/parser
 
 $ typesync
 $ yarn
+```
+
+## ESLintの適用ルールをカスタマイズ
+
+### Airbnb
+
+Airbnb JavaScript Style Guide に準拠するESLintの共有設定 eslint-config-airbnb が有名。
+
+### `extends` による各プラグイン推奨ルールの共有設定
+
+まず `extends` から。各プラグイン推奨ルールの共有設定を書く。
+プラグインは読み込んだだけでは何のルールも適用されないので、プラグイン開発者がパッケージ内で推奨の共有設定を一緒に提供している。
+それらをここで適用している。
+
+```js
+extends: [ 'plugin:react/recommended', 'airbnb',
++ 'airbnb/hooks',
++ 'plugin:import/errors',
++ 'plugin:import/warnings',
++ 'plugin:import/typescript',
++ 'plugin:@typescript-eslint/recommended',
++ 'plugin:@typescript-eslint/recommended-requiring-type-checking',
+],
+```
+
+記述順序には意味がある。
+共有設定感で設定ルール値が衝突したら、後に記述されたものが優先される。
+
+他のルールセットと依存の順番がある場合はそれぞれドキュメントで言及されているはずなので、新しくプラグインや拡張ルールセットをインストールするときはnpmのページくらいにはざっと目を通しておくと良い。
+
+### `parser`
+
+ESLintのパーサに設定した @typescript-eslint/parser へ渡すオプションの定義。
+
+```js
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true
+    },
+    ecmaVersion: 12,
++   project: './tsconfig.eslint.json',
+    sourceType: 'module',
++   tsconfigRootDir: __dirname,
+  },
+```
+
+まず、TypeScriptコンパイル設定ファイルのパスの設定。
+型情報が要求されるルールを使用したい場合に必要となる。
+
+ここでは `tsconfig.json` ではなく `tsconfig.eslint.json` を読み込むように設定している。
+なぜ別ファイルが必要なのかというと、こうしないとパーサがローカルにインストールされているnpmパッケージのファイルまでパースしてしまい、VSCodeと連携させたときのパフォーマンスが落ちたりするため。
+
+```json:tsconfig.eslint.json
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+```
+
+### `plugins`
+
+読み込ませる追加ルールのプラグインを記述する。
+`yarn add` しただけでは使えるようにならず、ここにリストアップすることで初めてそれらのルールが適用出来るようになる。
+
+```js
+  plugins: [
+    '@typescript-eslint',
+    + 'import',
+    + 'jsx-a11y',
+    'react',
+    + 'react-hooks',
+  ],
+```
+
+### `root`
+
+親ディレクトリの設定ファイルまで読み込んでしまうというESLintデフォルトの挙動を抑止するためのもの。
+
+```js
+  + root:true,
+```
+
+### `rules` 及び 類似設定
+
+```js
+rules: {
+    // occur error in `import React from 'react'` with react-scripts 4.0.1
+    'no-use-before-define': 'off',
+    '@typescript-eslint/no-use-before-define': [
+    'error',
+    ],
+    'lines-between-class-members': [
+    'error',
+    'always',
+    {
+        exceptAfterSingleLine: true,
+    },
+    ],
+    'no-void': [
+    'error',
+    {
+        allowAsStatement: true,
+    },
+    ],
+    'padding-line-between-statements': [
+    'error',
+    {
+        blankLine: 'always',
+        prev: '*',
+        next: 'return',
+    },
+    ],
+    '@typescript-eslint/no-unused-vars': [
+    'error',
+    {
+        'vars': 'all',
+        'args': 'after-used',
+        'argsIgnorePattern': '_',
+        'ignoreRestSiblings': false,
+        'varsIgnorePattern': '_',
+    },
+    ],
+    'import/extensions': [
+    'error',
+    'ignorePackages',
+    {
+        js: 'never',
+        jsx: 'never',
+        ts: 'never',
+        tsx: 'never',
+    },
+    ],
+    'react/jsx-filename-extension': [
+    'error',
+    {
+        extensions: ['.jsx', '.tsx'],
+    },
+    ],
+    'react/jsx-props-no-spreading': [
+    'error',
+    {
+        html: 'enforce',
+        custom: 'enforce',
+        explicitSpread: 'ignore',
+    },
+    ],
+    'react/react-in-jsx-scope': 'off',
+},
+overrides: [
+    {
+    'files': ['*.tsx'],
+    'rules': {
+        'react/prop-types': 'off',
+    },
+    },
+],
+settings: {
+    'import/resolver': {
+    node: {
+        paths: ['src'],
+    },
+    },
+},
+```
+
+- `no-use-before-define` , `@typescript-eslint/no-use-before-define`
+  - 定義前の変数の使用を禁じる ESLint と TypeScript ESLint のルール。
+- `lines-between-class-members`
+  - クラスメンバーの定義の間に空行を入れるかどうかを定義するルール。
+  - ここでは1行記述のメンバーのときは空行不要にしている
+- `no-void`
+  - `void` 演算子の式としての使用を禁じるルール
+- `padding-line-between-statements`
+  - 任意の構文の間に区切りの空行を入れるかどうかを定義するルール
+  - ここでは `return` の前に空行を入れるよう設定している
+- `@typescript-eslint/no-unused-vars`
+  - 仕様していない変数の定義を許さないルール
+  - ここでは変数名を `_` にしたときのみ許容するよう設定
+- `import/extensions` *
+  - インポート時にファイル拡張子を記述するかどうかを定義するルール
+  - ここでは npm パッケージ以外のファイルについて、 `.js` `.jsx` `.ts` `.tsx` のファイルのみ拡張子を省略、他ファイルは拡張子を記述させるよう設定
+- `react/jsx-filename-extension` *
+  - JSXのファイル拡張子を制限するルール
+  - `.jsx` のみに制限されているので `.tsx` を追加
+- `react/jsx-props-no-spreading`
+  - JSXでコンポーネントを呼ぶときの props の記述にスプレッド構文を許さないルール
+  - 個々の props を明記する書き方のみ許容するように設定
+- `react/react-in-jsx-scope`
+  - JSXを使用する時、reactモジュールを `React` としてインポートすることを強制する
+  - 新しいJSX変換形式ではインポート不要なので無効化
+- `react/prop-types` *
+  - コンポーネントの props に型チェックを行うための `propsTypes` プロパティの定義を強制するルール
+  - TypeScriptの場合不要なのでファイル拡張子が `.tsx` の場合に無効化するよう設定を上書き
+
+`overrides` は任意の glob パターンにマッチするファイルのみ、ルールの適用を上書きできるプロパティ。
+ここでは react/prop-types ルールを通常の JSX ファイルでは適用したままにして、.tsx ファイルでは無効にするために使ってる。
+
+`settings` は任意の実行ルールに適用される追加の共有設定。
+`tsconfig.json` で `src/` 配下のファイルを絶対パスでインポート出来るようにしていたが、このままでは eslint-plugin-import が絶対パスを解決出来ずエラーを出してしまう。
+そこで、 eslint-plugin-import が内部で使用している eslint-import-resolver-node というモジュール解決プラグインに対し、パスに `src` を追加してあげている。
+
+ルールの適用については基本は共有設定で規定されている通りに従うべきだが、TypeScriptについて考慮されていないものを調整したり、チームに合わせて部分的にゆるめたり厳しくしたりするイメージ。
+なお、上で `*` がついている設定がTypeScript必須設定、他は著者の好み。
+
+### ルールの調べ方
+
+[Rules - ESLint - Pluggable JavaScript Linter](https://eslint.org/docs/latest/rules/)
+[typescript-eslint/packages/eslint-plugin at main · typescript-eslint/typescript-eslint](https://github.com/typescript-eslint/typescript-eslint/tree/main/packages/eslint-plugin#supported-rules)
+
+各種プラグインはプロジェクトページやnpmのページを見に行く感じ。
+
+### `.eslintignore`
+
+ESLintチェックの対象外となるファイルを定義。
+
+```ignore
+build/
+public/
+**/coverage/
+**/node_modules/
+**/*.min.js
+*.config.js
+.*lintrc.js
+```
+
+### VSCode の `setting.json`
+
+`setting.json` に以下を追加しておく。
+
+```json
+"editor.codeActionsOnSave": {
+  "source.fixAll.eslint": true
+},
+"editor.formatOnSave": false,
+"eslint.packageManager": "yarn",
+"typescript.enablePromptUseWorkspaceTsdk": true
+```
+
+最後の行は、プロジェクトにTypeScriptがインストールされている場合、VSCode内蔵のTypeScriptとプロジェクトのTypeScriptどちらを使うか尋ねさせる設定。
+VSCodeに内蔵されているTypeScriptは大抵バージョンが古いため。
+
+なお、プロジェクトのTypeScriptを強制的に使わせたい場合は以下を記述。
+
+```json
+"typescript.tsdk": "./node_modules/typescript/lib",
 ```
