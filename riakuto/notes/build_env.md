@@ -1,47 +1,88 @@
-# 6. Lintとフォーマッタでコード美人に
+# 環境構築手順
 
-# 6-1. ESLint
+## anyenv + nodenv による npm インストール
 
-## JavaScript、TypeScriptにおけるLinterの歴史
+### anyenv インストール
 
-### Linterとは
+```zsh
+$ brew install anyenv
+$ echo 'eval "$(anyenv init -)"' >> ~/.zshrc $ exec $SHELL -l
+$ anyenv install nodenv
+$ exec $SHELL -l
+```
 
-コードを静的解析してコンパイルで弾かれない潜在的なバグを警告するもの
+### nodenv インストール
 
-### コードフォーマッタ
+インストールが終わったら nodenv で npm をインストールする。
 
-インデントや改行などのスタイルを一律に自動整形してくれるもの
+```zsh
+$ mkdir -p $(anyenv root)/plugins
+$ git clone https://github.com/znz/anyenv-update.git $(anyenv root)/plugins/anyenv-update
+$ mkdir -p "$(nodenv root)"/plugins
+$ git clone https://github.com/nodenv/nodenv-default-packages.git "$(nodenv root)/plugins/nodenv-default-packages"
+$ touch $(nodenv root)/default-packages
+```
 
-### Lint とは
+### `default_packages` の中身
 
-lintはそもそもC言語のソースコードに対して、コンパイラよりも詳細かつ厳密なチェックを行うプログラムとして開発され、初期のUNIXにコマンドとして装備されていた。
-その機能が、放っておくと故障の原因となる糸くずを片っ端から絡め取る乾燥機の糸くずフィルター「link tarp」に似ていたことからそう名付けようとしたが、当時のUNIXでは4文字以上の命令が使えなかったため「lint」と命名された。
+```
+yarn
+typescript
+ts-node
+typesync
+```
 
-そこから転じて、Cに限らずコードを解析して構文チェックを行うことを「lint」と動詞化して表現されるようになり、さらにそのプログラムは「linter」と呼ばれるようになった。
+## `create-react-app` の実行
 
-## 任意のnpmパッケージが依存しているものを調べる
+### デフォルトで使用されるパッケージマネージャ
 
-`npm info パッケージ名 peerDependencies` でリストアップされる。
-また、npm公式サイトの該当ページにもインストール方法が書いてあるのでそれを参考に。
+Create React App 5.00 以降は `npm` `npx` から実行されれば npm を、 `yarn` から実行されれば yarn をパッケージマネージャとして使用するように変更されている。
 
-## ESLintのエコシステム
+yarn を強制的に使うには `yarn create react-app <project-name>` とする。
+`yarn create-react-app` ではなく `yarn create react-app` なので注意。
 
-ESLint本体を除くエコシステムのパッケージは主に3種類に分類される。
+### バージョン指定して実行
 
-### パーサ(Parser)
+`npx create-react-app@4.0.3 hello-world --template typescript` のようにする。
 
-ソースコードを特定の言語仕様に沿って解析してくれるライブラリ。
-ESLintにはJavaScriptのパーサが組み込まれているが、標準はTypeScriptに対応していないのでTypeScriptパーサの導入が必要。
+### node のバージョン
 
-### プラグイン(Plugin)
+`babel-jest@27.5.1: The engine "node" is incompatible with this module. Expected version "^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0". Got "14.4.0"` というエラーが出た。
+文字通り、node のバージョンが対応していないものだったことが問題な模様。
 
-ESLint組み込みルール以外に独自のルールを追加するもの。
-それらを適用した推奨の共有設定とパッケージングして提供されることが多い。
+対応しているバージョンに変更することで対処。
 
-### 共有設定(Shareable Config)
+```zsh
+$ node -v
+v14.17.0
+```
 
-複数ルールの適用をまとめて設定するもの。
-ESLintに同梱される eslint:recommended や Airbnbが提供している eslint-config-airbnb が有名。
+## ESLintの導入
+
+CRA で作成したプロジェクトにはデフォルトで ESLint が入っている。
+react-scripts との相性の問題があるので、ESLintのバージョンはデフォルトのものが推奨。
+
+```zsh
+$ yarn list eslint
+yarn list v1.22.19
+warning Filtering by arguments is deprecated. Please use the pattern option instead.
+└─ eslint@8.21.0
+```
+
+### 各種パッケージの更新
+
+```zsh
+$ yarn upgrade-interactive --latest
+$ yarn upgrade typescript@latest
+```
+
+### 必要となるパッケージ群
+
+ESLint本体を除くと以下のインストールが必要。
+
+- パーサ
+- プラグイン
+- 共有設定
 
 ## ESLintの環境を作る
 
@@ -330,22 +371,45 @@ settings: {
 
 各種プラグインはプロジェクトページやnpmのページを見に行く感じ。
 
-### 最終的な `.eslintrc.js`
+### `.eslintignore`
 
-デフォルトだとアロー関数式が許容されていないため、 `rules` に以下を追加。
+ESLintチェックの対象外となるファイルを定義。
 
-```js
-    'react/function-component-definition': [
-        'error',
-        {
-          namedComponents: [
-            'arrow-function',
-          ],
-        },
-    ],
+```ignore
+build/
+public/
+**/coverage/
+**/node_modules/
+**/*.min.js
+*.config.js
+.*lintrc.js
 ```
 
-最終的な形。
+### VSCode の `setting.json`
+
+`setting.json` に以下を追加しておく。
+
+```json
+"editor.codeActionsOnSave": {
+  "source.fixAll.eslint": true
+},
+"editor.formatOnSave": false,
+"eslint.packageManager": "yarn",
+"typescript.enablePromptUseWorkspaceTsdk": true
+```
+
+最後の行は、プロジェクトにTypeScriptがインストールされている場合、VSCode内蔵のTypeScriptとプロジェクトのTypeScriptどちらを使うか尋ねさせる設定。
+VSCodeに内蔵されているTypeScriptは大抵バージョンが古いため。
+
+なお、プロジェクトのTypeScriptを強制的に使わせたい場合は以下を記述。
+
+```json
+"typescript.tsdk": "./node_modules/typescript/lib",
+```
+
+## 最終的な形
+
+### `.eslintrc.js`
 
 ```js
 module.exports = {
@@ -469,9 +533,7 @@ module.exports = {
 
 ### `.eslintignore`
 
-ESLintチェックの対象外となるファイルを定義。
-
-```ignore
+```js
 build/
 public/
 **/coverage/
@@ -481,48 +543,24 @@ public/
 .*lintrc.js
 ```
 
-### VSCode の `setting.json`
-
-`setting.json` に以下を追加しておく。
+### `tsconfig.eslint.json`
 
 ```json
-"editor.codeActionsOnSave": {
-  "source.fixAll.eslint": true
-},
-"editor.formatOnSave": false,
-"eslint.packageManager": "yarn",
-"typescript.enablePromptUseWorkspaceTsdk": true
-```
-
-最後の行は、プロジェクトにTypeScriptがインストールされている場合、VSCode内蔵のTypeScriptとプロジェクトのTypeScriptどちらを使うか尋ねさせる設定。
-VSCodeに内蔵されているTypeScriptは大抵バージョンが古いため。
-
-なお、プロジェクトのTypeScriptを強制的に使わせたい場合は以下を記述。
-
-```json
-"typescript.tsdk": "./node_modules/typescript/lib",
-```
-
-## 一時的にESLintを黙らせる
-
-無効化コメントを使う。
-
-```js
-/* eslint-disable react/jsx-one-expression-per-line */
-import logo from './logo.svg';
-import './App.css';
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-function App() {
-...
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
 ```
 
-`eslint-disable` はそのコメント以降からファイルが終わるまで、ESLintのチェックを無効化するコメント。
-該当ルールを記述するとそのルールだけ無効化される。
-
-1行だけ無効化したい場合、同じ行にコメントとして `// eslint-disable-line` を書くか、直前の行に `// eslint-disable-next-line` を書けばいい。
-
-## まとめて lint チェックが走るようにする
+## まとめてlintチェックが走るようにする
 
 ```json:package.json
   "scripts": {
@@ -540,3 +578,4 @@ function App() {
 
 また、パッケージをインストールするごとに `typesync` を手動実行するのは面倒なので、 `preinstall` で自動で走るようにしてある。
 `A || B` (A が失敗したら B を実行)を使い、成功したら `:` (何もしないコマンド) を実行することで、異常終了することを防ぐ。
+
