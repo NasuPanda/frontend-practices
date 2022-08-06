@@ -4,5 +4,6 @@ module.exports = {
   ignoreFiles: ['**/node_modules/**'],
   rules: {
     'string-quotes': 'single',
+    'selector-class-pattern': '^[A-Z]+$',
   },
 };

@@ -747,3 +747,198 @@ RECESS は Twitterが提供していたCSSのコード品質ツール。
     "less.validate": false,
     "scss.validate": false,
 ```
+
+# 6-4. 更に進んだ設定
+
+## ESLintのプラグイン
+
+ESLint はサードパーティからプラグインとして多くのルールが提供されている。
+AWESOME ESLint というリポジトリにはプラグインや共有設定が100個以上掲載されている。
+
+## eslint-plugin-prefer-arrow の導入
+
+関数宣言をアロー関数式限定にするプラグイン。
+
+### インストール
+
+```zsh
+yarn -D add eslint-plugin-prefer-arrow
+```
+
+### `.eslintrc.js` の編集
+
+```js
+  plugins: [
+    '@typescript-eslint',
+    'import',
+    'jsx-a11y',
++   'prefer-arrow',
+    'react',
+    'react-hooks',
+  ],
+  ...
+  rules: {
+    'prefer-arrow/prefer-arrow-functions': [
+      'error',
+      {
+        disallowPrototype: true,
+        singleReturnOnly: false,
+        classPropertiesAllowed: false,
+      },
+    ],
+  }
+```
+
+## コミット前にlintチェックを走らせる
+
+Git Hooks という仕組みを使う。
+Git Hooks は `.git/hooks/` ディレクトリにある、各アクション名に対応したスクリプトファイルを実行する。
+例えばそこに `pre-commit` というファイルがあればコミット前に、 `pre-push` があればプッシュ前に実行してくれる。
+
+## simple-Git-hooks の導入
+
+### インストール
+
+```zsh
+yarn add -D simple-git-hooks lint-staged
+```
+
+### `package.json` の編集
+
+`prepare` で `simple-git-hooks` を走らせることで、 Git Hooks への登録忘れを防ぐ。
+
+```json
+  "scripts": {
+    // ...
+    "prepare": "simple-git-hooks > /dev/null"
+  }
+  // ...
+  "simple-git-hooks": {
+    "pre-commit": ". ./lint-staged-around",
+    "pre-push": ". ./test-around"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write --loglevel=error",
+      "eslint --fix --quiet"
+    ],
+    "src/**/*.{css,less,sass,scss}": [
+      "stylelint --fix --quiet"
+    ],
+    "{public,src}/**/*.{html,gql,graphql,json}": [
+      "prettier --write --loglevel=error"
+    ]
+  }
+```
+
+### Githooks への登録
+
+`simple-git-hooks` コマンドは、 `package.json` の `"simple-git-hooks"` エントリから `pre-commit` や `pre-push` に対応するものを抽出、該当ファイルに書き出してくれる。
+
+```zsh
+$ npx simple-git-hooks
+[INFO] Successfully set the pre-commit with command: . ./lint-staged-around
+[INFO] Successfully set the pre-push with command: . ./test-around
+[INFO] Successfully set all git hooks
+```
+
+### 削除したい時
+
+`package.json` の `"simple-git-hooks"` エントリ から該当の設定を削除した上で `npx simple-git-hooks` を実行すると、自動的に Git hooks のスクリプトファイルが削除される。
+
+## Monorepo の場合の Git-Hooks
+
+1つのリポジトリの中に複数のプロジェクトを置いているケース。
+
+### どうするか
+
+リポジトリ内で JSX など の任意の種類のファイルに変更があったプロジェクトを抽出、そのディレクトリでコマンドを実行するシェルスクリプトを自力で書く。
+
+例えば、 `lint-staged-around` というファイルをプロジェクトルートに置いた場合、 `package.json` は以下のようになる。
+
+```json
+"simple-git-hooks": {
+  "pre-commit": ". ./lint-staged-around",
+  "pre-push": ". ./test-around"
+},
+```
+
+`lint-staged-around` は以下。
+
+```shell
+#!/bin/sh
+
+# lint-staged-around
+#   execute each lint-staged entry in sub-directories projects recursively
+#
+#   Riakuto! Project by Klemiwary Books
+
+fileTypes="js|jsx|ts|tsx|html|css|less|sass|scss|gql|graphql|json"
+target="src|public"
+
+# detect git against tag
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+  against=HEAD
+else
+  # Initial commit: diff against an empty tree object
+  against=$(git hash-object -t tree /dev/null)
+fi
+
+if [ "$(uname)" == "Darwin" ]; then
+  sedOption='-E'
+else
+  sedOption='-r'
+fi
+
+# pick staged projects
+stagedProjects=$( \
+  git diff --cached --name-only --diff-filter=AM $against | \
+  grep -E ".*($target)\/" | \
+  grep -E "^.*\/.*\.($fileTypes)$" | \
+  grep -vE "(package|tsconfig).*\.json" | \
+  sed $sedOption "s/($target)\/.*$//g" | \
+  uniq \
+)
+
+# execute each lint-staged
+rootDir=$(pwd | sed $sedOption "s/\/\.git\/hooks//")
+
+for project in ${stagedProjects[@]}; do
+  echo "Executing $project lint-staged entry..."
+  cd "$rootDir/$project"
+  npx lint-staged 2>/dev/null
+done
+```
+
+`test-around` は以下。
+
+```shell
+#!/bin/sh
+
+# test-around
+#   execute each test in sub-directories projects recursively
+#
+#   Riakuto! Project by Klemiwary Books
+
+targetProjects=(
+  "06-lint/04-advanced"
+  "08-component/02-props"
+  "08-component/03-state/01-class"
+  "08-component/03-state/02-state"
+  "08-component/04-lifecycle"
+  "09-hooks/03-effect"
+  "09-hooks/02-state"
+  "09-hooks/03-effect"
+  "09-hooks/04-memoize"
+  "09-hooks/05-custom"
+)
+
+# execute each test
+rootDir=$(pwd | sed -r "s/\/\.git\/hooks//")
+
+for project in ${targetProjects[@]}; do
+  cd "$rootDir/$project"
+  CI=true npm test
+done
+```
