@@ -658,3 +658,92 @@ The following rules are unnecessary or might conflict with Prettier:
         "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
 ```
+
+# 6-3. stylelint
+
+CSSにもそこそこ複雑な構文と、様々な流派のコーディングスタイルが存在している。
+CSSもLinterを導入しておくと良い。
+
+## 必要なパッケージ
+
+- stylelint
+  - 本体
+- stylelint-config-standard
+  - stylelint公式による標準の共有設定
+- stylelint-order
+  - 並び順に関するルールセットのプラグイン
+  - stylelint-config-recess-order が必要
+- stylelint-config-recess-order
+  - RECESS に基づく CSS の並び替えのための共有設定
+
+## インストール
+
+```zsh
+$ yarn add -D stylelint stylelint-config-standard stylelint-order stylelint-config-recess-order
+```
+
+## `.stylelintrc.js` の編集
+
+`.eslintrc.js` とほとんど同じ。
+異なるのは `ignoreFiles` というプロパティがあることくらい。
+
+```js
+module.exports = {
+  extends: ['stylelint-config-standard', 'stylelint-config-recess-order'],
+  plugins: ['stylelint-order'],
+  ignoreFiles: ['**/node_modules/**'],
+  rules: {
+    'string-quotes': 'single',
+  },
+};
+```
+
+### `extends` による共有設定
+
+`extends` では共有設定を編集する。
+
+`stylelint-config-standard` が公式提供の標準設定。
+`style-config-recommended` というものもあり、より広く使われているが、ルールが最小限。
+
+### `plugins` によるプラグイン
+
+stylelint-order は、並び順についてのルールが設定されたプラグイン。
+共有設定 stylelint-config-recess-order からそのルールを使っている。
+
+### RECESS
+
+RECESS は Twitterが提供していたCSSのコード品質ツール。
+そこで使われていたソートのルールをstylelintの共有設定として移植したものがstylelint-config-recess-order。
+
+## `package.json` の `scripts` に登録
+
+```json
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "fix": "npm run -s format && npm run -s lint:fix",
+    "format": "prettier --write --loglevel=warn 'src/**/*.{js,jsx,ts,tsx,gql,graphql,json}'",
+    "lint": "npm run -s lint:style; npm run -s lint:es",
+    "lint:fix": "npm run -s lint:style:fix && npm run -s lint:es:fix",
+    "lint:es": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:es:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:conflict": "eslint-config-prettier 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:style": "stylelint 'src/**/*.{css,less,sass,scss}'",
+    "lint:style:fix": "stylelint --fix 'src/**/*.{css,less,sass,scss}'",
+    "preinstall": "typesync || :"
+  },
+```
+
+## VSCode: `settings.json` に追加
+
+```json
+    "editor.codeActionsOnSave": {
+      // ...
+      "source.fixAll.stylelint": true, // stylelint
+    },
+    "css.validate": false,
+    "less.validate": false,
+    "scss.validate": false,
+```

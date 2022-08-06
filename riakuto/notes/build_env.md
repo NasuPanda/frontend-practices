@@ -584,7 +584,7 @@ public/
 読み方はプリティア。
 フロントエンド開発におけるデファクトスタンダードとなっているコードフォーマッタ。
 
-## Prettierの環境を作る
+## 必要なパッケージ
 
 
 ESLintの環境に Prettier を加えるのに必要なパッケージは次の2つ。
@@ -594,13 +594,13 @@ ESLintの環境に Prettier を加えるのに必要なパッケージは次の2
 - eslint-config-prettier
   - Prettier と競合する可能性のあるESLintのルールを無効にする共有設定
 
-### 必要なパッケージのインストール
+## 必要なパッケージのインストール
 
 ```zsh
 yarn add -D prettier eslint-config-prettier
 ```
 
-### `.eslintrc.js` の編集
+## `.eslintrc.js` の編集
 
 `extends` に `prettier` を加える。
 他と競合するルール設定を上書きするものなので、eslint-config-prettier を書くのは一番最後にすること。
@@ -612,9 +612,9 @@ yarn add -D prettier eslint-config-prettier
   ],
 ```
 
-### `prettierrc` の編集
+## `.prettierrc` の編集
 
-Prettier用の設定を記述。
+`.prettierrc` というファイルを作り、 Prettier 用の設定を記述。
 1行の文字数やインデントなどのスタイル設定値を個々に記述する。
 
 指定したもの以外はデフォルト値が設定される。
@@ -628,7 +628,7 @@ Prettier用の設定を記述。
 }
 ```
 
-### ESLint と Prettier 間でルールの競合がないか確認
+## ESLint と Prettier 間でルールの競合がないか確認
 
 次のような出力なら問題なし。
 
@@ -647,7 +647,7 @@ The following rules are unnecessary or might conflict with Prettier:
 
 この場合は `@typescript-eslint/indent` の設定が不要だということなので、 `eslintrc.js` からそれを削除する。
 
-### `package.json` の `scripts` 編集
+## `package.json` の `scripts` 編集
 
 - `fix` : Prettierによるフォーマット + ESLint による fix の実行
 - `format` : Prettierによるフォーマットの実行
@@ -666,7 +666,7 @@ The following rules are unnecessary or might conflict with Prettier:
   },
 ```
 
-### VSCode : `settings.json` の編集
+## VSCode : `settings.json` の編集
 
 `settings.json` に `editor.formatOnSave` と `editor.defaultFormatter` を追加。
 
@@ -695,4 +695,78 @@ The following rules are unnecessary or might conflict with Prettier:
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
+```
+
+# stylelint
+
+CSS にもそこそこ複雑な構文と、様々な流派のコーディングスタイルが存在している。
+CSS も linter を導入しておくと良い。
+
+CSS のデファクトスタンダードとなっている linter が stylelint 。
+
+## 必要なパッケージ
+
+- stylelint
+  - 本体
+- stylelint-config-standard
+  - stylelint公式による標準の共有設定
+- stylelint-order
+  - 並び順に関するルールセットのプラグイン
+  - stylelint-config-recess-order が必要
+- stylelint-config-recess-order
+  - RECESS に基づく CSS の並び替えのための共有設定
+
+## インストール
+
+```zsh
+$ yarn add -D stylelint stylelint-config-standard stylelint-order stylelint-config-recess-order
+```
+
+## `.stylelintrc.js` の編集
+
+`.eslintrc.js` とほとんど同じ。
+異なるのは `ignoreFiles` というプロパティがあることくらい。
+
+```js
+module.exports = {
+  extends: ['stylelint-config-standard', 'stylelint-config-recess-order'],
+  plugins: ['stylelint-order'],
+  ignoreFiles: ['**/node_modules/**'],
+  rules: {
+    'string-quotes': 'single',
+  },
+};
+```
+
+## `package.json` の `scripts` に登録
+
+```json
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "fix": "npm run -s format && npm run -s lint:fix",
+    "format": "prettier --write --loglevel=warn 'src/**/*.{js,jsx,ts,tsx,gql,graphql,json}'",
+    "lint": "npm run -s lint:style; npm run -s lint:es",
+    "lint:fix": "npm run -s lint:style:fix && npm run -s lint:es:fix",
+    "lint:es": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:es:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:conflict": "eslint-config-prettier 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:style": "stylelint 'src/**/*.{css,less,sass,scss}'",
+    "lint:style:fix": "stylelint --fix 'src/**/*.{css,less,sass,scss}'",
+    "preinstall": "typesync || :"
+  },
+```
+
+## VSCode: `settings.json` に追加
+
+```json
+    "editor.codeActionsOnSave": {
+      // ...
+      "source.fixAll.stylelint": true, // stylelint
+    },
+    "css.validate": false,
+    "less.validate": false,
+    "scss.validate": false,
 ```
