@@ -1,8 +1,6 @@
-# 環境構築手順
+# anyenv + nodenv による npm インストール
 
-## anyenv + nodenv による npm インストール
-
-### anyenv インストール
+## anyenv インストール
 
 ```zsh
 $ brew install anyenv
@@ -11,7 +9,7 @@ $ anyenv install nodenv
 $ exec $SHELL -l
 ```
 
-### nodenv インストール
+## nodenv インストール
 
 インストールが終わったら nodenv で npm をインストールする。
 
@@ -23,7 +21,7 @@ $ git clone https://github.com/nodenv/nodenv-default-packages.git "$(nodenv root
 $ touch $(nodenv root)/default-packages
 ```
 
-### `default_packages` の中身
+## `default_packages` の中身
 
 ```
 yarn
@@ -32,20 +30,20 @@ ts-node
 typesync
 ```
 
-## `create-react-app` の実行
+# `create-react-app` の実行
 
-### デフォルトで使用されるパッケージマネージャ
+## デフォルトで使用されるパッケージマネージャ
 
 Create React App 5.00 以降は `npm` `npx` から実行されれば npm を、 `yarn` から実行されれば yarn をパッケージマネージャとして使用するように変更されている。
 
 yarn を強制的に使うには `yarn create react-app <project-name>` とする。
 `yarn create-react-app` ではなく `yarn create react-app` なので注意。
 
-### バージョン指定して実行
+## バージョン指定して実行
 
 `npx create-react-app@4.0.3 hello-world --template typescript` のようにする。
 
-### node のバージョン
+## node のバージョン
 
 `babel-jest@27.5.1: The engine "node" is incompatible with this module. Expected version "^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0". Got "14.4.0"` というエラーが出た。
 文字通り、node のバージョンが対応していないものだったことが問題な模様。
@@ -56,6 +54,8 @@ yarn を強制的に使うには `yarn create react-app <project-name>` とす�
 $ node -v
 v14.17.0
 ```
+
+# ESLint
 
 ## ESLintの導入
 
@@ -579,3 +579,120 @@ public/
 また、パッケージをインストールするごとに `typesync` を手動実行するのは面倒なので、 `preinstall` で自動で走るようにしてある。
 `A || B` (A が失敗したら B を実行)を使い、成功したら `:` (何もしないコマンド) を実行することで、異常終了することを防ぐ。
 
+# Prettier
+
+読み方はプリティア。
+フロントエンド開発におけるデファクトスタンダードとなっているコードフォーマッタ。
+
+## Prettierの環境を作る
+
+
+ESLintの環境に Prettier を加えるのに必要なパッケージは次の2つ。
+
+- prettier
+  - 本体
+- eslint-config-prettier
+  - Prettier と競合する可能性のあるESLintのルールを無効にする共有設定
+
+### 必要なパッケージのインストール
+
+```zsh
+yarn add -D prettier eslint-config-prettier
+```
+
+### `.eslintrc.js` の編集
+
+`extends` に `prettier` を加える。
+他と競合するルール設定を上書きするものなので、eslint-config-prettier を書くのは一番最後にすること。
+
+```js
+  extends: [
+    // ...
++   "prettier",
+  ],
+```
+
+### `prettierrc` の編集
+
+Prettier用の設定を記述。
+1行の文字数やインデントなどのスタイル設定値を個々に記述する。
+
+指定したもの以外はデフォルト値が設定される。
+詳細 : [Options · Prettier](https://prettier.io/docs/en/options.html)
+
+```js
+{
+  "singleQuote": true,
+  "trailingComma": "all",
+  "endOfLine": "auto"
+}
+```
+
+### ESLint と Prettier 間でルールの競合がないか確認
+
+次のような出力なら問題なし。
+
+```zsh
+$ npx eslint-config-prettier 'src/**/*.{js,jsx,ts,tsx}'
+No rules that are unnecessary or conflict with Prettier were found.
+```
+
+衝突がある場合次のような出力になる。
+
+```zhs
+The following rules are unnecessary or might conflict with Prettier:
+- @typescript-eslint/indent
+- @typescript-eslint/no-extra-semi
+```
+
+この場合は `@typescript-eslint/indent` の設定が不要だということなので、 `eslintrc.js` からそれを削除する。
+
+### `package.json` の `scripts` 編集
+
+- `fix` : Prettierによるフォーマット + ESLint による fix の実行
+- `format` : Prettierによるフォーマットの実行
+- `lint:conflict` : ESLint / Prettier 間で設定の衝突がないか確認
+
+```json
+  "scripts": {
+    ︙
+    "eject": "react-scripts eject",
+    "fix": "npm run -s format && npm run -s lint:fix",
+    "format": "prettier --write --loglevel=warn 'src/**/*.{js,jsx,ts,tsx,gql,graphql,json}'",
+    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:conflict": "eslint-config-prettier 'src/**/*.{js,jsx,ts,tsx}'",
+    "preinstall": "typesync || :"
+  },
+```
+
+### VSCode : `settings.json` の編集
+
+`settings.json` に `editor.formatOnSave` と `editor.defaultFormatter` を追加。
+
+```json
+    "[javascript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[javascriptreact]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[typescript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[typescriptreact]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[graphql]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+    "[json]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+```
