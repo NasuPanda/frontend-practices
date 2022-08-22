@@ -44,7 +44,7 @@ props とはコンポーネントにとっての引数のようなもの。prope
 より安全にコーディングするには、子要素をいじっているコンポーネントなのかどうか型で明記されていた方が良い、ということで、現在子要素をいじらない関数コンポーネントの型定義には `VFC` を使うことがコミュニティで推奨されている。
 
 これは TypeScript の話なので一般の開発者には理由がわかりにくい。
-こういった話は [React TypeScript Cheatsheets | React TypeScript Cheatsheets](https://react-typescript-cheatsheet.netlify.app/) に載っている。
+こういった話は [React TypeScript Cheatsheets](https://react-typescript-cheatsheet.netlify.app/) に載っている。
 TypeScript で React を使うにはかなり参考になるドキュメントの上、頻繁にアップデートが掛けられていてトレンドもわかるので、とりあえず参照しておくと良い。
 
 ### `Props` の型定義
@@ -349,3 +349,46 @@ reset = (): void => {
     this.setState((state) => ({ count: state.count + 1 }));
   };
 ```
+
+# 8-4. コンポーネントのライフサイクル
+
+コンポーネントにおけるライフサイクルとは、まずマウントして初期化され、レンダリングされた後、何らかのきっかけで再レンダリングされ、最後にアンマウントされるまでの過程を言う。
+アプリケーションの実行中、コンポーネントは何度も再レンダリングされることがあるので「サイクル」という言葉がよく合う。
+
+なぜライフサイクルという明示的な概念がコンポーネントに必要なのかと言うと、コンポーネントベースアーキテクチャのアプリケーションでは各コンポーネントのライフサイクルにおける任意のフェーズに処理を登録しておき、そのタイミングで実行したいことがよくあるため。
+フェーズは以下の4つ。
+
+- **Mounting** : コンポーネントが初期化され、仮想DOMにマウントされるまでのフェーズ。
+- **Updating** : 差分検出処理エンジンが変更を検知してコンポーネントが再レンダリングされるフェーズ。
+  - 変更 = props / state の変更
+- **Unmounting** : コンポーネントが仮想DOMから削除されるフェーズ。
+- **Error Handling** : 子孫コンポーネントのエラーを検知、補足するフェーズ。
+
+## Mounting
+
+`componentDidMount(): void` コンポーネントがマウントされた直後に呼ばれる。
+
+## Updating
+
+`shouldComponentUpdates(nextProps, nextState): boolean` 変更を検知してから再レンダリング処理の前に呼ばれ、 `false` を返すことで再レンダリングを中止できる。
+
+`componentDidUpdate(prevProps, prevState, snapshot?): void` 再レンダリングの完了直後に呼ばれる。
+
+`getSnapShotBeforeUpdate (nextProps, nextState): SnapShot | null` 再レンダリングの内容がDOMに反映される直前に呼ばれ、返り値でスナップショットを撮っておき、それを `componentDidUpdate` に渡すことが出来る。
+
+## Unmounting
+
+`componentWillUnmount(): void` コンポーネントがアンマウントされて破棄される直前に呼ばれる。
+
+![lifecycle](../../images/b2e053f0000af45c2599e61a9b2c761cc1501e98459b3020b98cf554c678fe07.png)
+
+イメージ図 : https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/
+
+## 16.2系 以前と以後の違い
+
+16.2 系までは componentWillMount, componentWillReceiveProps, componentWillUpdate というライフサイクルメソッドがあった。
+これらはレンダリングの直前に実行されるメソッド。
+バージョン17から有効化された、最適化された完全非同期なレンダリングと相性が悪く副作用を生みやすいので、16.3以降は公式から非推奨にされ、名前にも `UNSAFE_` というプレフィックスがついている。
+
+## サンプルコード
+
