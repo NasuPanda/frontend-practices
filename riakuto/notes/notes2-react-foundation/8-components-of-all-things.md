@@ -102,3 +102,250 @@ props から `school` と `characters` を抽出する分割代入の処理を�
 この関数は値を1つ返すだけなので、 `return` 文を省略出来る。
 
 なお、 props が無い場合はからオブジェクトを渡して `FC<{}>` とするのが正しい。が、定義の方で `{}` がデフォルト値として設定されているので省略出来る。
+
+# 8-3. クラスコンポーネントで学ぶ state
+
+## クラスコンポーネントの基本
+
+現在では非推奨となったクラスコンポーネントだが、歴史的経緯から既存のコードはクラスコンポーネントで書かれている事が多い。
+そのため、ある程度は読めたほうが良い。
+
+```tsx
+import React, { Component, ReactElement } from 'react';
+import CharacterList, { Character } from './CharacterList';
+import './App.css';
+
+class App extends Component {
+  characters: Character[] = [
+    {
+      id: 1,
+      name: '桜木花道',
+      grade: 1,
+      height: 189.2,
+    },
+    {
+      id: 2,
+      name: '流川 楓',
+      grade: 1,
+      height: 187,
+    },
+    {
+      id: 3,
+      name: '宮城リョータ',
+      grade: 2,
+      height: 168,
+    },
+    {
+      id: 4,
+      name: '三井 寿',
+      grade: 3,
+    },
+    {
+      id: 5,
+      name: '赤木剛憲',
+      grade: 3,
+      height: 197,
+    },
+  ];
+
+  render(): ReactElement {
+    return (
+      <div className="container">
+        <header>
+          <h1>SLAM DUNK 登場人物</h1>
+        </header>
+        <CharacterList school="湘北高校" characters={this.characters} />
+      </div>
+    );
+  }
+}
+
+export default App;
+```
+
+- クラスコンポーネントは `Component` を継承したクラス。
+- props に相当する値 (上では `characters` ) がメンバ変数になる。
+- 関数コンポーネントはそれ自体が返す値がレンダリング対象になっているのに対して、クラスコンポーネントでは `render` の戻り値がレンダリング対象になる。
+
+```tsx
+class CharacterList extends Component<Props> {
+  render(): ReactElement {
+    const { school, characters } = this.props;
+
+    return (
+      <>
+        <Header as="h2">{school}</Header>
+        <Item.Group>
+          {characters.map((character) => (
+            <Item key={character.id}>
+              <Icon name="user circle" size="huge" />
+              <Item.Content>
+                <Item.Header>{character.name}</Item.Header>
+                <Item.Meta>{character.grade}年生</Item.Meta>
+                <Item.Meta>
+                  {character.height ?? '???'}
+                  cm
+                </Item.Meta>
+              </Item.Content>
+            </Item>
+          ))}
+        </Item.Group>
+      </>
+    );
+  }
+}
+
+export default CharacterList;
+```
+
+- props の型定義は `Component<Props>` のようにジェネリクスによる型引数で行う。
+- 渡された props へのアクセスはメンバ変数 `props` から行う。
+
+## クラスコンポーネントに state をもたせる
+
+```tsx
+import React, { Component, ReactElement } from 'react';
+import { Button, Card, Statistic } from 'semantic-ui-react';
+import './App.css';
+
+type State = {
+  count: number;
+};
+
+class App extends Component<unknown, State> {
+  constructor(props: unknown) {
+    super(props);
+    this.state = { count: 0 };
+  }
+
+  reset(): void {
+    this.setState({ count: 0 });
+  }
+
+  increment(): void {
+    this.setState((state) => ({ count: state.count + 1 }));
+  }
+
+  render(): ReactElement {
+    const { count } = this.state;
+
+    return (
+      <div className="container">
+        <header>
+          <h1>カウンター</h1>
+        </header>
+        <Card>
+          <Statistic className="number-board">
+            <Statistic.Label>count</Statistic.Label>
+            <Statistic.Value>{count}</Statistic.Value>
+          </Statistic>
+          <Card.Content>
+            <div className="ui two buttons">
+              <Button color="red" onClick={() => this.reset()}>
+                Reset
+              </Button>
+              <Button color="green" onClick={() => this.increment()}>
+                +1
+              </Button>
+            </div>
+          </Card.Content>
+        </Card>
+      </div>
+    );
+  }
+}
+
+export default App;
+```
+
+### state を持つ場合のコンポーネントの引数
+
+`Component<unknown, State>` のように `State` を渡している。
+第1引数は props の型。このコンポーネントには props が存在しないので `unknown` を渡している。
+デフォルト値は `{}` だが、TypeScriptの解釈では「null 以外のあらゆるオブジェクト」として解釈されてしまうため、使用が禁じられている。
+そのため、プロパティを持てないオブジェクトの方である `unknown` がここではふさわしい。
+
+### state の初期化
+
+state の初期化にはコンストラクタが必要。
+お約束としてスーパークラスに props を渡すことを忘れないこと。
+大事なのは `this.state` に値を設定しているところ。そして、`this.state` の値を直接書き換えて良いのはコンストラクタ内だけであること。
+それ以外の場所から値を変更するには、 `setState` メソッドを使う必要がある。
+
+### `setState` メソッド
+
+引数には2種類の値が設定できる。
+
+- state 内の変更したい要素名をキー、値をその値としたオブジェクト
+  - e.g. `{count}`
+- `(prevState, props?) => newState` 形式の、以前の state (必要なら props も) を引数として受け取って新しい state を返す関数
+  - e.g. `(state, props) => ({foo: state.foo + props.bar})`
+
+### React がサポートするイベント
+
+`Button` タグのところ ( `<Button color="red" onClick={() => this.reset()}>` ) では `onClick` イベントハンドラを設定している。
+
+`onDbClick` が `onDoubleClick` になっているなど、純正JSのイベントハンドラとは若干異なる。
+詳細 : [合成イベント (SyntheticEvent) – React](https://ja.reactjs.org/docs/events.html#supported-events)
+
+### state による単方向データフロー
+
+`Button` コンポーネントの `onClick` に設定した `() => this.increment()` は、親コンポーネントである `App` の state 内の `count` をひとつ加算する関数。
+これにより、子コンポーネント `Button` が親コンポーネント `App` の値をさかのぼって直接書き換えること無く、単方向データフローを保ったまま、コールバック関数を介して値を変更している。
+
+### `this` の挙動
+
+`onClick` に渡していた無名関数を以下のように書き換えると、「this.setState is not a function」というエラーが出る。
+
+```tsx
+<Button>
+- <Button color="green" onClick={() => this.increment()}>
++ <Button color="green" onClick={this.increment}>
+    +1
+</Button>
+```
+
+これは、JavaScriptの不可解な `this` の挙動によるもの。
+`increment` はアロー関数ではなく従来型の関数定義なので、その内部で記述した `this` は実行時のオブジェクト、つまり `App` ではなく `Button` になってしまう。
+
+そこで、定義をアロー関数に書き換えてみると正常に動く。
+
+```tsx
+// before
+  reset(): void {
+    this.setState({ count: 0 });
+  }
+
+  increment(): void {
+    this.setState((state) => ({ count: state.count + 1 }));
+  }
+
+// after
+reset = (): void => {
+    this.setState({ count: 0 });
+  }
+
+  increment = (): void => {
+    this.setState((state) => ({ count: state.count + 1 }));
+  }
+```
+
+###  イベントハンドラを省略しない書き方
+
+`e: SyntheticEvent` は、Reactが提供している `SyntheticEvent` という型で定義されるイベントオブジェクト。
+
+`e.preventDefault` はデフォルトの挙動を抑制する。
+例えば `<a>` 要素だとクリックでページ移動が起きてしまうので、それをキャンセルするために必要な場合もある。
+他にも `<select>` 要素で選択した値を受け取りたい場合、 `onChange` 値に設定した関数内で `e.target.value` にアクセスすれば参照出来る。
+
+```tsx
+  reset = (e: SyntheticEvent) => {
+    e.preventDefault();
+    this.setState({ count: 0 });
+  };
+
+  increment = (e: SyntheticEvent) => {
+    e.preventDefault();
+    this.setState((state) => ({ count: state.count + 1 }));
+  };
+```
