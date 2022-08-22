@@ -390,5 +390,36 @@ reset = (): void => {
 これらはレンダリングの直前に実行されるメソッド。
 バージョン17から有効化された、最適化された完全非同期なレンダリングと相性が悪く副作用を生みやすいので、16.3以降は公式から非推奨にされ、名前にも `UNSAFE_` というプレフィックスがついている。
 
-## サンプルコード
+# 8-5. Presentational Component と Container Component
+
+## Presentational and Container Components というデザインパターン
+
+一つのコンポーネントを Presentational Component と Container Component に分割しようと言うデザインパターンがある。
+
+presentational は「表現に関する」の名前の通り、純粋に見た目だけを責務とするコンポーネント。
+container は presentational をコンテナのごとく抱合してロジックを追加するためのコンポーネント。
+
+紹介元 : [Presentational and Container Components | by Dan Abramov | Medium](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)
+
+コンポーネントベースアーキテクチャの思想としてはデザインとロジックを閉じ込めたコンポーネントを組み合わせてアプリケーションを作る。
+
+ただ、プロジェクトの継続的な運用を考えると、個々のコンポーネントを見た目だけのコンポーネントとそれにロジックを追加するコンポーネントに分割しておくことは有益。
+ロジックから独立して見た目だけを責務としたコンポーネントを分離しておけば、それらをスタイルガイドに登録してデザインの運用に活用できる。
+そうすることで既にどんな見た目のコンポーネントがあるか調べやすい上、再利用性も高まる。
+
+## React の流儀 (Thinking in React)
+
+React公式ドキュメントの [React の流儀 – React](https://ja.reactjs.org/docs/thinking-in-react.html) という章で、公式が推奨するコンポーネントの正しい作り方が説明されている。
+
+1. デザインモックからはじめ、そのUIをコンポーネントの構造に分解して落とし込む
+2. ロジックを除外した、静的に動作するバージョンを作成する
+3. UIを表現するために最低限必要な「状態」を特定する
+4. 3 の状態をどこに配置すべきか決める
+5. 階層構造をさかのぼって考え、データが上流から流れてくるようにする
+
+↑のデザインパターンを使うことで、 presentational は 1~2 、 container は 3~5 を意識して設計することになり、Reactの流儀に従ったコンポーネントを作ることに自然とつながる。
+
+## presentational / container の関心事
+
+![presentational-vs-container](../../images/3c742fba53a9c330c65f1bf9cab01bb9df98d682533aca88a4e5e56e34882dd5.png)
 
