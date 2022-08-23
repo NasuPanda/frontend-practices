@@ -59,3 +59,108 @@ React にとっての理想のコンポーネントは純粋関数であるは�
 
 コンポーネントに外から状態やロジックを紐付ける、つまり「引っ掛けて」おく仕組みを提供するというニュアンス。
 引っ掛けておけば、後は React が然るべきタイミングで然るべき処理をしてくれるので、 React らしい宣言的な手法と言える。
+
+# 9-2. Hooks で state を扱う
+
+## State Hook の基礎
+
+まずは Hooks で state を使う方法から。
+これは **State Hook** と言い、クラスコンポーネントの `state` に相当するものを関数コンポーネントでも使えるようにする機能。
+
+```jsx
+const [count, setCount] = useState(0);
+setCount(100);
+setCount(prevCount => prevCount + 1);
+```
+
+`useState(initialValue)` は返り値として `state` 変数とその `state` 更新関数をタプルとして返す。
+そのため、上のように分割代入で受け取る。
+
+クラスコンポーネントと異なる点は、 `useState` ではプロパティを特定する必要がなく、 state 変数・state 更新関数がそれぞれ独立している点。
+
+## TypeScriptで `useState` を使う時の注意点
+
+**state の型が推論出来るかどうか** という点に注意する必要がある。
+`number` や `string` などの型であれば引数を型推論してくれる。
+
+しかし、例えば外部APIにリクエストしてユーザ情報を取得、そのオブジェクトを state に入れるような場合は、明示的に型引数を渡してやる必要がある。
+
+```tsx
+const [author, setAuthor] = useState<User>();
+const [articles, setArticles] = useState<Article[]>([]);
+```
+
+最初の例は `User` というオブジェクト型を型引数として渡し、引数には何も渡していない。
+こうすると `author` は `User` オブジェクトを格納できる、初期値 `undefined` の state 変数になる。
+
+次の例は、初期値を渡しながらも型推論が使えない場合の書き方。
+`Article[]` にしたくて、初期値は `[]`空配列 にしたい場合。
+
+## サンプルコード: カウンター
+
+```tsx
+import React, { FC, useState } from 'react';
+import { Button, Card, Statistic } from 'semantic-ui-react';
+import './Counter.css';
+
+const Counter: FC = () => {
+  const [count, setCount] = useState(0);
+  const reset = () => setCount(0);
+  const increment = () => setCount((c) => c + 1);
+
+  return (
+    <Card>
+      <Statistic className="number-board">
+        <Statistic.Label>count</Statistic.Label>
+        <Statistic.Value>{count}</Statistic.Value>
+      </Statistic>
+      <Card.Content>
+        <div className="ui two buttons">
+          <Button color="red" onClick={reset}>
+            Reset
+          </Button>
+          <Button color="green" onClick={increment}>
+            +1
+          </Button>
+        </div>
+      </Card.Content>
+    </Card>
+  );
+};
+
+export default Counter;
+```
+
+## 制限事項
+
+### state 変数がレンダリングごとに一定
+
+次のコードは、直感的にはどちらも `count` が `3` 加算されるように思える、
+
+```jsx
+const plusThreeDirectly = () => [0, 1, 2].forEach((_) => setCount(count + 1));
+const plusThreeWithFunction = () => [0, 1, 2].forEach((_) => setCount((c) => c + 1));
+```
+
+しかし、実際には前者の `plusThreeDirectly` は `1` しか加算されない。
+
+なぜなら、 **state 変数はコンポーネントのレンダリングごとで一定だから**。
+`plusTheeDirectly` はそのレンダリング時点での `count` が `0` だった場合、それを `1` に上書きする処理を3回繰り返すことになる。
+
+そのため、必ず `setState((prevState) => prevState + 1);` のように書くべき。
+
+### Hooks の呼び出しは論理階層のトップレベルでなければならない
+
+以下のように、条件文や繰り返し処理の中で呼び出してはいけない。
+これは Hooks の実装に起因するもの。
+
+```jsx
+const Counter: VFC<{max: number}> = ({max}) => {
+  const [count, setCount] = useState(0);
+
+  if (count >= max) {
+    const [isExceeded, setIsExceeded] = useState(true);
+    doSomething(...);
+  }
+}
+```
