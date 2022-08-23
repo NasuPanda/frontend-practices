@@ -353,3 +353,277 @@ export default Timer;
 
 [useEffect完全ガイド — Overreacted](https://overreacted.io/ja/a-complete-guide-to-useeffect/)
 
+# 8-4. Hooks におけるメモ化
+
+## メモ化とは
+
+関数型プログラミングの文脈でよく用いられる手法。
+関数内における任意のサブルーチンを呼び出した結果を後で再利用するために保持しておき、その関数が呼び出される度に再計算されることを防ぐ、プログラム高速化の手法のこと。
+
+## `useMemo`
+
+次のような関数の計算結果をメモ化する。
+
+```tsx
+export const getPrimes = (maxRange: number): number[] =>
+  [...Array(maxRange + 1).keys()].slice(2).filter((n) => {
+    for (let i = 2; i < n; i += 1) {
+      if (n % i === 0) return false;
+    }
+
+    return true;
+  });
+```
+
+```tsx
+import React, { FC, useEffect, useMemo, useState } from 'react';
+import { Button, Card, Icon, Statistic } from 'semantic-ui-react';
+import { getPrimes } from 'utils/math-tool';
+import './Timer.css';
+
+type TimerProps = {
+  limit: number;
+};
+
+const Timer: FC<TimerProps> = ({ limit }) => {
+  const [timeLeft, setTimeLeft] = useState(limit);
+  // メモ化
+  const primes = useMemo(() => getPrimes(limit), [limit]);
+  const reset = () => setTimeLeft(limit);
+  const tick = () => setTimeLeft((t) => t - 1);
+
+  useEffect(() => {
+    const timerId = setInterval(tick, 1000);
+
+    return () => clearInterval(timerId);
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft === 0) setTimeLeft(limit);
+  }, [timeLeft, limit]);
+
+  return (
+    <Card>
+      <Statistic className="number-board">
+        <Statistic.Label>time</Statistic.Label>
+        <Statistic.Value
+          className={primes.includes(timeLeft) ? 'prime-number' : undefined}
+        >
+          {timeLeft}
+        </Statistic.Value>
+      </Statistic>
+      <Card.Content>
+        <Button color="red" fluid onClick={reset}>
+          <Icon name="redo" />
+          Reset
+        </Button>
+      </Card.Content>
+    </Card>
+  );
+};
+
+export default Timer;
+```
+
+`useMemo` の第1引数に実行したい関数、第2引数にその依存配列を渡す。
+ここでは `limit` が変わったときだけ再計算すればいいので、依存配列に `limit` を入れている。
+
+## `useCallback`
+
+`useEffect` に次のような変更を加えてみる。
+
+```tsx
+  useEffect(() => {
+  - if (timeLeft === 0) setTimeLeft(limit);
+  + if (timeLeft === 0) reset();
+  }, [timeLeft, reset]);
+```
+
+すると、「useEffect Hook における reset 関数への依存がレンダリングごとに変わってしまい ます。これを修正するには、reset の定義を useCallback() にラップしてください」というエラーが出る。
+
+これは、関数のアドレスが違う事による。
+関数は、値が同じなら同一のものをみなされるプリミティブ型の変数と異なり、内容が同じであっても定義ごとに指しているメモリアドレスが異なる。
+そのため、比較では別物と判断される。
+
+そのため、 `useEffect` の依存配列に `reset` 関数を入れるのは、毎回のレンダリングで第1引数の関数を実行することと等しい。
+
+そこで、 `useCallback` を使う。
+これは、関数定義そのものをメモ化するためのもの。
+
+```tsx
+- const reset = () => setTimeLeft(limit);
++ const reset = useCallback(() => setTimeLeft(limit), [limit]);
+```
+
+こうすることで、 props である `limit` が変わったときだけ、 `reset` 関数が再定義されるようになる。
+
+このように、メモ化はパフォーマンスの最適化以外に、依存関係を適切化して不要な再レンダリングを避けるためにも用いられる事がある。
+
+## `useRef`
+
+本来はリアルDOMへの参照に用いる **refオブジェクト** を生成するために使う。
+
+```tsx
+import React, { FC, SyntheticEvent, useEffect, useRef } from 'react';
+
+const TextInput: FC = () => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const handleClick = (e: SyntheticEvent): void => {
+    e.preventDefault();
+    // eslint-disable-next-line no-alert
+    if (inputRef.current) alert(inputRef.current.value);
+  };
+  useEffect(() => {
+    if (inputRef.current) inputRef.current.focus();
+  }, []);
+
+  return (
+    <>
+      <input ref={inputRef} type="text" />
+      <button onClick={handleClick} type="button">
+        Click
+      </button>
+    </>
+  );
+};
+
+export default TextInput;
+```
+
+`useRef` で生成した ref オブジェクト `inputRef` を JSX の `<input>` 要素の `ref` 属性に代入している。
+こうすることで、 `<input>` のリアルDOMのノードが `inputRef.current` で参照出来るようになる。
+
+`useRef` により、あらゆる書き換え可能な値を保持しておくことが出来る。
+
+state との違いは、再レンダリングが発生しない点。
+再レンダリングを伴わずに何らかのデータを関数コンポーネントで保持しておきたいケースでは `useRef` を使う。
+
+### 具体例
+
+次のサンプルコードを参照。
+
+```tsx
+import React, { FC, useEffect, useMemo, useState } from 'react';
+import { Button, Card, Icon, Statistic } from 'semantic-ui-react';
+import { getPrimes } from 'utils/math-tool';
+import './Timer.css';
+
+type TimerProps = {
+  limit: number;
+};
+
+const Timer: FC<TimerProps> = ({ limit }) => {
+  const [timeLeft, setTimeLeft] = useState(limit);
+  const primes = useMemo(() => getPrimes(limit), [limit]);
+  const reset = () => setTimeLeft(limit);
+
+  const tick = () => setTimeLeft((t) => t - 1);
+
+  useEffect(() => {
+    const timerId = setInterval(tick, 1000);
+
+    return () => clearInterval(timerId);
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft === 0) reset();
+  }, [timeLeft, reset]);
+
+  return (
+    <Card>
+      <Statistic className="number-board">
+        <Statistic.Label>time</Statistic.Label>
+        <Statistic.Value
+          className={primes.includes(timeLeft) ? 'prime-number' : undefined}
+        >
+          {timeLeft}
+        </Statistic.Value>
+      </Statistic>
+      <Card.Content>
+        <Button color="red" fluid onClick={reset}>
+          <Icon name="redo" />
+          Reset
+        </Button>
+      </Card.Content>
+    </Card>
+  );
+};
+
+export default Timer;
+```
+
+問題点として、 props の `limit` が変更された場合には新しい `limit` でタイマーが初期化されるべきだが、それがない。
+そのため、1つ目の `useEffect` の依存配列に `limit` を入れて上げる必要がある。
+
+ただし、そうすると `limit` が変わる度に `setInterval` が呼ばれ、タイマーの挙動がおかしくなってしまう。
+
+そこで、残り時間をリセットした上で以前のカウントダウンタスクをクリアする必要がある。
+そのため、 `useRef` を使ってタイマーIDを保持しておき、 `limit` が変更されたらそのIDでクリア処理を行う。
+
+```tsx
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { Button, Card, Icon, Statistic } from 'semantic-ui-react';
+import { getPrimes } from 'utils/math-tool';
+import './Timer.css';
+
+const Timer: FC<{ limit: number }> = ({ limit }) => {
+  const [timeLeft, setTimeLeft] = useState(limit);
+  const primes = useMemo(() => getPrimes(limit), [limit]);
+  const timerId = useRef<NodeJS.Timeout>();
+  const reset = useCallback(() => setTimeLeft(limit), [limit]);
+  const tick = () => setTimeLeft((t) => t - 1);
+
+  useEffect(() => {
+    const clearTimer = () => {
+      if (timerId.current) clearInterval(timerId.current);
+    };
+
+    reset();
+    clearTimer();
+    timerId.current = setInterval(tick, 1000);
+
+    return clearTimer;
+  }, [limit, reset]);
+
+  useEffect(() => {
+    if (timeLeft === 0) reset();
+  }, [timeLeft, reset]);
+
+  return (
+    <Card>
+      <Statistic className="number-board">
+        <Statistic.Label>time</Statistic.Label>
+        <Statistic.Value
+          className={primes.includes(timeLeft) ? 'prime-number' : undefined}
+        >
+          {timeLeft}
+        </Statistic.Value>
+      </Statistic>
+      <Card.Content>
+        <Button color="red" fluid onClick={reset}>
+          <Icon name="redo" />
+          Reset
+        </Button>
+      </Card.Content>
+    </Card>
+  );
+};
+
+export default Timer;
+```
+
+`useRef` により `timerId` にタイマーIDを保持。
+
+`useEffect` 内の処理は `limit` / `reset` が変更されたときに実行され、
+`timerId` に値があればそれを使って `clearInterval` を呼び出し、カウントダウンのリセット、 `timerId` の初期化等を行う。
+
+## 学習リソース
+
+[フックに関するよくある質問 – React](https://ja.reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies)
