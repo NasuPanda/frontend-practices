@@ -164,3 +164,117 @@ const Counter: VFC<{max: number}> = ({max}) => {
   }
 }
 ```
+
+# 9-3. Hooks で副作用を扱う
+
+## 副作用の概要
+
+副作用を扱う Hooks API を **Effect Hook** という。
+
+コンポーネントの副作用とは何か。
+具体例を示すと、ネットワークを介したデータの取得やそのリアクティブな購読、ログの記録、リアルDOMの手動での書き換えなど。
+
+副作用は英語では *side-effect* 、 または単に *effect* と呼ばれる。
+もともとは関数型プログラミングの文脈で用いられる用語で、React でもその意味で使われている。
+
+React における副作用とは、コンポーネントの状態を変化させ、それ以降の出力を変えてしまう処理のこと。
+
+React におけるコンポーネントとは、状態を持った関数のようなもの。
+関数 *y = f(x)* は本来なら 参照透過性が保たれているが、状態を抱える関数は必ずともそうとは限らない。
+例えば、 f(x) は 2 を返していたのがある処理を実行することで、それ以降は 4 を返すようになる、といった具合に。これが副作用。
+
+Hooks が適用されるコンポーネントは関数コンポーネント。
+Effect Hook とは、 props が同一でもその関数コンポーネントの出力内容を変えてしまうような処理をレンダリングのタイミングに同期させて実行するための Hooks API のこと。
+
+## Effect Hook の使い方
+
+```tsx
+const SampleComponent: VFC = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    doSomething();
+
+    return () => clearSomething();
+  }, [someDeps]);
+};
+```
+
+`useEffect` は第1引数として、引数を持たない関数を受け取る。この関数の中身が任意のタイミングで実行されるもの。
+ここでは省略されているが、一般的には何らかの処理の結果、そのコンポーネントの sate 変数を書き換えたりする。
+
+そして、 `useEffect` に引数として渡された関数が `clearSomething` 関数を返している。
+
+このようにして、第1引数として渡す関数が任意の引数を返すようになっていると、そのコンポーネントがアンマウントされる時にその返り値の関数を実行してくれる。
+アンマウント時に実行したい処理が特に無ければ何も返さなくていい。
+
+具体例: 外部のAPIからリアクティブにデータを購読していた場合、その購読を解除する。
+
+***
+
+`useEffect` は第2引数として、変数の配列を渡せるようになっている。
+
+この配列の中に格納された変数が一つでも前のレンダリング時と比較して差分があったときだけ、第1引数の関数が実行される。
+この第2引数のことを **依存配列 (dependencies array)** とも言う。
+
+省略した場合、レンダリングごとに第1引数の関数が実行される。
+一方 空配列 `[]` を渡すと、初回レンダリング時のみ第1引数の関数が実行される。
+
+### サンプルコード: タイマー
+
+```tsx
+import React, { FC, useEffect, useState } from 'react';
+import { Button, Card, Icon, Statistic } from 'semantic-ui-react';
+import './Timer.css';
+
+const Timer: FC<{ limit: number }> = ({ limit }) => {
+  const [timeLeft, setTimeLeft] = useState(limit);
+  const reset = (): void => setTimeLeft(limit);
+  const tick = (): void => setTimeLeft((t) => t - 1);
+
+  useEffect(() => {
+    const timerId = setInterval(tick, 1000);
+
+    return () => clearInterval(timerId);
+  }, []);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (timeLeft === 0) setTimeLeft(limit);
+  }, [timeLeft, limit]);
+
+  return (
+    <Card>
+      <Statistic className="number-board">
+        <Statistic.Label>time</Statistic.Label>
+        <Statistic.Value>{timeLeft}</Statistic.Value>
+      </Statistic>
+      <Card.Content>
+        <Button color="red" fluid onClick={reset}>
+          <Icon name="redo" />
+          Reset
+        </Button>
+      </Card.Content>
+    </Card>
+  );
+};
+
+export default Timer;
+```
+
+`useState` で `timeLeft` 変数と `setTimeLeft` 関数を定義。
+`timeLeft` に `props` から受け取った `limit` を渡すことで値を初期化。
+
+1つ目の `useEffect` では、 `setInterval` により `tick` 関数が1秒毎に実行されるように設定。
+第1引数の関数から `clearInterval` を実行する関数を返すことで、アンマウント時に `clearInterval` を実行する。
+第2引数に空配列を渡しているので、初回のみ実行される。
+
+2つ目の `useEffect` では、 `timeLeft` の値が `0` だったとき、 `setTimeLeft` に `limit` を渡すことで `timeLeft` の値を初期化している。
+なお、第2引数を省略してしまうと、以下のようなエラーが出る。
+
+> error:  React Hook useEffect contains a call to 'setTimeLeft'. Without a list of dependencies, this can lead to an infinite chain of updates. To fix this, pass [timeLeft, limit] as a second argument to the useEffect
+
+ここでは判断材料に `timeLeft` を使っている。また、値の再設定に props である `limit` を使っている。
+
+つまり、この処理は `timeLeft` か `limit` が変更された後でなければ実行する意味がない。
+そのため、依存配列として `[timeLeft, limit]` が必要。
