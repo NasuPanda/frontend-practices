@@ -627,3 +627,171 @@ export default Timer;
 ## 学習リソース
 
 [フックに関するよくある質問 – React](https://ja.reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies)
+
+# 9-5. CustomHookでロジックを分離・再利用する
+
+## Custom Hook
+
+CustomHookとは、Hooks のロジック部分だけを抽出、再利用可能な形にしたもの。
+Custom Hook 関数の頭には「use」を付けること。
+
+どのようなフォーマットで値を返すかは開発者が自由に決められる。
+
+```tsx
+const { timeLeft, isPrime, reset } = useTimer(limit);
+const [timeLeft, isPrime, reset] = useTimer(limit);
+```
+
+### サンプルコード
+
+```tsx
+// Timer.tsx
+
+import React, { FC } from 'react';
+import useTimer from 'hooks/use-timer';
+import { Button, Card, Icon, Statistic } from 'semantic-ui-react';
+import 'components/Timer.css';
+
+const Timer: FC<{ limit: number }> = ({ limit }) => {
+  const [timeLeft, isPrime, reset] = useTimer(limit);
+
+  return (
+    <Card>
+      <Statistic className="number-board">
+        <Statistic.Label>time</Statistic.Label>
+        <Statistic.Value className={isPrime ? 'prime-number' : undefined}>
+          {timeLeft}
+        </Statistic.Value>
+      </Statistic>
+      <Card.Content>
+        <Button color="red" fluid onClick={reset}>
+          <Icon name="redo" />
+          Reset
+        </Button>
+      </Card.Content>
+    </Card>
+  );
+};
+
+export default Timer;
+```
+
+```tsx
+// use-timer.ts
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { getPrimes } from 'utils/math-tool';
+
+const useTimer = (limit: number): [number, boolean, () => void] => {
+  const [timeLeft, setTimeLeft] = useState(limit);
+  const primes = useMemo(() => getPrimes(limit), [limit]);
+  const timerId = useRef<NodeJS.Timeout>();
+  const reset = useCallback(() => setTimeLeft(limit), [limit]);
+  const tick = () => setTimeLeft((t) => t - 1);
+
+  useEffect(() => {
+    const clearTimer = () => {
+      if (timerId.current) clearInterval(timerId.current);
+    };
+
+    reset();
+    clearTimer();
+    timerId.current = setInterval(tick, 1000);
+
+    return clearTimer;
+  }, [limit, reset]);
+
+  useEffect(() => {
+    if (timeLeft === 0) reset();
+  }, [timeLeft, reset]);
+
+  return [timeLeft, primes.includes(timeLeft), reset];
+};
+
+export default useTimer;
+```
+
+### サンプルコード: presentational / container component パターン
+
+上のサンプルコードを presentational /container component のパターンに分けてみる。
+
+```tsx
+// components/Timer.tsx
+
+import React, { FC } from 'react';
+import { Button, Card, Icon, Statistic } from 'semantic-ui-react';
+import './Timer.css';
+
+type Props = {
+  timeLeft?: number;
+  isPrime?: boolean;
+  reset?: () => void;
+};
+
+const Timer: FC<Props> = ({
+  timeLeft = 0,
+  isPrime = false,
+  reset = () => undefined,
+}) => (
+  <Card>
+    <Statistic className="number-board">
+      <Statistic.Label>time</Statistic.Label>
+      <Statistic.Value className={isPrime ? 'prime-number' : undefined}>
+        {timeLeft}
+      </Statistic.Value>
+    </Statistic>
+    <Card.Content>
+      <Button color="red" fluid onClick={reset}>
+        <Icon name="redo" />
+        Reset
+      </Button>
+    </Card.Content>
+  </Card>
+);
+
+export default Timer;
+```
+
+こちらが presentational component の方。
+`limit` はロジックでしか使われない変数なので、無くなっている。
+
+presentational で何を props にすべきかは考えどころだが、シンプルに JSX の中で使われているものだけを抽出すればいい。
+
+次に container component 。
+
+```tsx
+// containers/Timer.tsx
+
+import React, { FC } from 'react';
+import useTimer from 'hooks/use-timer';
+import Timer from 'components/Timer';
+
+const EnhancedTimer: FC<{ limit: number }> = ({ limit }) => {
+  const [timeLeft, isPrime, reset] = useTimer(limit);
+
+  return <Timer timeLeft={timeLeft} isPrime={isPrime} reset={reset} />;
+};
+
+export default EnhancedTimer;
+```
+
+単純に presentational component をインポートしてきて、Custom Hook とつなげているだけ。
+
+そして、最後に `App.tsx` から container component を呼ぶ。
+
+```tsx
+import React, { FC } from 'react';
+import Timer from 'containers/Timer';
+import './App.css';
+
+const App: FC = () => (
+  <div className="container">
+    <header>
+      <h1>タイマー</h1>
+    </header>
+    <Timer limit={60} />
+  </div>
+);
+
+export default App;
+```
