@@ -401,3 +401,86 @@ patty
 - React Router の公式ドキュメント: [React Router: Declarative Routing for React.js](https://v5.reactrouter.com/web/guides/quick-start)
   - ルーティング初心者には難易度が高い上、ボリュームも多い。ただし目は通しておくべき。
   - ユースケースごとのサンプル(ログイン有無でのルーティングの切り分けなど)が載っている。
+
+# 10-4. React Router をアプリケーションで使う
+
+## Atomic Design
+
+`components/` が presentational components, `containers/` が container components 。
+
+```
+├── App.css
+├── App.tsx
+├── components
+│   ├── molecules
+│   │   ├── HomeButton.tsx
+│   │   ├── Spinner.css
+│   │   └── Spinner.tsx
+│   ├── organisms
+│   │   ├── CharactersList.tsx
+│   │   └── SchoolList.tsx
+│   ├── pages
+│   │   ├── Characters.tsx
+│   │   ├── Home.css
+│   │   └── Home.tsx
+│   └── templates
+│       ├── AllCharacters.tsx
+│       └── SchoolCharacters.tsx
+├── containers
+│   ├── molecules
+│   │   └── HomeButton.tsx
+│   ├── organisms
+│   │   └── SchoolList.tsx
+│   └── templates
+│       ├── AllCharacters.tsx
+│       └── SchoolCharacters.tsx
+├── data
+│   └── characters.ts
+├── index.css
+├── index.tsx
+├── react-app-env.d.ts
+├── serviceWorker.ts
+└── setupTests.ts
+```
+
+**Atomic Design** というUIデザイン手法を採用している。
+粒度の小さいものから atoms(原子)、 molecules(分子)、 organisms(有機体)、 templates(テンプレート)、 pages(ページ)という5つのカテゴリーにUIパーツを分けて設計しようというもの。
+
+atoms は これ以上分割出来ないデザインとして最小単位のコンポーネント、具体的には `<Button>` や `<Icon>` 。
+最も大きい単位の pages はルーティングの対象となるページ全体を表現するコンポーネントに相当する。
+
+5つカテゴリーがあるので、どれがどれに相当するのか判断するのが難しい。
+最小単位の atoms と最大単位の pages 以外は絶対的な基準と言えるものはない。
+
+ただし、 molecules は atoms を組み合わせたもの、 organisms は atoms と molecules を組み合わせたもの、といった具合に自分のカテゴリよりも小さい単位を組み合わせて作られるもの、と考えていけばいい。
+
+## React Helmet によるHTMLドキュメントヘッダの書き換え
+
+SPA では意図して書き換えないと常に `public/index.html` に書かれた `<title>` の中身がどのページでもページタイトルになってしまう。
+そこで、 React Helmet というライブラリを使ってどこからでも HTML ドキュメントヘッダを動的に上書きできるようにする。
+
+```tsx
+    <Helmet>
+      <title>登場人物一覧 | {school}</title>
+    </Helmet>
+```
+
+## SPAの注意点: スクロール位置
+
+React Router ではルーティング遷移時にスクロール位置が変わらない。
+
+例えばページネーションされたページで「次」「前」といったリンクがあったとする。
+一番下までスクロールした状態でリンクを踏むと、ページが変わっているのに一番下へスクロールしたままになってしまう。
+
+これに対処するには、例えば `useEffect` を使ってURLに変更があったときに強制的にトップにスクロールさせるといった手法が考えられる。
+
+```tsx
+︙
+const App: FC = () => {
+  const { hash, pathname } = useLocation();
+
+  useEffect(() => {
+    if (!hash) window.scrollTo(0, 0);
+  }, [hash, pathname]);
+︙
+```
