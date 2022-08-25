@@ -45,3 +45,226 @@ React Router は、バージョン5 => 6 にかけてインターフェースを
 現時点ではバージョン5系で開発されたプロダクトの方が多いので、ひとまず5系についても学んでおくべき。
 ただし、今から新しくプロジェクトを始めるとしたら6系を選んでおけば間違いない。
 
+# 10-3. React Router (5系) のAPI
+
+## React Router のインストールと導入
+
+```zsh
+yarn add react-router react-router-dom
+(typesync)
+yarn
+```
+
+React Router を導入するには通常、ルーティング機能を提供するプロバイダコンポーネントをトップレベルで設定する。
+`src/index.tsx` に次のように記述する。
+
+```tsx
+import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+
+ReactDOM.render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>,
+  document.getElementById('root');
+);
+```
+
+`BrowserRouter` というのがそれ。
+
+## ルーティングプロバイダ・コンポーネント
+
+react-router-dom が提供するルーティングプロバイダ・コンポーネントには次の4つがあり、これらは共通してより低レベルの `<Router>` コンポーネントを下敷きにしている。
+通常は `<Router>` をそのまま使うのではなく、ユースケースに合わせてこれらを使い分ける。
+
+- `<BrowserRouter>`
+- `<HashRouter`>
+- `<StaticRouter`>
+- `<MemoryRouter`>
+
+`BrowserRouter` は HTML5 の History API を使ってUIとURLを動的に同期してくれるルータコンポーネント。
+一般的なSPAの開発ではほぼこれ一択といっていい。
+
+`HashRouter` は URL に `#` がつくルーティング機能を提供するもの。
+一時期流行った裏技的な手法で、今これを使う場面はまずない。
+
+`StaticRouter` はサーバサイドレンダリングを導入する際にサーバ側で使う。
+これも直近で使うことはまずない。
+
+`MemoryRouter` はブラウザのアドレスバーのURLが一切替わらず、メモリの中だけで履歴が管理されるもの。
+React Native と組み合わせてテストの際に用いられたりするらしいが、ほぼ使うことはない。
+
+これらルーティングプロバイダコンポーネントが具体的に何をやってくれるかというと、下位層の子孫コンポーネントの中で後に説明するような `<Link>` や `<Redirect>` といった機能タグを使えるようにしてくれたり、 `match` や `location` `history` といったオブジェクトへアクセス出来るようにしてくれたりする。
+
+## React Router のコンポーネントAPI
+
+### `Route` コンポーネント
+
+ルーティングルールを設定する `Route` コンポーネントについて。
+
+```tsx
+import { VFC } from 'react'
+import { Route } from 'react-router';
+import Home from 'components/pages/Home';
+import About from 'components/pages/About';
+import Contact from 'components/pages/Contact';
+
+constApp:VFC=()=>(
+  <>
+    <p>弊社のホームページへようこそ!</p>
+    <Route exact path="/" component={Home} />
+    <Route path="/about">
+      <About />
+    </Route>
+    <Route path="/contact">
+      <Contact destAddress="contact@our-company.com" />
+    </Route>
+</> );
+
+export default App;
+```
+
+URLが `path` の値とマッチするとコンポーネントがレンダリングされる。
+
+`component` 属性として渡したり、子要素として渡したり出来る。
+また、 `props` で `children{Home /}` のようにも書ける。
+
+**公式ドキュメントのサンプルでは子コンポーネントにしていることが圧倒的に多い**。
+
+それぞれの挙動の違い。
+
+子要素にすると `<Home foo={bar} /> ` のように任意の props を設定できる。
+
+`component` 属性で設定した場合、 props を任意の値に設定できない。代わりに `RouteComponentProps` 型のオブジェクトが渡される。
+
+```tsx
+export interface RouteComponentProps<
+  Params extends { [K in keyof Params]?: string } = {},
+  C extends StaticContext = StaticContext,
+  S = H.LocationState
+>
+{
+  history: H.History<S>;
+  location: H.Location<S>;
+  match: match<Params>; staticContext?: C;
+}
+```
+
+こういった React Router が提供する `history` オブジェクトや `location` オブジェクトを props として受け取れる。
+これらは通常Hooks APIでも取得出来るようになっているが、直接 props として受け取ればコードの省略になる。
+
+### `path` 属性のマッチング
+
+- 4系と5系ではつねに `/` から始まる絶対パスを使うこと。
+- マッチングの条件はデフォルトでは前方一致だが、次のboolean型の props を同時に設定すると挙動が変わる。
+  - `exact` : 完全一致
+  - `strict` : 末尾のスラッシュ有無のマッチングを厳密に
+  - `sensitive` : 大文字小文字まで正確にマッチングさせる
+
+### `Switch` コンポーネント
+
+`path` 属性のマッチングでは、例えば `/` への前方一致の場合、 `/`, `/about`, `/contact` のいずれにもマッチしてしまう。
+それでは管理が面倒なので、switch-case文のように使える `<Switch>` コンポーネントが用意されている。
+
+`<Switch>` でくくると、 `<Route>` は `path` が最初にマッチしたところでルーチンを抜けるので挙動を把握しやすくなる。
+
+```tsx
+import { VFC } from 'react'
+import { Route } from 'react-router';
+import Home from 'components/pages/Home';
+import User from 'components/pages/User';
+import NotFound from 'components/pages/NotFound';
+
+constApp:VFC=()=>(
+  <Switch>
+    <Route exact path="/">
+      <Home />
+    </Route>
+    <Route path="/user/:userId">
+      <User />
+    </Route>
+    <Route>
+      <NotFound />
+    </Route>
+</Switch> );
+export default App;
+```
+
+`<NotFound />` のところは `path` 属性を指定していない。switch-case文のdefault節のようなもの。
+
+`:` から始まる文字列( 例の場合 `/user/:userId` )はURLパラメータといい、ここにマッチした文字列はレンダリングされるコンポーネントで `match` オブジェクトから `userId` の値を抽出できる。
+
+例えば `/user/foo` というパスだったら、 `User` コンポーネントで `match.params.userId` に `foo` が格納されることになる。
+パラメータのマッチングには正規表現を適用出来る。`"/user/:userId(foo|bar)"` と書けばこの二択になったり、N桁の数字/英語に限定したり出来る。
+
+### `Redirect` コンポーネント
+
+`<Switch>` 構文の中で `<Route>` と並んでよく使われるのが `<Redirect>` 。
+文字通りリダイレクトを実行してくれるコンポーネント。
+
+```tsx
+import {Redirect, Route, Switch} from 'react-router';
+
+const App: VFC = () => {
+  <Switch>
+    <Route exact path="/" component={Home} />
+    <Redirect from="/user/profile/:userId" to="user/:userId" />
+    <Route  path="user/:userId" component={User} />
+    <Redirect push to="/" />
+  </Switch>
+}
+```
+
+`from` でマッチングして `to` のパスにリダイレクトさせる。
+URLパラメータも引き継げる。
+
+リダイレクトのデフォルトの挙動は HTML5 の HistoryAPI の `replaceState` が適用されるが、 boolean型の props である `push` を指定すれば `pushState` になる。
+
+例えばどこにもマッチしないパス `/nowhere` にアクセスしたとき、最後の `<Redirect>` に `push` の指定があれば `/nowhere` → `/` とそこにアクセスした履歴が残って『戻る』ボタンを押せば また `/nowhere` に来ることになる。
+`push` が指定されてなければ `/nowhere` にアクセスした過去が抹消されて、 `/` で『戻る』ボタンを押せば本来ならもうひとつ前にアクセスしていたページまで戻ることになる。
+
+### `Link` コンポーネント
+
+文字通りリンク機能を提供する `<Link>` コンポーネントについて。
+react-router-dom のパッケージからインポートする。
+
+```tsx
+import { Link } from 'react-router-dom';
+
+  <ul>
+    <li>
+      <Link to="/">トップページ</Link>
+    </li>
+    <li>
+      <Link to="{{
+        pathname: '/contact',
+        search: '?from=here'
+        hash: '#subject',
+        state: { secretCode: '8yUfa9KECH' },
+        }}"> お問い合わせ
+      </Link>
+    </li>
+    <li>
+      <Link to="/anywhere" replace>今ここではないどこか</Link>
+    </li>
+  </ul>
+```
+
+Q. `<a>` タグではだめ？
+A. だめ。
+
+SPAの場合 `<a>` タグを使ってリンクを書くと、そのリンクを踏んだ時点で React Router の管轄外となり、管理していた履歴が全て消えてしまう。Webサーバにリクエストが飛んでSPAのコード全体がリロードされるため。
+そのため、アプリケーション内リンクは全て `Link` で記述すること。
+
+`to` にはパスの文字列または `location` オブジェクトを渡す事ができる。
+`location` オブジェクトならパスの他にクエリパラメータやハッシュも設定でき、ユーザに見せたくない情報を埋め込んでリクエスト先に受け渡すことも出来る。
+アクセス解析などにも使える。
+
+boolean型の属性である `replace` を指定すれば、クリックした時点でそこにいたページの履歴が消えることになる。
+
+## 学習リソース
+
+- React Router の公式ドキュメント: [React Router: Declarative Routing for React.js](https://v5.reactrouter.com/web/guides/quick-start)
+  - ルーティング初心者には難易度が高い上、ボリュームも多い。ただし目は通しておくべき。
+  - ユースケースごとのサンプル(ログイン有無でのルーティングの切り分けなど)が載っている。
