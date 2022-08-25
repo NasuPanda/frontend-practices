@@ -263,6 +263,139 @@ SPAの場合 `<a>` タグを使ってリンクを書くと、そのリンクを�
 
 boolean型の属性である `replace` を指定すれば、クリックした時点でそこにいたページの履歴が消えることになる。
 
+## React Router の Hooks API
+
+React Router の Hooks API を使うと通常のコンポーネントから React Router が提供する `match`, `location`, `history` オブジェクトへアクセスできるようになる。
+
+次の4つがある。
+
+- `useHistory`
+- `useLocation`
+- `useParams`
+- `useRouteMatch`
+
+### `useHistory`
+
+ブラウザ履歴系の機能を使いたい時に使う。
+
+```tsx
+import { VFC } from 'react'
+import { useHistory } from 'react-router-dom'
+
+const historyButtons: VFC = () => {
+  const history = useHistory();
+
+  return (
+    <button type="button" onClick={() => history.goBack()}>
+      戻る
+    </button>
+    <button type="button" onClick={() => history.goForward()}>
+      進む
+    </button>
+    <button type="button" onClick={() => history.push("/")}>
+      トップページへ
+    </button>
+  );
+};
+export default historyButtons;
+```
+
+`useHistory` が返すのは HTML5 の History API が提供する生の `History` オブジェクトではなく、 React Router が独自に定義している `history` オブジェクト。
+
+主な要素は以下の通り。
+
+- `length`...... スタックされている履歴の数
+- `action`...... 直近に実行されたアクションの種類("PUSH","REPLACE","POP")
+- `push(PATH)`...... 引数 PATH で指定したパスに移動するメソッド
+- `replace(PATH)`...... 引数 PATH で指定したパスにリダイレクトするメソッド(現在いるページの 履歴は消える)
+- `goBack()`...... ひとつ前の履歴のページに戻るメソッド
+- `goForward()`...... ひとつ先の履歴のページに進むメソッド
+- `go(N)`...... 引数 N で指定した番号の履歴に移動するメソッド
+
+### `useLocation`
+
+Google Analytics が使えない問題に対応する時など。
+
+```tsx
+import { VFC } from 'react';
+import { Switch, useLocation } from 'react-router-dom';
+import ReactGA from 'react-ga';
+import Home from 'components/pages/Home';
+import User from 'components/pages/User';
+import NotFound from 'components/pages/NotFound';
+
+
+constApp:VFC=()=>{
+  const location = useLocation();
+
+  useEffect(() => {
+    ReactGA.pageview(location.pathname + location.search);
+  }, [location.key]);
+
+  return (
+    <Switch>
+      <Route exact path="/" component={Home} />
+      <Route path="/user/:userId" component={User} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+export default usePageViews;
+```
+
+`location` オブジェクトにはその時点でのURL情報が格納されている。
+例えば `https://exampleapp.com/user/patty?from=user-list#friends` の時は以下のようになる。
+
+```ts
+{
+  pathname: '/user/patty',
+  search: '?from=user-list',
+  hash: '#friends',
+  state: {
+    [secretKey]: '9qWV408Zyr',
+  },
+  key: '1j3qup',
+}
+```
+
+`key` は `location` オブジェクトごとに生成されるユニークな文字列。
+意味合い的にもふさわしいので、ここでは `useEffect` の依存配列に `key` を渡している。
+
+### `useParams` / `useRouteMatch`
+
+React Router が提供する `match` オブジェクトをハンドリングするためのAPI。
+
+次のサンプルコードは、 `useParams`, `useRouteMatch` がそれぞれどのような値を返すのかを示している。
+
+```tsx
+import { VFC } from 'react';
+import { useParams, useRouteMatch } from 'react-router-dom';
+
+const User: VFC = () => {
+  const { userId } = useParams();
+  const match = useRouteMatch();
+
+  // for debug
+  console.log(userId);
+  console.log(match);
+}
+
+
+// Output
+// useParams
+patty
+
+// useRouteMatch
+{
+  path: "/user/:userId",
+  url: "/user/patty",
+  isExact: true,
+  params: {
+    userId: "patty",
+  }
+}
+```
+
 ## 学習リソース
 
 - React Router の公式ドキュメント: [React Router: Declarative Routing for React.js](https://v5.reactrouter.com/web/guides/quick-start)
