@@ -101,7 +101,8 @@ props の型を設定することで、そのコンポーネントを JSX でマ
 props から `school` と `characters` を抽出する分割代入の処理を引数に書いている。
 この関数は値を1つ返すだけなので、 `return` 文を省略出来る。
 
-なお、 props が無い場合はからオブジェクトを渡して `FC<{}>` とするのが正しい。が、定義の方で `{}` がデフォルト値として設定されているので省略出来る。
+なお、 props が無い場合はからオブジェクトを渡して `FC<{}>` とするのが正しい。
+ただし、定義で `{}` がデフォルト値として設定されているので省略出来る。
 
 # 8-3. クラスコンポーネントで学ぶ state
 
@@ -261,6 +262,7 @@ export default App;
 ### state を持つ場合のコンポーネントの引数
 
 `Component<unknown, State>` のように `State` を渡している。
+
 第1引数は props の型。このコンポーネントには props が存在しないので `unknown` を渡している。
 デフォルト値は `{}` だが、TypeScriptの解釈では「null 以外のあらゆるオブジェクト」として解釈されてしまうため、使用が禁じられている。
 そのため、プロパティを持てないオブジェクトの方である `unknown` がここではふさわしい。
@@ -269,6 +271,7 @@ export default App;
 
 state の初期化にはコンストラクタが必要。
 お約束としてスーパークラスに props を渡すことを忘れないこと。
+
 大事なのは `this.state` に値を設定しているところ。そして、`this.state` の値を直接書き換えて良いのはコンストラクタ内だけであること。
 それ以外の場所から値を変更するには、 `setState` メソッドを使う必要がある。
 
@@ -286,7 +289,6 @@ state の初期化にはコンストラクタが必要。
 `Button` タグのところ ( `<Button color="red" onClick={() => this.reset()}>` ) では `onClick` イベントハンドラを設定している。
 
 `onDbClick` が `onDoubleClick` になっているなど、純正JSのイベントハンドラとは若干異なる。
-詳細 : [合成イベント (SyntheticEvent) – React](https://ja.reactjs.org/docs/events.html#supported-events)
 
 ### state による単方向データフロー
 
@@ -349,6 +351,10 @@ reset = (): void => {
     this.setState((state) => ({ count: state.count + 1 }));
   };
 ```
+
+## 学習リソース
+
+[合成イベント (SyntheticEvent) – React](https://ja.reactjs.org/docs/events.html#supported-events)
 
 # 8-4. コンポーネントのライフサイクル
 
@@ -423,3 +429,9 @@ React公式ドキュメントの [React の流儀 – React](https://ja.reactjs.
 
 ![presentational-vs-container](../../images/3c742fba53a9c330c65f1bf9cab01bb9df98d682533aca88a4e5e56e34882dd5.png)
 
+
+## 学習リソース
+
+[React の流儀 – React](https://ja.reactjs.org/docs/thinking-in-react.html)
+
+[Presentational and Container Components | by Dan Abramov | Medium](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)

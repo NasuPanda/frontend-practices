@@ -12,7 +12,7 @@ Webフロントエンド元年と言えるのが2005年。
 Google Mapはマウスのドラッグにより、見る位置を好きなように移動させたり、拡大・縮小させたりといったことがリアルタイムで出来た。
 従来のインターネットの地図サービスは全てサーバーサイドアプリケーションで、移動・拡大しようとすると、静的リンクをクリックしてページ遷移する必要があり、非常にストレスフルだった。
 
-もしもGoogle Mapのようなインタラクティブなことをさせるには Flash などのプラグインを使うしか無かったが、それを HTML/JavaScript だけで実現してしまったことが衝撃的だった。
+Google Mapのようなインタラクティブなことをさせるには Flash などのプラグインを使うしか無かったが、それを HTML/JavaScript だけで実現してしまったことが衝撃的だった。
 それまでJavaScriptはホームページを無意味に飾り付けるための言語だと思われていたが、Google Mapが再評価のきっかけとなった。
 
 当時のGoogle Mapには Ajax(Asynchronous JavaScript + XML) という技術が使われた。
@@ -33,7 +33,7 @@ DOM 操作ライブラリを主軸としながら、確固としたアーキテ�
 
 ### フロントエンド第1世代の HTML / JavaScript の動き
 
-いっぽうこのようなフロントエンドの動向に呼応してか、しばらく安定してた Web や JavaScript の世界においても変化の動きが出てきた。
+いっぽうこのようなフロントエンドの動向に呼応してか、しばらく安定していた Web や JavaScript の世界においても変化の動きが出てきた。
 まず 2008 年に HTML5 のドラフトが発表される。 HTML5 は Adobe の Flash や Microsoft の Silverlight といったプロプライエタリなプラグインとして
 提供されていたリッチなアプリケーションのプラットフォームを置き換えることを目的とし、Web アプリケーションのプラットフォームとしての機能や API を実装するための仕様。
 
@@ -56,8 +56,8 @@ JavaScriptの世界では2008年にGoggleが Chrome の JavaScriptエンジン�
 
 ## Web Components
 
-2011年、Fronteers Conference 2011 において、Google のエンジニ アで Chrome 開発チームのメンバーである Alex Russell が『Web Components and Model Driven Views』というテーマで講演をした。
-その内容は HTML をプログラマブルに拡張し、開発者が自ら作成したカスタムタグを読み込んで使えるようにする Web Components という技術を Web 標準 の仕様として広くブラウザに実装しようと提唱するもの。
+2011年、Fronteers Conference 2011 において、Google のエンジニアで Chrome 開発チームのメンバーである Alex Russell が『Web Components and Model Driven Views』というテーマで講演をした。
+その内容は HTML をプログラマブルに拡張し、開発者が自ら作成したカスタムタグを読み込んで使えるようにする Web Components という技術を Web 標準の仕様として広くブラウザに実装しようと提唱するもの。
 従来用いられていたような、ひとつの長大な HTML と全体に適用されるこれまた長大な CSS をカプセル化された再利用可能なコンポーネントに分割し、それらの組み合わせで Web コンテンツを表現する仕組みを作ろうという提案だった。
 
 これは野心的な提案だったが、ブラウザに実装するにはかなりコストがかかるもの。
@@ -123,10 +123,10 @@ Reactがアプリケーションの設計スタイルとして提示している
 
 ## Just the UI(UIにしか関知しない)
 
-Angular/Vue.jsが「フレームワーク」を謳っているのに対し、Reactは「A JavaScript library for building user interface」と言い続けている。
-実際、React単体でアプリケーションを構築することは難しく、サードーパーティのルーティングライブラリやグローバル状態管理ライブラリを別途導入する必要がある。
+Angular / Vue.js が「フレームワーク」を謳っているのに対し、Reactは一貫して「A JavaScript library for building user interface」と言い続けている。
+実際、 React 単体でアプリケーションを構築することは難しく、サードーパーティのルーティングライブラリやグローバル状態管理ライブラリを別途導入する必要がある。
 
-変化の早い世界では、ワンストップであることは技術の進歩の妨げとなる。
+変化の早い世界では、ワンストップであることは逆に技術の進歩の妨げとなる。
 
 ## Virtual DOM(仮想DOM)
 
@@ -138,11 +138,11 @@ React Elements はコンポーネントを任意の props で呼ぶための実�
 
 ### React development tools
 
-「React development tools」という拡張機能を使うと、仮想DOMを可視化することが出来る。
+「React development tools」というChrome拡張機能を使うと、仮想DOMを可視化することが出来る。
 
 ## One-Way Dataflow(単方向データフロー)
 
-Reactにおける単方向データフローとは、データがコンポーネントツリーを親から子に対して一方向に、 `props` という形をとって流れ落ちる。
+Reactにおける単方向データフローとは、データがコンポーネントツリーを親から子に対して一方向に、 `props` という形をとって流れ落ちること。
 子から親に向かってデータが逆流するということはない。
 
 フォームを実装する際は、各パーツを子として持つ単一の親をまず作成する。
@@ -159,10 +159,10 @@ Reactは設計として本体と仮想DOMを実際のUIにレンダリングす�
 Angularを採用する最大のメリットは、フレームワークとして一通りのものがフルスタックで提供されている点。
 保守性を考えるならAngularはいい選択肢。
 
-Reactの早い進化に付き合うのが難しい人・組織はAngularを採用しがち・・・らしい。
+Reactの早い進化に付き合うのが難しい人・組織はAngularを採用しがち、、らしい。
 
-「[Made with Angular](https://www.madewithangular.com/)」でAngular製のサイトを見ることが出来る。
-ドイツ銀行、デルタ空港、BMW、・・・保守的な大企業に人気。
+「[Made with Angular](https://www.madewithangular.com/)」で Angular 製のサイトを見ることが出来る。
+ドイツ銀行、デルタ空港、BMW、etc...保守的な大企業に人気。
 
 ## Vue.js
 
