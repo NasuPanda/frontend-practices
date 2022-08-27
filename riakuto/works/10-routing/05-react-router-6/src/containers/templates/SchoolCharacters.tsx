@@ -1,14 +1,14 @@
-import React, { FC } from 'react';
+import { VFC } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { parse } from 'query-string';
 
 import SchoolCharacters from 'components/templates/SchoolCharacters';
 import { charactersData } from 'data/characters';
 
-const EnhancedSchoolCharacters: FC = () => {
-  const { schoolCode } = useParams();
+const EnhancedSchoolCharacters: VFC = () => {
+  const { schoolCode = '' } = useParams();
   const { search } = useLocation();
-  const isLoading = !!parse(search)?.loading;
+  const queryParams = new URLSearchParams(search);
+  const isLoading = !!queryParams.get('loading');
   const schoolCodeList = Object.keys(charactersData);
 
   if (schoolCodeList.includes(schoolCode)) {
