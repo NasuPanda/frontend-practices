@@ -484,3 +484,191 @@ const App: FC = () => {
   }, [hash, pathname]);
 ︙
 ```
+
+# 10-5. React Router バージョン 5 から 6 への移行
+
+history が dependencies から外されているので別途インストールが必要。 (りあクト! 第3版の情報なので、変更済の可能性あり)
+
+```zsh
+yarn add react-router@6 react-router-dom@6 history
+```
+
+## v5 => v6 の変更点
+
+### 仕様以外
+
+- TypeScript製になった
+- パッケージ容量が 16.9KB => 7.2KB に
+- React 16.8 以降必須
+
+### 主な変更点
+
+主な変更点を示す。
+
+1. `Switch` の廃止と `Routes` の導入。`<Switch>` はマッチした `<Route>` があり次第、それ以降の評価をせず処理を抜ける。`<Routes>` では最後まで評価した上で、ベストマッチする `<Route>` にルーティングされる。
+2. v4 で消えた nested routes が復活し、それにより一箇所にルーティングルールを集約して記述できるようになった (※ 従来通り子孫コンポーネントへ分散させて記述することも可能)
+3. `<Routes>` 内のすべての `<Route>` および `<Link>` のパスは、相対パスで記述できる (※ 従来通り絶対パスでの記述も可能)
+
+### switch-case的な挙動 => 全ての候補を評価
+
+まず 1 については switch-case 的な挙動ではなく、全ての候補を評価した上でもっともマッチしたものが選択されるようになった。
+`<Switch>` の仕様だと並び順によってマッチするものが変わるので、簡単にマッチングルールが壊れてしまう。
+`<Routes>` なら意味合いによる可読性を優先して並べることが出来る、新規追加・書き換えをしても既存ルールが壊れにくいといったメリットがある。
+
+### nested routes の復活
+
+2 についてはなぜ復活したのか。
+nested routes が作者陣お気に入りの機能だったのが、React way に合わせることを最優先とした結果 v4 で廃止された。
+しかし、 Reach Router での知見 + 現状のReact と nested routes を融和させる目処が立ったため復活させた、と思われる。
+
+```tsx
+// ver5
+constApp:FC=()=>(
+  <Switch>
+    <Route exact path="/"><Home /></Route>
+    <Route path="/users" component="Users" />
+  </Switch>
+);
+const Users: FC<RouteComponentProps> = ({ match }) => (
+  <div>
+    <nav>
+      <Link to={`${match.url}/me`}>My Profile</Link>
+    </nav>
+    <Switch>
+      <Route path={`${match.path}/me`}><SelfProfile /></Route>
+      <Route path={`${match.path}/:id`}><UserProfile /></Route>
+    </Switch>
+  </div> );
+
+
+// ver6
+constApp:FC=()=>(
+  <Routes>
+    <Route path="/" element={<Home />} />
+    <Route path="users/*" element={<Users />} />
+  </Routes>
+);
+const Users: FC = () => (
+  <div>
+    <nav>
+      <Link to="me">My Profile</Link>
+    </nav>
+    <Routes>
+      <Route path=":id" element={<UserProfile />} />
+      <Route path="me" element={<SelfProfile />} />
+    </Routes>
+  </div> );
+
+
+// ver6 (改善版)
+constApp:FC=()=>(
+  <Routes>
+    <Route path="/" element={<Home />} />
+    <Route path="users" element={<Users />}>
+      <Route path="me" element={<SelfProfile />} />
+      <Route path=":id" element={<UserProfile />} />
+    </Route>
+  </Routes>
+);
+const Users: FC = () => (
+  <div>
+    <nav>
+      <Link to="me">My Profile</Link>
+    </nav>
+    <Outlet />
+  </div>
+);
+```
+
+ルーティングをネストすることで、例えば `users/me` ならまず `Users` コンポーネントがマッチする。
+さらにネストされた中で `SelfProfile` がマッチする。
+それにより最初に `Users` コンポーネントがレンダリングされ、その `<Outlet />` の中で `SelfProfile` がレンダリングされる。
+
+`<Outlet>` は子ルートのコンポーネントをレンダリングするためのプレースホルダー。
+
+ルーティングルールが複数のコンポーネントに分散されていると可読性・メンテナンス性が落ちるので、 nested routes を使って積極的にルールをまとめていくと良い。
+
+### `<Route>` の変更点
+
+`<Route>` について。
+レンダリング対象のコンポーネントの指定が、 `component` / `render` 属性 及び 子要素 で行っていたのが `element` 属性で統一された。
+そして渡す値も `element={<MyComponent />}` のようにJSXタグを記述する形で React Elements を渡すようになった。
+
+※ `<Route>` の子要素は nested routes で使うようになったため、そちらを優先させた結果。
+
+### `path` のマッチ
+
+`path` のマッチについて。
+
+- 相対パスで記述出来るようになった
+- ベースが前方一致ではなく完全一致になった。ただし `<Route>` がネストしている場合は、親ルートのマッチングは前方一致になる
+- `exact` および `strict` 属性が廃止。末尾のスラッシュはマッチングで無視される
+- 正規表現が使えなくなり、現状では末尾の `*` だけがワイルドカードとしてマッチング可能
+- 大文字・小文字を区別したい場合は `caseSensitive` 属性を指定する
+
+### `History` オブジェクトの廃止
+
+履歴系の操作は Hooks API の `useNavigation` で返される `navigate` 関数に集約された。
+
+```tsx
+// ver5
+import { useHistory, Redirect } from 'react-router-dom';
+const Direction: FC<{ shouldGoHome: boolean }> = ({ shouldGoHome }) => {
+  const history = useHistory();
+
+  if (shouldGoHome) history.push('/');
+
+  return (
+    <>
+      <button onClick={() => history.go(-2)}>2 つ戻る</button>
+      <button onClick={history.goBack}>戻る</button>
+      <button onClick={history.goForward}>進む</button>
+      <button onClick={() => history.go(2)}>2 つ進む</button>
+    </>
+  );
+};
+
+// ver6
+import { useNavigate, Navigate } from 'react-router-dom';
+const Direction: FC<{ shouldGoHome: boolean }> = ({ shouldGoHome }) => {
+  const navigate = useNavigate();
+
+  if (shouldGoHome) navigate('/');
+
+  return (
+    <>
+      <button onClick={() => navigate(-2)}>2 つ戻る</button>
+      <button onClick={() => navigate(-1)}>戻る</button>
+      <button onClick={() => navigate(1)}>進む</button>
+      <button onClick={() => navigate(2)}>2 つ進む</button>
+    </>
+  );
+};
+```
+
+`navigate` 関数は引数が数値の場合は 「戻る・進む」系の操作。
+文字列 または `PartialPath` 型のオブジェクト (e.g. `{ pathname: '/foo', search: '?bar=baz', hash: '#qux' }`) の場合はリダイレクト系の操作になる。
+
+また、後者では第2引数に `{ replace?: boolean; state?: object | null }` を渡す事ができる。
+これによって `history.replace('/')` は `navigate({ path: '/' }, { replace: true })` のように書き換えられる。
+
+### `<Redirect>`
+
+`<Redirect>` が廃止され、代わりに `<Navigate>` を使うようになった。
+
+```tsx
+<Navigate to=`/Home` replace />
+```
+
+`Navigate` では `replace` を与えることで履歴を上書きするようになる。
+
+### なぜ `History` や `<Redirect>` が置き換えられたか
+
+React ではバージョン16.7 から Suspense という遅延読み込みの機能が導入されていて、それがデータ取得のシーンでも本格的に導入されようとしている。
+ブラウザのHooks APIを直接使う従来の `History` や `<Redirect>` は Suspense と相性が悪いため、変更する必要があった。
+
+## v6 でアプリケーションを書き直す
+
+- ルーティングルール
+- `History` オブジェクトを使っていた箇所
+- `<Redirect>` を使っていた箇所
