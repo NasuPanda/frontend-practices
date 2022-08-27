@@ -1,12 +1,11 @@
-import React, {
-  FC,
+import {
+  VFC,
   FormEvent,
   Suspense,
-  SuspenseConfig,
-  unstable_SuspenseList as SuspenseList,
+  SuspenseList,
   useRef,
   useState,
-  unstable_useTransition as useTransition,
+  useTransition,
 } from 'react';
 import { Button, Divider, Input, Menu } from 'semantic-ui-react';
 import capitalize from 'lodash/capitalize';
@@ -17,20 +16,15 @@ import OrgInfo from 'containers/oraganisms/OrgInfo';
 import MemberList from 'containers/oraganisms/MemberList';
 import './Members.css';
 
-const SUSPENSE_CONFIG: SuspenseConfig = {
-  timeoutMs: 2000,
-  busyDelayMs: 100,
-  busyMinDurationMs: 700,
-};
 type Props = {
   orgCodeList: string[];
   prefetch?: (orgCode: string) => void;
 };
 
-const Members: FC<Props> = ({ orgCodeList, prefetch = () => undefined }) => {
+const Members: VFC<Props> = ({ orgCodeList, prefetch = () => undefined }) => {
   const [orgCode, setOrgCode] = useState('');
   const [input, setInput] = useState('');
-  const [startTransition, isPending] = useTransition(SUSPENSE_CONFIG);
+  const [isPending, startTransition] = useTransition();
   const ebKey = useRef(0);
 
   const menuItems = orgCodeList.map((code) => ({
