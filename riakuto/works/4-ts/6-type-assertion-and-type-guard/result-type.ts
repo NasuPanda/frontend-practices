@@ -12,13 +12,17 @@ export class Err<T, E extends Error> {
   isErr = (): this is Err<T, E> => true;
 }
 
-export const withResult = <T, A extends any[], E extends Error>(fn: (...args: A) => Promise<T>,) =>
+export const withResult =
+  <T, A extends any[], E extends Error>(
+    fn: (...args: A) => Promise<T> // ジェネリクス, 引数(Promise を返す関数)の型定義
+  ) =>
+  // 返り値(引数 A を受け取り、 返り値がPromiseの関数を返す)の型定義
   async (...args: A): Promise<Result<T, E>> => {
-  try {
-    return new Ok(await fn(...args));
-  } catch (error) {
-    if (error instanceof Error) {
-      return new Err(error as E);
+    try {
+      return new Ok(await fn(...args));
+    } catch (error) {
+      if (error instanceof Error) {
+        return new Err(error as E);
+      }
     }
-  }
-};
+  };
