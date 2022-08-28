@@ -51,3 +51,92 @@ home-brew とは英語で自家醸造酒(ビール)を意味し、「ユーザ�
 [Lodash](https://lodash.com/) : ユーティリティライブラリ
 
 [davidmarkclements/rfdc: Really Fast Deep Clone](https://github.com/davidmarkclements/rfdc) : deep clone
+
+# 2. React基礎編
+
+## 読み物
+
+[Prettier · Opinionated Code Formatter](https://prettier.io/) : Haskell の作者のひとりでもある Philip Wadler という著名な学者による論文。Prettierに適用されるスタイルの元となっている。
+
+[Why Prettier? · Prettier](https://prettier.io/docs/en/why-prettier.html) : Prettier 公式ドキュメントの、Prettierを使う意義について。
+
+[Our First 50,000 Stars – React Blog](https://ja.reactjs.org/blog/2016/09/28/our-first-50000-stars.html) : React誕生秘話。
+
+[React の流儀 – React](https://ja.reactjs.org/docs/thinking-in-react.html) : Reactの流儀について。
+
+[Presentational and Container Components | by Dan Abramov | Medium](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0) Presentational / Container Components というデザインパターンについて。
+
+[関数コンポーネントはクラスとどう違うのか? — Overreacted](https://overreacted.io/ja/how-are-function-components-different-from-classes/) : 関数コンポーネントとクラスコンポーネントの挙動の違い
+
+[フックに関するよくある質問 – React](https://ja.reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies) : 依存関係を適切にｓるうための考え方
+
+
+## リファレンス
+
+### ESLint
+
+[TypeScript ESLint](https://typescript-eslint.io/) : ESLint本体。公式のTypeScript対応プロジェクトが提供しているパッケージ群
+
+[javascript/packages/eslint-config-airbnb at master · airbnb/javascript](https://github.com/airbnb/javascript/tree/master/packages/eslint-config-airbnb) : airbnbの共有設定。とりあえず入れておけば間違いない。
+
+[Rules - ESLint - Pluggable JavaScript Linter](https://eslint.org/docs/latest/rules/) : ESLint組み込みのルール
+
+[typescript-eslint/packages/eslint-plugin at main · typescript-eslint/typescript-eslint](https://github.com/typescript-eslint/typescript-eslint/tree/main/packages/eslint-plugin#supported-rules) : @typescript-eslint/eslint-plugin の設定可能なルール
+
+[Configuring ESLint - ESLint - Pluggable JavaScript Linter](https://eslint.org/docs/latest/user-guide/configuring) : `.eslintrc` のドキュメント
+
+[dustinspecker/awesome-eslint: A list of awesome ESLint plugins, configs, etc.](https://github.com/dustinspecker/awesome-eslint) : ESLintのサードーパーティ製プラグインをまとめたリポジトリ
+
+### Prettier
+
+[Prettier · Opinionated Code Formatter](https://prettier.io/) : コードフォーマッタ Prettier のドキュメント
+
+[Options · Prettier](https://prettier.io/docs/en/options.html) : 設定可能なオプション
+
+[prettier/eslint-config-prettier: Turns off all rules that are unnecessary or might conflict with Prettier.](https://github.com/prettier/eslint-config-prettier) : Prettier と競合する可能性のある ESLint の各種ルールを無効にする共有設定
+
+### Stylelint
+
+[Home | Stylelint](https://stylelint.io/) : CSSフォーマッタ Stylelint のドキュメント。
+
+[stylelint/stylelint-config-standard: The standard shareable config for Stylelint](https://github.com/stylelint/stylelint-config-standard) : stylelint公式による標準のESLint共有設定
+
+[hudochenkov/stylelint-order: A plugin pack of order related linting rules for Stylelint.](https://github.com/hudochenkov/stylelint-order) : 並び順に関するプラグイン
+
+[stormwarning/stylelint-config-recess-order: 🗂️ Recess-based property sort order for Stylelint.](https://github.com/stormwarning/stylelint-config-recess-order) : recessに基づく並び順にするための共有設定
+
+[twitter-archive/recess: A simple and attractive code quality tool for CSS built on top of LESS](https://github.com/twitter-archive/recess) : RECESS (Twitter 製のCSSSリンター)
+
+### Gitフック
+
+[Git - Git フック](https://git-scm.com/book/ja/v2/Git-%E3%81%AE%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%9E%E3%82%A4%E3%82%BA-Git-%E3%83%95%E3%83%83%E3%82%AF) : Gitフック。
+
+[toplenboren/simple-git-hooks: A simple git hooks manager for small projects](https://github.com/toplenboren/simple-git-hooks)
+
+[okonet/lint-staged: 🚫💩 — Run linters on git staged files](https://github.com/okonet/lint-staged) : ステージされたコードに対してlint✔を走らせるためのツール。
+
+### React
+
+[React TypeScript Cheatsheets](https://react-typescript-cheatsheet.netlify.app/) : Reactに関わるTypeScriptの話が載っている。頻繁にアップデートがあり、これを見ていればトレンドがわかるので参照すべし。
+
+[React – A JavaScript library for building user interfaces](https://reactjs.org/) : React 公式
+
+[合成イベント (SyntheticEvent) – React](https://ja.reactjs.org/docs/events.html#supported-events) : Reactがサポートするイベント
+
+[state のリフトアップ – React](https://ja.reactjs.org/docs/lifting-state-up.html) : stateによるフォームの実装
+
+[useEffect完全ガイド — Overreacted](https://overreacted.io/ja/a-complete-guide-to-useeffect/) : useEffectのガイド
+
+[関数コンポーネントはクラスとどう違うのか? — Overreacted](https://overreacted.io/ja/how-are-function-components-different-from-classes/) : 関数コンポーネントとクラスコンポーネントの挙動の違い
+
+[フックに関するよくある質問 – React](https://ja.reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies) : 依存関係を適切にｓるうための考え方
+
+[Introduction - Semantic UI React](https://react.semantic-ui.com/) : Semantic UI React (React 向けUIフレームワーク)
+
+[DefinitelyTyped/types/react at master · DefinitelyTyped/DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react) : Reactの型定義
+
+### その他
+
+[Google Developers Japan: Web Vitals の概要: サイトの健全性を示す重要指標](https://developers-jp.googleblog.com/2020/05/web-vitals.html) : CRA4.0 から導入されている、 Web Vitals というパフォーマンス計測指標。
+
+AOTコンパイル = Ahead-of-time Compilation : アプリケーション実行前にコードを事前にコンパイルすること。Facebook は Prepack という JavaScript のオプティマイザを開発中で、React 開発チームはそれをビルドプロセスに組み込ん でパフォーマンスを大幅に向上させるべく検証を行っているとのこと。
