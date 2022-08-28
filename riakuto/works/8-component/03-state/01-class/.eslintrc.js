@@ -1,7 +1,7 @@
 module.exports = {
   env: {
     browser: true,
-    es2020: true,
+    es2021: true,
   },
   extends: [
     'plugin:react/recommended',
@@ -10,21 +10,16 @@ module.exports = {
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:import/typescript',
-    'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:prettier/recommended',
     'prettier',
-    'prettier/@typescript-eslint',
-    'prettier/react',
-    'prettier/standard',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
     },
-    ecmaVersion: 2020,
+    ecmaVersion: 12,
     project: './tsconfig.eslint.json',
     sourceType: 'module',
     tsconfigRootDir: __dirname,
@@ -34,12 +29,16 @@ module.exports = {
     'import',
     'jsx-a11y',
     'prefer-arrow',
-    'prettier',
     'react',
     'react-hooks',
   ],
   root: true,
   rules: {
+    // occur error in `import React from 'react'` with react-scripts 4.0.1
+    'no-use-before-define': 'off',
+    '@typescript-eslint/no-use-before-define': [
+      'error',
+    ],
     'lines-between-class-members': [
       'error',
       'always',
@@ -47,9 +46,12 @@ module.exports = {
         exceptAfterSingleLine: true,
       },
     ],
-    // should be rewritten as `['error', { allowAsStatement: true }]` in ESLint 7 or later
-    // SEE: https://github.com/typescript-eslint/typescript-eslint/issues/1184
-    'no-void': 'off',
+    'no-void': [
+      'error',
+      {
+        allowAsStatement: true,
+      },
+    ],
     'padding-line-between-statements': [
       'error',
       {
@@ -61,11 +63,11 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
-        vars: 'all',
-        args: 'after-used',
-        argsIgnorePattern: '_',
-        ignoreRestSiblings: false,
-        varsIgnorePattern: '_',
+        'vars': 'all',
+        'args': 'after-used',
+        'argsIgnorePattern': '_',
+        'ignoreRestSiblings': false,
+        'varsIgnorePattern': '_',
       },
     ],
     'import/extensions': [
@@ -100,13 +102,12 @@ module.exports = {
         explicitSpread: 'ignore',
       },
     ],
-    'react/jsx-uses-react': 'off',
     'react/react-in-jsx-scope': 'off',
   },
   overrides: [
     {
-      files: ['*.tsx'],
-      rules: {
+      'files': ['*.tsx'],
+      'rules': {
         'react/prop-types': 'off',
       },
     },

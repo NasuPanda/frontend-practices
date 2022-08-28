@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import Timer from './Timer';
+import Timer from './Timer3';
 import './App.css';
 
 const App: FC = () => (

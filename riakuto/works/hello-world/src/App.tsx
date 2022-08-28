@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import './App.css';
 import Greets from './components/Greets';
+import TextInput from './components/TextInput';
 
 const App: FC = () => (
   <div className="App">
@@ -9,6 +10,7 @@ const App: FC = () => (
       <Greets name="Alice" times={4}>
         <p>foo bar</p>
       </Greets>
+      <TextInput firstText="first" />
     </header>
   </div>
 );

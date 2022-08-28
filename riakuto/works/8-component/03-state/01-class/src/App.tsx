@@ -1,9 +1,9 @@
-import React, { VFC } from 'react';
+import { Component, ReactElement } from 'react';
 import CharacterList, { Character } from './CharacterList';
 import './App.css';
 
-const App: VFC = () => {
-  const characters: Character[] = [
+class App extends Component {
+  characters: Character[] = [
     {
       id: 1,
       name: '桜木花道',
@@ -35,14 +35,16 @@ const App: VFC = () => {
     },
   ];
 
-  return (
-    <div className="container">
-      <header>
-        <h1>『SLAM DUNK』登場人物</h1>
-      </header>
-      <CharacterList school="湘北高校" characters={characters} />
-    </div>
-  );
-};
+  render(): ReactElement {
+    return (
+      <div className="container">
+        <header>
+          <h1>SLAM DUNK 登場人物</h1>
+        </header>
+        <CharacterList school="湘北高校" characters={this.characters} />
+      </div>
+    );
+  }
+}
 
 export default App;
