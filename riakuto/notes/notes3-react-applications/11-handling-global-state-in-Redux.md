@@ -762,3 +762,202 @@ reportWebVitals();
 などができる。
 
 使うためには通常 `createStore` に設定を仕込む必要があるが、 `configureStore` はデフォルトでそれが設定されている。
+
+# 11-5. Redux と useReducer
+
+## useReducer で Redux の処理を書き直す
+
+Redux ではアプリケーションを包括するグローバルな状態を action と reducer で管理していたが、 useReducer はそれと同じことを個別のコンポーネントで可能にする Hooks API 。
+
+```ts
+const [state, dispatch] = useReducer(reducer, initialState);
+
+// 似たようなインターフェースのAPIと比較してみる
+const [state, dispatch] = useReducer(reducer, initialState);
+const [state, setState] = useState(initialState);
+const store = createStore(reducer, initialState);
+```
+
+### サンプルコード
+
+```tsx
+import { VFC, useReducer } from 'react';
+import CounterWidget from 'components/templates/CounterWidget';
+
+const CounterActionType = {
+  added: 'counter/added',
+  decremented: 'counter/decremented',
+  incremented: 'counter/incremented',
+} as const;
+
+type ValueOf<T> = T[keyof T];
+type CounterAction = {
+  type: ValueOf<typeof CounterActionType>;
+  payload?: number;
+};
+
+type CounterState = { count: number };
+
+const counterReducer = (
+  state: CounterState,
+  action: CounterAction,
+): CounterState => {
+  switch (action.type) {
+    case CounterActionType.added:
+      return {
+        ...state,
+        count: state.count + (action.payload ?? 0),
+      };
+    case CounterActionType.decremented:
+      return {
+        ...state,
+        count: state.count - 1,
+      };
+    case CounterActionType.incremented:
+      return {
+        ...state,
+        count: state.count + 1,
+      };
+    default: {
+      const _: never = action.type;
+
+      return state;
+    }
+  }
+};
+
+const add = (payload: number): CounterAction => ({
+  type: CounterActionType.added,
+  payload,
+});
+const decrement = (): CounterAction => ({
+  type: CounterActionType.decremented,
+});
+const increment = (): CounterAction => ({
+  type: CounterActionType.incremented,
+});
+
+const EnhancedCounterWidget: VFC<{ initialCount?: number }> = ({
+  initialCount = 0,
+}) => {
+  const [state, dispatch] = useReducer(
+    counterReducer,
+    initialCount,
+    (count: number): CounterState => ({ count }),
+  );
+
+  return (
+    <CounterWidget
+      count={state.count}
+      add={(amount: number) => dispatch(add(amount))}
+      decrement={() => dispatch(decrement())}
+      increment={() => dispatch(increment())}
+    />
+  );
+};
+
+export default EnhancedCounterWidget;
+```
+
+長いので、 `createSlice` で書き換えてみる。
+
+```tsx
+import { VFC, useReducer } from 'react';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import CounterWidget from 'components/templates/CounterWidget';
+
+type CounterState = { count: number };
+const initialState: CounterState = { count: 0 }; // dummy
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState,
+  reducers: {
+    added: (state, action: PayloadAction<number>) => ({
+      ...state,
+      count: state.count + action.payload,
+    }),
+    decremented: (state) => ({ ...state, count: state.count - 1 }),
+    incremented: (state) => ({ ...state, count: state.count + 1 }),
+  },
+});
+
+const EnhancedCounterWidget: VFC<{ initialCount?: number }> = ({
+  initialCount = 0,
+}) => {
+  const [state, dispatch] = useReducer(
+    counterSlice.reducer,
+    initialCount,
+    (count: number): CounterState => ({ count }),
+  );
+  const { added, decremented, incremented } = counterSlice.actions;
+
+  return (
+    <CounterWidget
+      count={state.count}
+      add={(amount: number) => dispatch(added(amount))}
+      decrement={() => dispatch(decremented())}
+      increment={() => dispatch(incremented())}
+    />
+  );
+};
+
+export default EnhancedCounterWidget;
+```
+
+## `useReducer` と State Hook の実体
+
+### `useReducer` の嬉しさ
+
+`useReducer` は何が嬉しいのか。
+
+コンポーネントの機能が複雑化してくると state の数が増え、ある state の更新ロジックが別の state を参照するようになる。
+大量の state が更新時に相互参照し、さらにそれが `useEffect` の副作用処理の中で行われたりするとどこで更新が起きるのかわかりにくくなる。
+
+そこで、 `useReducer` を使う。
+`useReducer` を使えばコンポーネントの state を Redux のようにシングルツリーのオブジェクトに格納して、その中身を reducer によって副作用を排除しつつ更新できるようになる。
+
+### `useState` の実体
+
+実体は1つの setter action しか持たない `useReducer` 。
+つまり、複数の state がある場合、最初から `useReducer` を使えば良いということになる。
+
+![useState-entity](../../images/64e46c6e7f164cd2a76530a4418950b95f507da98b454d59a4647d6caffb7750.png)
+
+## Hooks の正体
+
+State Hook は便利だが、クラスコンポーネントが state をメンバー変数として持つのに対して、関数コンポーネントではその状態をどこでどうやって保持しているのか。
+
+### Fiber
+
+React では バージョン16.0 から **Fiber** というレンダリングのためのアーキテクチャを採用している。
+Fiber は React Elements に対応する差分検出やデータ更新、再描画のスケジューリングのための最小単位としての意味も持つ。
+
+### Hooks の正体
+
+React が提供する `useXXX` の Hooks API をコンポーネントの中で使用すると、
+仮想DOMにマウントされた React Elements と対応する Fiber の「メモ化された状態」領域の中にその Hooks のオブジェクトが作られ、
+コールされた順番に従って連結リストとして格納されていく。
+
+下図の Hooks1, Hooks2, Hooks3 がそれ。
+
+![Hooks-mechanism](../../images/f4d2ce9d04de4718e6e9658b043033ad83bd32b2a8880c38c330d0a462cfadca.png)
+
+Hooks API の呼び出しが生成された Hooks オブジェクトのどれに対応するかはコールされた順番によって称合されるので、もし再レンダリング時に呼び出しの順番が変わるようなことがあるとこの参照がズレてしまう。
+Hooks API の使用はコンポーネントの論理階層のトップレベルで行い、条件文やループの中で使ってはいけないというルールがあるのはそれが理由。
+
+そして、Hooks のオブジェクトはそれぞれ固有の state を持っていて、対応する Hooks API コールが返す値はそこへの参照。
+
+### `useReducer` の動作
+
+`useReducer` は Hooks オブジェクト固有の state を Redux ライクな action と reducer を使った仕組みで更新するようになっている。
+
+ただし、Redux と全く同じというわけではない。
+APIの返り値 `dispatch` 関数に `action` を渡して実行すると、それがすぐさま reducer に渡されるのではなく、 Hooks オブジェクトの中に用意された「更新キュー」へ発行した action が追加されていく。
+
+そして、React の差分検出エンジンが最適化されたタイミングでそのコンポーネントの再レンダリングを実行すると、描画直前にキューの中に溜まっていた action が reducer に渡され、キューの分だけ `(prevState, action) => newState` が実行された最終結果が `state` に反映される。
+
+### `useState` の動作
+
+返り値として `useReducer` における dispatcher の代わりに setter 関数を返している。
+その実体は setter action だけを発行する専用の dispatcher で、対応する Hooks オブジェクトの動作は全く一緒。
