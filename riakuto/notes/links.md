@@ -139,4 +139,38 @@ home-brew とは英語で自家醸造酒(ビール)を意味し、「ユーザ�
 
 [Google Developers Japan: Web Vitals の概要: サイトの健全性を示す重要指標](https://developers-jp.googleblog.com/2020/05/web-vitals.html) : CRA4.0 から導入されている、 Web Vitals というパフォーマンス計測指標。
 
-AOTコンパイル = Ahead-of-time Compilation : アプリケーション実行前にコードを事前にコンパイルすること。Facebook は Prepack という JavaScript のオプティマイザを開発中で、React 開発チームはそれをビルドプロセスに組み込ん でパフォーマンスを大幅に向上させるべく検証を行っているとのこと。
+AOTコンパイル = Ahead-of-time Compilation : アプリケーション実行前にコードを事前にコンパイルすること。Facebook は Prepack という JavaScript のオプティマイザを開発中で、React 開発チームはそれをビルドプロセスに組み込んでパフォーマンスを大幅に向上させるべく検証を行っているとのこと。
+
+# 3. React応用編
+
+## 読み物
+
+[Atomic Design | Brad Frost](https://bradfrost.com/blog/post/atomic-web-design/) : アトミックデザインというデザインパターンについて
+
+[Dan Abramov - Live React: Hot Reloading with Time Travel at react-europe 2015 - YouTube](https://www.youtube.com/watch?v=xsSnOQynTHs) : 動画だが。Redux 発表セッション。
+
+## React Router
+
+[React Router: Declarative Routing for React.js](https://v5.reactrouter.com/web/guides/quick-start) : 公式ドキュメント。ルーティング初心者には難易度が高い上、ボリュームも多い。ただし目は通しておくべき。ユースケースごとのサンプル(ログイン有無でのルーティングの切り分けなど)が載っている。
+
+## Redux
+
+[React Redux | React Redux](https://react-redux.js.org/) : ReduxをReactに組み込むためのバインディング。
+
+[Three Principles | Redux](https://redux.js.org/understanding/thinking-in-redux/three-principles) : Redux の3つの思想
+
+[Hooks | React Redux](https://react-redux.js.org/api/hooks) : Hooks API のドキュメント
+
+[Style Guide | Redux](https://redux.js.org/style-guide/) : Redux のスタイルガイド
+
+### Redux 推奨ツール
+
+[Introduction to Immer | Immer](https://immerjs.github.io/immer/) : イミュータブルな更新を簡単にする
+
+[Redux Toolkit | Redux Toolkit](https://redux-toolkit.js.org/) : Redux における Create React App のような存在
+
+[Redux DevTools extensions](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=ja) : タイムトラベルデバッギング。
+
+## React 関連ライブラリ
+
+[ホーム | React Hook Form - Simple React forms validation](https://react-hook-form.com/jp/) : フォーム管理ライブラリ
