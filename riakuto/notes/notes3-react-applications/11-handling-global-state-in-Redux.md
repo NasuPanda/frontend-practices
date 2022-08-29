@@ -20,7 +20,7 @@ React ではコンポーネントそれぞれが状態を持つ。
 
 Redux は Flux パターンを実装したライブラリ。2022年現在の覇権。
 
-TODO 見る : https://www.youtube.com/watch?v=xsSnOQynTHs
+![redux-architecture](../../images/c63ea89acf5ccdbf560ece75a2a22c17cf7731e613c8371749c0a8770e2ccad6.png)
 
 # 11-2. Redux の使い方
 
@@ -586,3 +586,179 @@ Hooks ファーストの今、Reduxのミドルウェアが本当に必要なの
 15. フォームの状態を Redux に入れない : C
 16. 複雑なロジックはコンポーネントの外に追い出す : C
 17. 非同期処理には Redux Thunk を使う : C
+
+# 11-4. Redux Toolkit を使って楽をしよう
+
+Redux は強力なライブラリではあるが、不満の声も多くあった。
+その中で最も多いのは、「必要とされる提携構文が多く、コードの記述量が増える」というもの。
+
+そこで、 React 本体に CRA があるように、 Redux の開発チームも効率的なDXを開発者に提供しようと考えた。
+その結果開発されたのが [Redux Toolkit | Redux Toolkit](https://redux-toolkit.js.org/) 。
+
+提供されている主なAPIは以下の4つ。
+
+- `configureStore` ...... 各種デフォルト値が設定可能な createStore のカスタム版
+- `createReducer` ...... reducer の作成を簡単にしてくれる
+- `createAction` ...... action creator を作成する
+- `createSlice` ...... action の定義と action creator、reducer をまとめて生成できる
+
+## `createAction`
+
+action の定義と action creator 関数の定義を楽にしてくれる。
+`createAction` の型引数として渡されているのが FSA の payload に相当するものの型。
+
+```ts
+import { createAction } from '@reduxjs/toolkit';
+
+const FEATURE = 'counter';
+export const added = createAction<number>(`${FEATURE}/added`);
+export const decremented = createAction(`${FEATURE}/decremented`);
+export const incremented = createAction(`${FEATURE}/incremented`);
+```
+
+## `createReducer`
+
+reducer 関数を定義するときの注意点は、引数の型定義。
+
+第2引数 `action` に `PayloadAction` を使った型定義を忘れないこと。
+
+action creator の第1引数 `state` も、同じく型定義が必要。
+※ 型定義を省略出来ているのは `createReducer` 自身の第1引数 `initialState` から型推論されているため。
+
+`state` の初期値は、型推論が出来る値を入れると良い。
+例えば `state` の型が `id: string | null` だった場合、初期値に `id: null` を渡すと型推論が失敗するので、そういった場合 `as` で型をサジェストすると良い。
+
+```ts
+import { createReducer, PayloadAction } from '@reduxjs/toolkit';
+import { added, decremented, incremented } from './counter-actions';
+
+export type CounterState = { count: number };
+const initialState: CounterState = { count: 0 };
+
+export const counterReducer = createReducer(initialState, {
+  [added.type]: (state, action: PayloadAction<number>) => ({
+    ...state,
+    count: action.payload,
+  }),
+  [decremented.type]: (state) => ({ ...state, count: state.count - 1 }),
+  [incremented.type]: (state) => ({ ...state, count: state.count + 1 }),
+});
+```
+
+## `createSlice` : action + reducer
+
+action と reducer のロジックを統合したものを 「Slice」 と呼ぶ。
+このAPIは Slice を作成する。
+
+`createSlice` を使うとロジックをひとまとめにできる上、必然的にDucksパターンに準拠することになる。
+
+```ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+export type CounterState = { count: number };
+const initialState: CounterState = { count: 0 };
+
+export const counterSlice = createSlice({
+  name: 'counter',
+  initialState,
+  reducers: {
+    added: (state, action: PayloadAction<number>) => ({
+      ...state,
+      count: state.count + action.payload,
+    }),
+    decremented: (state) => ({ ...state, count: state.count - 1 }),
+    incremented: (state) => ({ ...state, count: state.count + 1 }),
+  },
+});
+```
+
+### `createSlice` : `void` 関数のときの挙動
+
+下のコードでは、 reducer が `(prevState, action) => newState` の形式になっていないどころか、 state の中身を直接書き換えている。
+
+```ts
+/* eslint-disable no-param-reassign */
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { uuid } from 'uuidv4';
+
+type Task = {
+  id: string;
+  title: string;
+  deadline?: Date;
+  createdAt: Date;
+};
+
+export type TodoState = {
+  todoList: { [id: string]: Task };
+  doneList: { [id: string]: Task };
+};
+
+export const todoSlice = createSlice({
+  name: 'todo',
+  initialState: { todoList: {}, doneList: {} } as TodoState,
+  reducers: {
+    taskCreated: (
+      state,
+      action: PayloadAction<Pick<Task, 'title' | 'deadline'>>,
+    ) => {
+      const id = uuid();
+      const createdAt = new Date();
+      state.todoList[id] = { ...action.payload, id, createdAt };
+    },
+    taskDone: (state, action: PayloadAction<string>) => {
+      const id = action.payload;
+      const task = state.todoList[id];
+
+      if (task) {
+        state.doneList[id] = { ...task };
+        delete state.todoList[id];
+      }
+    },
+    taskUpdated: (state, action: PayloadAction<Omit<Task, 'createdAt'>>) => {
+      const { id, ...data } = action.payload;
+      const task = state.todoList[id];
+
+      if (task) state.todoList[id] = { ...task, ...data };
+    },
+  },
+});
+```
+
+このように reducer が返り値 `void` の関数になっていると、自動的に Immer を適用してイミュータブルな state 更新処理を行うようになっている。
+
+## `configureStore`
+
+トップレベルのファイルに store を仕込む。
+
+```tsx
+import ReactDOM from 'react-dom';
+import { configureStore } from '@reduxjs/toolkit';
+import { Provider } from 'react-redux';
+
+import { counterSlice } from 'features/counter';
+import reportWebVitals from './reportWebVitals';
+import App from './App';
+import 'semantic-ui-css/semantic.min.css';
+import './index.css';
+
+const store = configureStore({ reducer: counterSlice.reducer });
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root') as HTMLElement,
+);
+
+reportWebVitals();
+```
+
+### ReduxDevTools extension
+
+- action 発行履歴
+- その時点での state の中身
+- 任意の時点での sate の再現
+
+などができる。
+
+使うためには通常 `createStore` に設定を仕込む必要があるが、 `configureStore` はデフォルトでそれが設定されている。
