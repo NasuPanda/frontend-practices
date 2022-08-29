@@ -326,3 +326,263 @@ action creator 関数を引数に取る。 `dispatch(increment())` のように�
       // ...
   )
 ```
+
+# 11-3. Redux 公式スタイルガイド
+
+[Style Guide | Redux](https://redux.js.org/style-guide/)
+
+Redux 公式が提供しているガイドライン。
+3つの優先度がある。
+
+- A: 必須
+- B: 強く推奨
+- C: 普通に推奨
+
+## 優先度A: 必須
+
+1. state を直接書き換えない
+2. reducer に副作用を持たせない
+3. シリアライズできない値を state や action に入れない
+4. store は1つのアプリにつき1つだけ
+
+### 1. state を直接書き換えない
+
+reducer を始めあらゆる場所で store 内 state の直接書き換えを禁止する。
+
+### 2. reducer に副作用を持たせない
+
+reducer は再現可能な純粋関数であるべき。
+
+そのため、内部で副作用を生じる処理、例えば外部システムと通信したり、reducer の外の変数を書き換えたり、後から同じ値を作れないランダムな値を不用意に store へ渡したりしない。
+
+### 3. シリアライズできない値を state や action に入れない
+
+Promise や 関数 や クラスインスタンス のような、 `JSON.stringfy()` したときに値が同一であることが保証されないものを state や action に入れない。
+
+### 4. store は1つのアプリにつき1つだけ
+
+文字通り。
+
+## アクションに関するルール
+
+5. action を setter ではなくイベントとしてモデリングする : B
+6. action の名前は意味を的確に表現したものにする : B
+7. action タイプ名を「ドメインモデル/イベント種別」のフォーマットで書く : C
+8. action を FSA に準拠させる : C
+9. dispatch する action は直に書かず action creator を使って生成する : C
+
+### 5. action を setter ではなくイベントとしてモデリングする : B
+
+ユーザのプロフィールを更新するとき、action を表現するのに setter を使って次のようにしたとする。
+
+```ts
+{
+  type: "use/setName",
+  payload: {id: 387, name: Alice},
+}
+{
+  type: 'user/setBirthday',
+  payload: { id: 38792, birthday: new Date('1996-11-24T09:00:00') },
+}
+```
+
+しかし、これを「発生したイベント」として表現すれば、このようにも書ける。
+
+```ts
+{
+  type: "user/profileUpdated",
+  payload: { id: 38792, name: 'Alice', birthday: new Date('1996-11-24T09:00:00') },
+}
+```
+
+このようにすることで dispatch される action の数が減る上、 action ログ履歴も見やすくなる。
+更に ルール6 の「意味を的確に表現する」も同時に満たすことが出来る。
+ついでに ルール7 の「ドメインモデル/イベント種別のフォーマットで書く」というのも同時にやっている。
+
+### 6. action の名前は意味を的確に表現したものにする : B
+
+action の名前は意味を的確に表現したものにする。
+
+上の例では、改善前が `user/setName` `user/setBirthday` 、改善後が `user/profileUpdated` である。
+ここで更新されているのは「個々の属性」(前者)ではなく「ユーザのプロフィール」(後者)なので、後者の方がより的確に意味を表現していると言える。
+
+### 7. action タイプ名を「ドメインモデル/イベント種別」のフォーマットで書く : C
+
+`ドメインモデル/イベント種別` というフォーマットで書くこと。
+昔は `UPDATE_USER_PROFILE` のように大文字スネークケースで書くことが多く、公式サンプルですらそうなっているコードが散見されるので注意が必要。
+
+例 : `user/profileUpdated`
+
+### 8. action を FSA に準拠させる : C
+
+FSA とは、 action のオブジェクト構造を扱いやすくするよう定められた規約。
+
+この規約では action は `type` 及びオプショナルな `payload` , `error` , `meta` の4要素で構成される。
+
+TypeScriptで表してみると ↓ のような感じ。
+
+```ts
+type ActionType = {
+  type: string
+  payload?: any;
+  error?: boolean;
+  meta?: { [key: string]: any };
+}
+```
+
+エラーを表現するものであれば `error` を `true` に、 `meta` にエラー情報を格納する。
+
+正常系であれば `type` `payload` しか使わないことがほとんど。
+データは上の階層にそのまま入れてしまいがちだが、 `payload` の中に格納することを徹底するべき。
+
+#### ペイロードとは
+
+> ペイロード 【payload】
+> ペイロードとは、有料荷重、有効搭載量、最大積載量、積載物などの意味を持つ英単語。通信・ネットワークの分野において、送受信されるデータの伝送単位（パケットやデータグラムなど）のうち、宛先などの制御情報を除いた、相手に送り届けようとしている正味のデータ本体のことをペイロードという。
+>
+> [ペイロードとは - 意味をわかりやすく - IT用語辞典 e-Words](https://e-words.jp/w/%E3%83%9A%E3%82%A4%E3%83%AD%E3%83%BC%E3%83%89.html#:~:text=%E3%83%9A%E3%82%A4%E3%83%AD%E3%83%BC%E3%83%89%20%E3%80%90payload%E3%80%91,%E3%81%AE%E3%81%93%E3%81%A8%E3%82%92%E3%83%9A%E3%82%A4%E3%83%AD%E3%83%BC%E3%83%89%E3%81%A8%E3%81%84%E3%81%86%E3%80%82)
+
+### 9. dispatch する action は直に書かず action creator を使って生成する : C
+
+action は action creator 関数により生成する。
+
+## ツールやデザインパターンの利用に関するルール
+
+10. Redux のロジックを書くときは Redux Toolkit を使う : B
+11. イミュータブルな状態の更新には Immer を使う : B
+12. デバッグには Redux DevTools 拡張を使う : B
+13. ファイル構造には「Feature Folder」または Ducks パターンを適用する : B
+
+### 10. Redux のロジックを書くときは Redux Toolkit を使う : B
+
+後述。
+
+### 11. イミュータブルな状態の更新には Immer を使う : B
+
+オブジェクトのイミュータブルな更新を簡単にしてくれる。
+
+例えばブログ記事を表現するオブジェクトがあったとして、その特定のコメントの中身を書き換える更新をしたい場合、スプレッド構文を使って次のように書く。
+
+```js
+const article = {
+  id: '83214',
+  authorId: '3297',
+  title: 'My super awesome article',
+  body: 'Wow! I wrote such a great article...',
+  comments: {
+    '213974': {
+      id: '213974',
+      commenterId: 10983,
+      body: 'You are a genius!',
+    },
+  },
+};
+
+const updatedArticle = {
+  ...article, comments: {
+  ...article.comments, '213974': {
+    ...article.comments['213974'],
+    body: 'Yaaah!'
+    },
+  },
+}
+```
+
+これでは可読性が悪く、バグが混入する恐れがある。
+そこで Immer を使う。
+
+```js
+import produce from 'immer';
+const updatedArticle = produce(article, draftArticle => {
+  draftArticle.comments['213974'].body = 'Yaaah!';
+});
+```
+
+この手のライブラリは一般にパフォーマンスが悪化しがちだが、Immerは多くのケースでスプレッド構文よりも高速。
+
+### 12. デバッグには Redux DevTools 拡張を使う : B
+
+後述。
+Redux 開発者の Dan が自ら作った、タイムトラベルデバッギングができるデバッグツール。
+
+### 13. ファイル構造には「Feature Folder」または Ducks パターンを適用する : B
+
+```
+// Feature Folder
+src/
+  features/
+    user/
+      user-actions.ts
+      user-reducer.ts
+    article/
+      article-actions.ts
+      article-reducer.ts
+…
+// Ducks Pattern
+src/
+  ducks/
+    user.ts
+    article.ts
+```
+
+Feature Folder はドメイン、サービスにおける関心領域ごとにディレクトリを区切り、その中に action や reducer のファイルを格納する。
+
+Ducks パターンはドメインごとに action や reducer を単一のファイルにまとめて記述する。
+
+**どちらもドメインごとに分けるという点が共通している**。
+
+## その他設計に関するルール
+
+14. どの状態をどこに持たせるかは柔軟に考える : B
+15. フォームの状態を Redux に入れない : C
+16. 複雑なロジックはコンポーネントの外に追い出す : C
+17. 非同期処理には Redux Thunk を使う : C
+
+### 14. どの状態をどこに持たせるかは柔軟に考える : B
+
+Reduxは「Single source of truth」の哲学を掲げてはいるが、「すべての状態を store 内 state に保持すべき」というわけではない。
+
+どのタブが選択されているか、などのUIの状態は個別のコンポーネントのローカルな値として持ったほうが良い。
+
+### 15. フォームの状態を Redux に入れない : C
+
+フォーム管理に Redux を使わない。
+
+推奨フォーム管理ライブラリ : [ホーム | React Hook Form - Simple React forms validation](https://react-hook-form.com/jp/)
+
+### 16. 複雑なロジックはコンポーネントの外に追い出す : C
+
+ルール17と関連。
+
+### 17. 非同期処理には Redux Thunk を使う : C
+
+Redux Thunk は Redux 公式チーム製の非同期処理用ミドルウェア。
+
+りあクト作者は非推奨。
+Hooks ファーストの今、Reduxのミドルウェアが本当に必要なのかという点が疑問らしい。
+
+## ルールまとめ
+
+これらのルールは Redux Toolkit を使えば半分くらいは守られる。
+
+- A: 必須
+- B: 強く推奨
+- C: 普通に推奨
+
+1. state を直接書き換えない : A
+2. reducer に副作用を持たせない : A
+3. シリアライズできない値を state や action に入れない : A
+4. store は1つのアプリにつき1つだけ : A
+5. action を setter ではなくイベントとしてモデリングする : B
+6. action の名前は意味を的確に表現したものにする : B
+7. action タイプ名を「ドメインモデル/イベント種別」のフォーマットで書く : C
+8. action を FSA に準拠させる : C
+9. dispatch する action は直に書かず action creator を使って生成する : C
+10. Redux のロジックを書くときは Redux Toolkit を使う : B
+11. イミュータブルな状態の更新には Immer を使う : B
+12. デバッグには Redux DevTools 拡張を使う : B
+13. ファイル構造には「Feature Folder」または Ducks パターンを適用する : B
+14. どの状態をどこに持たせるかは柔軟に考える : B
+15. フォームの状態を Redux に入れない : C
+16. 複雑なロジックはコンポーネントの外に追い出す : C
+17. 非同期処理には Redux Thunk を使う : C
