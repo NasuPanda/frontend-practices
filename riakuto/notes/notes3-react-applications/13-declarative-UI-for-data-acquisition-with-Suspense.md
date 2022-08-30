@@ -185,3 +185,204 @@ Formidable というシアトルに本社のある企業が事業の一環とし
 
 ***
 
+## Restful API 用のデータフェッチライブラリ
+
+サーバーサイドが RESTful API だったり、 Firebase を始めとする Baas の場合はバックエンドや通信プロトコルに対して不可知論的、かつキャッシュ機能が統合されたデータフェッチライブラリを使うと良い。
+
+この条件に該当するライブラリは現状 SWR と TanStack Query(React Query) の二択。
+
+### SWR - Next.js で有名な Vercel 社製ライブラリ
+
+[Getting Started – SWR](https://swr.vercel.app/docs/getting-started)
+
+SWR は **Stale-While-Revalidate** という用語から来ている。
+stale とは「新鮮ではない、古くなった」という意味の形容詞。
+
+基本動作は以下。
+
+1. 該当データにアクセスしたとき、キャッシュされた値があってその取得日時が任意の許容期間内ならいったんそのキャッシュ値を返す。そしてその裏でサーバにリクエストを行い、その取得したデータ内容に変更があればキャッシュを更新、もう一度あらためてその値を返す
+2. 該当データにアクセスしたとき、キャッシュされた値がなかったり、あったとしてもその取得日時が任意の許容期間を過ぎていたら、直接サーバにリクエストしてデータを取得しその値を返す。さらにその後、そのデータをキャッシュしておく
+
+### SWRクイックスタート: `useSWR`
+
+```tsx
+// クイックスタート
+import React, { FC } from "react";
+import useSWR from "swr";
+import "./styles.css";
+
+const getUser = async (userId: number | string) =>
+  (await fetch(`https://jsonplaceholder.typicode.com/users/${userId}`)).json();
+
+const App: FC = () => {
+  const { data } = useSWR("user/3", () => getUser(3));
+  // const { data } = useSWR("3", (id) => getUser(id));
+  // const { data } = useSWR("3", getUser);
+  // const { data } = useSWR([3, "user"], (id, _) => getUser(id));
+  // const { data } = useSWR([3, "user"], getUser);
+
+  return (
+    <div className="App">
+      {data ? (
+        <>
+          <h2>{data.name}</h2>
+          <p>User ID: {data.id}</p>
+          <p>Email: {data.email}</p>
+          <p>Phone: {data.phone}</p>
+        </>
+      ) : (
+        <h2>Loading...</h2>
+      )}
+    </div>
+  );
+};
+
+export default App;
+// SEE: https://codesandbox.io/s/swr-8rw4g
+```
+
+`useSWR` という Hooks インターフェースを使う。
+第1引数がキャッシュを一意に特定するためのキー( key )、第2引数がデータ取得のための非同期関数( fetcher )。
+
+第1引数のキーは文字列か配列、 `null` 及びそれらを返す関数を渡すことが出来る。
+データが異なるのに同じキーを使ってしまうと当然ながら意図しない挙動になる。
+
+キーに `null` を渡すとどうなるのか。
+`useSWR` はキーが falsy な値になっている間は fetcher によるデータ取得が実行されない。
+`useSWR(shouldFetch ? "user/1" : null, fetcher)` のように記述することで、 boolean 変数 `shouldFetch` の値によって fetcher を実行するかどうかを振り分ける事ができる。
+
+第2引数について。SWR はデータ取得に関して「不可知論的」。
+fetcher となる関数はブラウザ標準の fetch だろうが axios だろうが、Firestore のデータ取得関数だろうが、実体のデータを Promise で返す関数なら何でも良い。
+
+また、第1引数を第2引数 fetcher 関数の引数として使える。
+つまり、文字列 `3` をキーに出来れば上の例は以下のように書ける。
+
+```ts
+const {data} = useSWR("3", (id) => getUser(id));
+```
+
+更に、 fetcher 自身の引数と中の関数に渡している引数が同じ `id` なので、下のように省略出来る。
+
+```ts
+const {data} = useSWR("3", getUser);
+```
+
+キーには配列も使える。
+
+```ts
+const { data } = useSWR([3, "user"], (id, _) => getUser(id));
+```
+
+上では `(id, _)` として配列の2番めの要素を捨てているが、最初から受け取らない事もできる。
+
+```ts
+const { data } = useSWR([3, "user"], getUser);
+```
+
+上で挙げたように、キーが falsy な値だった場合 fetcher は実行されない。
+これを利用して任意の条件でデータを取得するかどうか振り分けられる。 Conditional Fetching と呼ばれるやり方。
+
+```tsx
+const EnhancedUserProfile: VFC <{ userId?: string }> = ({ userId }) => {
+  const { data: user } = useSWR(userId && [userId, 'user'], getUser);
+
+  return <UserProfile user={user} />;
+};
+```
+
+### SWRクイックスタート: `mutate`
+
+キャッシュデータ書き換えのための関数で、任意のキーのデータを fetcher の再実行で更新したり、生の値で書き換えたり出来る。
+
+```ts
+const {data} = mutate(key, data?, shouldRevalidate?)
+```
+
+第2引数 `data` を省略すれば fetcher の再実行によるキャッシュ更新、値を渡せばそれによりキャッシュが更新される。
+
+第3引数 `shouldRevalidate` は書き換え後に改めて fetcher を実行するかどうか。
+デフォルトでは `true` になっている。
+
+### Vercel 社
+
+SWRの開発元。
+
+サーバーサイドレンダリング(SSR) や 静的サイト生成(SSG) が簡単に実現できる React のフレームワークである Next.js や、
+フロントエンド用の Paas である Vercel を提供している会社。
+
+***
+
+### TanStack Query - 個人開発ながら多機能で進化が早い
+
+TanStack Query (旧React Query) もSWRと同様の機能を持つ。
+
+```tsx
+import React, { FC } from "react";
+import { useQuery } from "react-query";
+import "./styles.css";
+
+const getUser = async (userId: number | string) =>
+  (await fetch(`https://jsonplaceholder.typicode.com/users/${userId}`)).json();
+
+const App: FC = () => {
+  const { data } = useQuery([3, "user"], () => getUser(3));
+
+  return (
+    <div className="App">
+      {data ? (
+        <>
+          <h2>{data.name}</h2>
+          <p>User ID: {data.id}</p>
+          <p>Email: {data.email}</p>
+          <p>Phone: {data.phone}</p>
+        </>
+      ) : (
+        <h2>Loading...</h2>
+      )}
+    </div>
+  );
+};
+
+export default App;
+```
+
+`useQuery` が `useSWR` と異なる点は、クエリのキーを fetcher 関数の引数に持ち越せないこと。
+
+conditional fetching 、 TanStack Query では dependent queries (依存クエリ) は、SWRと異なり明示的に示す必要がある。
+第3引数に boolean の `enabled` を設定でき、これが `true` だった時のみ fetcher関数が実行される。
+
+```tsx
+const EnhancedUserProfile: VFC <{ userId?: string }> = ({ userId }) => {
+  const { data: user } = useQuery(
+    [userId, 'user'],
+    () => getUser(userId),
+    { enabled: !!userId },
+  );
+return <UserProfile user={user} />; };
+```
+
+`useQueryClient` という Hooks API の返り値である `queryClient` オブジェクトはメソッドを豊富に持っている。
+以下はその一例。
+
+- `queryClient.prefetchQuery` ...... fetcher からあらかじめデータを取得してキャッシュしておく
+- `queryClient.getQueryDat`a...... ローカルキャッシュから値を読み取る
+- `queryClient.setQueryDat`a...... ローカルキャッシュに直接データを書き込む
+- `queryClient.invalidateQueries` ...... fetcher を再実行してデータを取得、キャッシュを上書きする
+- `queryClient.removeQuerie`s...... ローカルキャッシュから値を削除する
+- `queryClient.clea`r...... すべてのローカルキャッシュをクリアする
+
+この他にも無限スクロールのための `useInfiniteQuery` 、非同期のデータ取得を複数並列して行う `useQueries` などの Hooks APIが提供されている。
+
+更にはガベージコレクションまで用意されている。デフォルトでは5分間使用されなかったキャッシュは自動的に削除されるようになっている。
+
+Redux のような DevTools も用意されている。
+
+### SWR vs TanStack Query
+
+結論から言うと、TanStack Queryの方が圧倒的に多機能。
+おすすめは TanStack Query の方。
+
+TanStack Queryの問題点としては、進化が早く破壊的変更が多い点。
+それ以外には特に無い。
+
+## React Query with Suspense
