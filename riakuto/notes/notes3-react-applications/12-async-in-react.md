@@ -178,3 +178,140 @@ Cons
 - ジェネレータや独自の DSL ライクな API コールなど、書き方にクセがある
 - Saga の全体フローや豊富な Effects API の使い方を理解するための学習コストが高い
 - ライブラリのバンドルサイズが大きい(minify & gzip で 5.3KB。Thunk は 236B、 redux-observable は 1.5KB)
+
+# 12-2. Effect Hook で非同期処理
+
+## Redux ミドルウェアは問題を解決出来たのか
+
+コンポーネントのライフサイクルメソッド内で非同期処理を記述する方法が抱えていた問題を改めて書き出してみる。
+
+1. 機能的凝集度が低い
+2. ビジネスロジックの分離が難しい
+3. テスタビリティが低い
+4. コンポーネント間のデータの共有が難しい
+
+これらの課題は Redux ミドルウェアにより解決されたように思える。
+
+しかし、Redux ミドルウェアはまた新たな問題を生んでしまった。
+
+1. 学習コストが高い
+2. コードのボイラープレートが多い
+3. store の構造が過度に複雑化する
+4. どのミドルウェアを使うかでコミュニティが分断され、ベストプラクティスが定まらない
+
+Redux ミドルウェアを使った開発は基本的に学習コストが高い。
+React そのものはシンプルな UI ライブラリにも関わらず、Webアプリを作るためには難易度の高い Redux 及び 非同期処理ミドルウェアの組み合わせが前提となっていた。
+
+## Effect Hook
+
+Redux ミドルウェアの乱用による問題を解決するため、 Redux 公式から副作用処理のためのソリューションが提供された。
+それが Effect Hook 。
+
+Effect Hook なら、ライフサイクルメソッドでは時間軸でバラバラに書いていた処理を機能単位でまとめられる。
+Custom Hook にすればロジックの分離と再利用が可能になる。
+また、Hooks と同時にリリースされたテストユーティリティ ReactTestUtils を使えば、 Effect Hook 内の外部APIからのデータ取得もモックを噛ませてテスト出来るようになった。 ([テストのレシピ集 – React](https://ja.reactjs.org/docs/testing-recipes.html#data-fetching))
+
+基本は Effect Hook × State Hook で書き、コンポーネント間で取得したデータを共有したい時は Redux を併用する。
+
+### サンプルコード
+
+Effect Hookで非同期処理を書くには、下のように、状態を State Hook で持ち、Effect Hook の中で副作用処理を実行、結果を state 変数に格納すればいい。
+
+```tsx
+import { VFC, useEffect, useState } from 'react';
+import { useParams } from 'react-router';
+import { User, getMembers } from 'domains/github';
+import Members from 'components/pages/Members';
+
+const EnhancedMembers: VFC = () => {
+  const { orgCode = '' } = useParams();
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const load = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const usersData = await getMembers(orgCode);
+      setUsers(usersData);
+    } catch (err) {
+      throw new Error(`organization '${orgCode}' not exists`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+    void load();
+  }, [orgCode]);
+
+  return <Members {...{ orgCode, users, isLoading }} />;
+};
+
+export default EnhancedMembers;
+```
+
+`await` は async 関数内でしか使えないので、一旦 `load` 関数に処理をまとめてから改めてそれをコールしている。
+`load` のコールに `void` を書いているのは、返ってくる `Promise` をあえて無視することを明示するため。
+
+出回っているサンプルは `.then()` によるメソッドチェーンが多いが、React 公式は async/await による記法を推奨している。
+
+### サンプルコード: Redux導入
+
+コンポーネント間で取得したデータを共有したいような場面では Redux を使う。
+
+```tsx
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { User, getMembers } from 'domains/github';
+import { userSlice, UserState } from 'features/user';
+
+type ReturnValue = {
+  users: User[];
+  isLoading: boolean;
+};
+
+const useGetMembers = (orgCode: string): ReturnValue => {
+  const [isLoading, setIsLoading] = useState(false);
+  const users = useSelector<UserState, User[]>((state) => state.users);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    let isUnmounted = false;
+    const { membersGotten } = userSlice.actions;
+
+    const load = async (): Promise<void> => {
+      setIsLoading(true);
+
+      try {
+        const users = await getMembers(orgCode); // eslint-disable-line no-shadow
+
+        if (!isUnmounted) {
+          dispatch(membersGotten({ users }));
+        }
+      } catch (err) {
+        throw new Error(`organization '${orgCode}' not exists`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void load();
+
+    // クリーンアップ処理
+    return () => {
+      isUnmounted = true;
+    };
+  }, [orgCode, dispatch]);
+
+  return { users, isLoading };
+};
+
+export default useGetMembers;
+```
+
+注目すべきは、 `useEffect` の返り値である関数のクリーンアップ処理。
+外部APIにリクエストを送ってまだ結果が返ってきていない時にユーザが画面遷移をした場合、そのままにしておくと非同期処理プロセスは生きている。
+つまり、APIから結果が返ってきた直後に store の中身が書き換わり、予期せぬページ更新が起きかねない。
+
+そこで、コンポーネントがアンマウントされていたら store の中身を書き換えないようにする。
