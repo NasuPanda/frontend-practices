@@ -509,3 +509,85 @@ const queryClient = new QueryClient({
 [useQuery | TanStack Query Docs](https://tanstack.com/query/v4/docs/reference/useQuery?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useQuery)
 
 [useMutation | TanStack Query Docs](https://tanstack.com/query/v4/docs/reference/useMutation?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useMutation)
+
+# 13-3. Suspense の優位性と Concurrent Mode
+
+## 既存アプローチとの比較から見る Suspense の優位性
+
+### UXの改善
+
+他のアプローチと比べてパフォーマンスが優位に改善される。
+所要時間の短縮というより、体感的なパフォーマンスの改善がメイン。
+
+UX を重視する Web パフォーマンス計測では以下のような指標が重視される。
+
+- First Contentful Paint (FCP)
+  - ページの読み込みが開始されてから、何らかのコンテンツ(ローディングアニメーションなどでも可)が表示されるまでの時間
+- First Meaningful Paint (FMP)
+  - ページの読み込みが開始されてから、ユーザにとって意味のあるコンテンツが表示されるまでの時間
+- Largest Contentful Paint (LCP)
+  - ページの読み込みが開始されてから、 viewport (その時点のブラウザウィンドウの可視領域) に掲載される最大のコンテンツ要素が表示されるまでの時間
+
+Suspense と 他のアプローチの比較。
+
+#### Fetch-on-Render
+
+サンプル : https://codesandbox.io/s/fetch-on-render-rn472
+
+通常の Effect Hook を使った手法。
+レンダリングした上でフェッチする。
+
+![fetch-on-render](../../images/233426632c1bbf2498f9baf056cb7e3768a9d8d18c2737b63b7318dbdd2d7716.png)
+
+欠点は、親コンポーネントのデータ取得が完了してレンダリングが終わるまで子コンポーネントのデータ取得が始まらないこと。
+
+#### Fetch-Then-Render
+
+サンプル : https://codesandbox.io/s/fetch-then-render-x2v8r
+
+`Promise.all()` を使う。
+
+![fetch-then-render](../../images/f3a14072d039fe1d30bb7d4b97bcd0ceb1441fd06ea2243df15364a681b2fe8e.png)
+
+LCP が短縮された一方で、 FMP は長くなっている。
+
+#### Render-as-You-Fetch
+
+サンプル : https://codesandbox.io/s/render-as-you-fetch-20u2w
+
+Suspense を使う。レンダリングしながらフェッチする。
+
+![render-as-you-fetch](../../images/f4b1ad62137cf2b38f11d401abe85db39122e7995da2616c41b8587d2c03878e.png)
+
+### Race Conditions の解消
+
+例えば、コミックスのカテゴリ別売上ランキングページを作ったとする。
+
+ページに 『少年漫画』『青年漫画』『少女漫画』『女性漫画』『その他』のタブを並べて、その下にコミックスの一覧が表示されるという構成。
+このタブを超高速で『少女漫画』→『少年漫画』→『女性漫画』→『青年漫画』の順にクリックしたとする。
+
+他のジャンルは全て 300ms 程度で結果を返したが、少女漫画だけ 2s 程度かかってしまった。
+この場合、表示されるのは少女漫画になる。(state の状態が更新されてしまうため)
+
+これは **Race Conditions** と呼ばれるバグ。
+
+Suspense で処理を書いた場合、レンダリング時に Promise が未解決のデータに行き当たった時点でサスペンドされる。そこで解決されるべきデータが将来再開されるレンダリングに予約されるので、別の Promise によって取得したデータがレンダリングを汚染することがない。
+
+## Concurrent Mode
+
+Suspense は Concurrent Mode と組み合わせることで真価を発揮する。
+Concurrent とは、「同時発生的な、並列的な」と訳される。
+
+従来の React のいわゆるレガシーモードでは、レンダリングは一度始まると最後まで止まらないブロッキング・レンダリングだった。
+Concurrent Mode はレンダリングを中断可能にし、各コンポーネントのレンダリングを適宜サスペンド&レジュームしつつ適切にスケジューリングしてくれる。
+
+### 2022年8月現在の情報
+
+> React 18 was released with support for concurrency. However, there is no “mode” anymore, and the new behavior is fully opt-in and only enabled when you use the new features.
+> 訳 : React 18がリリースされ、並行処理がサポートされました。しかし、もう「モード」はなく、新しい動作は完全にオプトインで、新機能を使用するときのみ有効になります。
+>
+> https://17.reactjs.org/docs/concurrent-mode-intro.html
+
+[React v18.0 – React Blog](https://ja.reactjs.org/blog/2022/03/29/react-v18.html#what-is-concurrent-react)
+
+並行処理機能は段階的に採用されていく。
