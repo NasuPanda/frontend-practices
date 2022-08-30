@@ -315,3 +315,239 @@ export default useGetMembers;
 つまり、APIから結果が返ってきた直後に store の中身が書き換わり、予期せぬページ更新が起きかねない。
 
 そこで、コンポーネントがアンマウントされていたら store の中身を書き換えないようにする。
+
+# 12-3. 「Redux 不要論」 を検証する
+
+## オリジナル作者の脱退
+
+React 開発者の間に Redux が一気に普及した頃、一時期は React と Redux がセットのような扱いになっていて、 React でアプリケーションを作るときは最初から Redux を入れるのが当たり前になっていた。
+あまりの過熱ぶりに[You Might Not Need Redux. People often choose Redux before they…](https://medium.com/@dan_abramov/you-might-not-need-redux-be46360cf367)という記事を作者のDan Abramov 自身が書いたほど。
+
+その後 Dan Abramov は Redux、Redux Thunk 共にコミットをやめてしまった。
+
+## New Context API の登場
+
+React 16.3 で **Context API** という機能が導入された。
+これは、React 本体の機能でグローバルにデータを共有出来るようにするためのもの。
+
+Context API を Hooks で使うと以下のようになる。
+
+```tsx
+const ThemeContext = React.createContext('light');
+constApp = () => {
+  const theme = useState('light');
+
+  return (
+  <ThemeContext.Provider value={theme}>
+    <ThemedButton />
+  </ThemeContext.Provider> );
+};
+
+const ThemedButton = () => {
+  const theme = useContext(ThemeContext);
+
+  return <Button theme={theme} />;
+}
+```
+
+Redux の代わりとして使う(子孫から context の値を変更出来るようにする)には、 State Hook と組み合わせて、 state を変更するコールバック関数を同時に context へ格納すれば良い。
+
+### サンプルコード
+
+```tsx
+// ThemeProvider.tsx
+import { FC, useCallback, useState } from 'react';
+import { ThemeContext, themeKeys, themeStyles } from './context';
+
+const ThemeProvider: FC = ({ children }) => {
+  const [key, setKey] = useState<typeof themeKeys[number]>('light');
+  const styles = themeStyles[key];
+
+  const toggle = useCallback(() => {
+    const newKey = themeKeys.find((themeKey) => themeKey !== key);
+    if (newKey) setKey(newKey);
+  }, [key]);
+
+  return (
+    <ThemeContext.Provider value={{ key, styles, toggle }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export default ThemeProvider;
+```
+
+`toggle` 関数の定義では不要な再レンダリングを避けるために `useCallback` を使っている。
+
+```ts
+// context.ts
+import { createContext } from 'react';
+
+export const themeKeys = ['light', 'dark'] as const;
+const themeProperties = ['foreground', 'background'] as const;
+
+export const themeStyles: {
+  [key in typeof themeKeys[number]]: {
+    [property in typeof themeProperties[number]]: string;
+  };
+} = {
+  light: {
+    foreground: '#000',
+    background: '#eee',
+  },
+  dark: {
+    foreground: '#fff',
+    background: '#222',
+  },
+};
+
+type IThemeContext = {
+  key: typeof themeKeys[number];
+  styles: { [key in typeof themeProperties[number]]: string };
+  toggle: () => void;
+};
+
+export const ThemeContext = createContext<IThemeContext>({} as IThemeContext);
+```
+
+### 注意点
+
+context を使った設計で気をつける点としては、1種類の状態に対して1つのコンテキストを作るようにすること。
+Redux のように1つの context の中にオブジェクトツリーで複数の状態をもたせてしまうと、1つの状態を更新しただけでその context を参照する全てのコンポーネントが再レンダリングされてしまう。
+
+そのため、複数の種類の状態を context として共有したい場合、次のように入れ子にしていく必要がある。
+
+```tsx
+const FooContext = React.createContext<IFoo | null>(null);
+const BarContext = React.createContext<IBar | null>(null);
+const BazContext = React.createContext<IBaz | null>(null);
+
+return (
+  <FooContext.Provider value={initialFoo} />
+    <BarContext.Provider value={initialBar} />
+      <BazContext.Provider value={initialBaz} />
+        <App />
+      </BazContext.Provider>
+    </BarContext.Provider>
+  </FooContext.Provider>
+);
+```
+
+## Redux 周辺を取り巻くトレンドの変化
+
+### マイクロフロントエンド
+
+Redux が掲げる3原則の1つ目「Single source of truth」について。
+アプリケーションの状態は store 内の単一オブジェクトツリーに格納され、各コンポーネントは store に従属する形で値を参照するというものだが、このアプローチが時代が求めるものとズレてきた。
+
+**マイクロサービスアーキテクチャ** というものがある。
+1つのアプリケーションを認証や購入といったドメインごとのサービスに分割して、システム的に独立して動くような形にしつつ、開発や運用も別々のラインで行うというもの。
+
+大規模なサーバーサイド開発ではかなり浸透してきた設計手法だが、そのトレンドがフロントエンドにも届きつつある。
+名著『リファクタリング』の Martin Fowler 率いる Thoutworks 社がマイクロフロントエンドという概念を提唱、それが一定の支持を集めるようになってきた。
+
+SPAの要求が高度化するにつれて機能が増えていくと、モノリシックなアーキテクチャでは開発体制に限界が来てしまう。
+究極的にはそれぞれのドメインに分割したコンポーネント群を Web Components の形式で出力し、それらを束ねて読み込ませるようにすれば、各ドメインがどんなフレームワークで作られようが関係なくなるので、スキルセットの違う少人数チームをそれぞれに当てることも出来るようになる。
+
+そうなった時、中央集権的な状態管理手法は成立し得なくなる。
+ドメイン単位で分割され、それぞれが依存することなく動作し、時には異なるフレームワークで作られることもあるコンポーネントということは、個々のコンポーネントが状態を自律的に管理し、それらを組み合わせても競合すること無く動作するようになっていないといけない。
+
+このような状況下で、Redux の思想は収まりが悪くなりつつある。
+
+アプリケーションにとって重要なデータの管理をトップで独占的に行い、下々のコンポーネントはそれを拝領するという中央集権型ではなく、宣言的に記述された個々のコンポーネントが自律的・スマートに必要なデータを取り扱う地方分権型のアーキテクチャという方向に、 React 本家を含めて流れが進みつつある。
+
+### SPAにおけるサーバーサイドのあり方 : BFF(Backends for Frontends)
+
+従来のサーバサイドがフロントエンドに提供する API はサーバーサイド Web アプリケーションの延長で、アーキテクチャは HTML の代わりに JSON を出力するだけのものだった。
+REST の思想はサーバーサイド視点のものであり、そのサーバーサイドの都合にフロントエンド側が合わせるのが当然だとされてきた。
+
+アプリケーションの価値が UX に移るにつれて、BFF という概念が出てきたように、フロントエンドの都合にサーバーサイドが柔軟に合わせる形の技術が登場してきた。
+GraphQLや、Firebase、AWS Amplify に代表される BaaS (Backend as a service) などがそれ。
+
+サーバサイドが自身の論理でフロントエンドの都合を考えずに API を設計・提供していたときは、フロントエンドはその API が返す硬直的なデータをいったん取得した上で、必要に応じて加工・保存する必要が常にあった。
+しかし、フロントエンドが直接サーバサイドにクエリを発行して、その時々に必要なデータを柔軟に取得できるようになれば、フロントエンドが独自に持たなければ行けないデータは無くなる。
+
+現実的にはオフラインのケースやパフォーマンスも考慮しないといけないので、まったく必要なくなるわけではない。
+しかし、クエリ単位の結果を必要に応じてキャッシュすれば、それでこと足りてしまう。
+
+その思想によって台頭してきたのが Apollo Client 。
+ローディング状態やエラー状態を管理してくれる上、データはキャッシュベースで取り回され、そのキャッシュはApolloが勝手に正規化してくれたり、mutation を発行すればレスポンスがサーバから返ってくる前にキャッシュを先に更新してくれたりする。
+
+## この先 Redux とどう付き合っていくべきか
+
+ここまでの流れ。
+
+- オリジナル作者の離脱による求心力の低下(2016 年~)
+- 中央集権的アプローチによる状態管理がフロントエンドのトレンドと乖離してきた(2016 年~)
+- Apollo Client を始めとするクエリキャッシュをベースとした状態管理手法の普及(2017 年~)
+- 新しい Context API の登場により、React 本体だけでグローバルな状態が扱えるように(2018 年 ~)
+- Effect Hook の登場により、Redux ミドルウェアを使わずとも副作用処理がうまく取り回せるよ うに(2019 年~)
+- Facebookから状態管理ライブラリRecoil127 のリリース(2020年)
+
+### Recoil
+
+Facebook からリリースされた状態管理ライブラリ。
+Redux と真っ向から対立たした思想を持つ。
+
+React 公式の状態管理ライブラリというわけではない。
+
+端的に言うと、 `useState` の中身の状態をグローバルに扱えるようにしたもの。
+
+```tsx
+import { VFC } from 'react';
+import { atom, useRecoilState } from 'recoil';
+const counterState = atom(
+  {
+    key: 'counter',
+    default: 0,
+  }
+);
+
+const CounterBoard: VFC = () => {
+  const [count, setCount] = useRecoilState(counterState);
+  const increment = () => setCount(c => c + 1);
+
+  return (
+    <>
+      <p>{count}</p>
+      <button onClick={increment}>
+        +1
+      </button>
+    </>
+  );
+};
+
+export default CounterBoard;
+```
+
+Atom というのが Recoil における state の単位で、 `atom` 関数で state を一意に特定する `key` と デフォルト値の `default` を定義する。
+この atom を引数として `useRecoilState` を実行すれば、どのコンポーネントでもその atom に対応する state 変数とその setter 関数が取得出来る。
+
+Redux では store によって state を一元管理するため、任意の state を参照するときは常にそのツリー構造を意識する必要があるのに対して、 Recoil では atom の key によって state を特定するので、その煩わしさがない。
+
+サーバサイドが従来型の Restful API を使う形のアプリケーション開発を今から行うなら、 Redux の代替として使うのはアリ。
+
+### Redux を使うべきか
+
+Redux は今のトレンドとは合っていない。
+とは言っても、そのDL数は圧倒的なまま。
+
+![Redux-vs-other-libraries](../../images/3964f5d01a6b9a360f631b8e823b9cf9043bdca20481746c0791512c2fe59291.png)
+
+Redux が React 開発のデファクトであった期間が長いため、惰性で使っている人が多いと思われる。
+とはいえ、既存プロジェクトで Redux を使っていない方が難しい。
+既存プロジェクトのリファクタリング等を含め、 Redux を扱う機会はまだまだある。
+
+### Redux を採用するべきプロジェクト
+
+EC サイトや SNS 程度なら、Redux を採用する必要はもう無いと言える。
+
+Redux が必要なケースは、
+GUI上でオブジェクトをインタラクティブに取り回せるようにしておきながら、裏でそのデータの整合性をリアルタイムに取りつつ適宜ローカルのストレージやサーバに内容を保存する必要があったり、
+状態の変更履歴を保存しておいて undo / redo 出来るようにする必要があるケースが相当する。
+
+具体的にはゲーム、エディタ、Trello のようなGUIで動かすアプリなど。
+そのため、Webアプリケーションというよりも React Native によるモバイルアプリ、 Electron によるデスクトップアプリの文脈では Redux が必要になることが少なくないと思われる。
+
+Redux Devtools によるデバッギングを始めとする、デバッグやテストの優れたDXも考慮すべし。
