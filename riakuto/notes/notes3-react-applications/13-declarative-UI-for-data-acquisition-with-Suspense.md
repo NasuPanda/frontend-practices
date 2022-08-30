@@ -151,3 +151,37 @@ export default App;
 このコードの前半だけ隠して `MemberList` と `App` だけ見てみれば、非同期処理が宣言的に書けていると言え無くもない。
 Promise を throw する部分、 `membersCache` というグローバル変数を使っている点が主な問題なので、そこを隠蔽出来れば良さそう。
 
+# 13-2. Suspense Ready なデータ取得ライブラリ
+
+Suspense を使うと非同期なデータ取得を伴う副作用処理をいい感じに宣言的UIで書ける。
+ただし、そのためのリソース生成部分の可読性が低い。
+
+リソース生成部分をいい感じにラップしてくれる、かつキャッシュ機能を持つライブラリを使うと良い。
+
+***
+
+## GraphQL クライアントライブラリ
+
+![relay-vs-apollo-vs-urql](../../images/5af95ad2cf008778dc4f1f8b42e2591c8b658a961a60e9428e01fe5811254a19.png)
+
+### Relay
+
+Facebook 製の GraphQL クライアント。
+Facebook 規模のシステムに特化していて、癖が強く学習コストが高い。
+
+### Apollo
+
+Graph QL クライアントの中ではかなり勢いがあるライブラリ。
+ただし、 Suspense 対応はいつになるか未定。(2022年8月現在未対応)
+
+### urql (Universal React Query Library)
+
+[FormidableLabs/urql](https://github.com/FormidableLabs/urql)
+
+Suspense の対応がかなり進んでいる GraphQL クライアントのライブラリ。
+Formidable というシアトルに本社のある企業が事業の一環として作っているライブラリなので、信頼性はそれなりに高い。
+
+りあクト作者は今から導入するならこれがおすすめだそう。
+
+***
+
