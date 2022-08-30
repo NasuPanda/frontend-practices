@@ -386,3 +386,126 @@ TanStack Queryの問題点としては、進化が早く破壊的変更が多い
 それ以外には特に無い。
 
 ## React Query with Suspense
+
+`useQuery` などのAPIを使うには上位の階層からプロバイダコンポーネントでラップしてやる必要がある。
+
+```tsx
+// index.tsx
+import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+import 'semantic-ui-css/semantic.min.css';
+import './index.css';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 0,
+      // ここで Suspense を有効に
+      suspense: true,
+      // useErrorBoundary: true,
+    },
+    mutations: {
+      retry: 0,
+      // useErrorBoundary: true,
+    },
+  },
+});
+
+ReactDOM.render(
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <App />
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryClientProvider>
+  </BrowserRouter>,
+  document.getElementById('root') as HTMLElement,
+);
+
+reportWebVitals();
+```
+
+### Error boundary の注意点
+
+子コンポーネントで発生した例外をキャッチするのはクラスコンポーネントの `getDerivedStateFromError` と `componentDidCatch` しか出来ない。
+
+```tsx
+import { ErrorInfo, PureComponent, ReactNode } from 'react';
+import { HTTPError } from 'ky';
+import { Message } from 'semantic-ui-react';
+
+type StatusMessages = { [status: number]: string };
+type Props = { statusMessages?: StatusMessages };
+type State = { hasError: boolean; error: Error | null };
+const DEFAULT_MESSAGES: StatusMessages = { 0: 'サーバエラーです' };
+
+class ErrorBoundary extends PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError = (error: Error): State => ({
+    hasError: true,
+    error,
+  });
+
+  componentDidCatch = (error: Error, info: ErrorInfo): void => {
+    console.error(error, info); // eslint-disable-line no-console
+  };
+
+  render = (): ReactNode => {
+    const { children, statusMessages = {} } = this.props;
+    const { hasError, error } = this.state;
+    const messages = { ...DEFAULT_MESSAGES, ...statusMessages };
+
+    if (hasError) {
+      const statusCode = (error as HTTPError)?.response?.status;
+
+      if (statusCode && Object.keys(messages).includes(String(statusCode))) {
+        return <Message warning>{messages[statusCode]}</Message>;
+      }
+
+      return <Message error>{messages[0]}</Message>;
+    }
+
+    return children;
+  };
+}
+
+export default ErrorBoundary;
+```
+
+また、React Queryを使う際は、トップレベルで以下のような設定をするが、 `queries` カテゴリの `useErrorBoundary` というオプションが `true` になっていないとエラーが起きてもキャッチ出来ない。
+
+`useErrorBoundary` の値は `suspense` オプションの値と連動するので、Suspense有効モードだと暗黙の内に有効になっている。
+
+```tsx
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 0,
+      // ここで Suspense を有効に
+      suspense: true,
+      // useErrorBoundary: true,
+    },
+    mutations: {
+      retry: 0,
+      // useErrorBoundary: true,
+    },
+  },
+});
+```
+
+### リファレンス
+
+[useQuery | TanStack Query Docs](https://tanstack.com/query/v4/docs/reference/useQuery?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useQuery)
+
+[useMutation | TanStack Query Docs](https://tanstack.com/query/v4/docs/reference/useMutation?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useMutation)
