@@ -145,9 +145,19 @@ AOTコンパイル = Ahead-of-time Compilation : アプリケーション実行�
 
 ## 読み物
 
-[Atomic Design | Brad Frost](https://bradfrost.com/blog/post/atomic-web-design/) : アトミックデザインというデザインパターンについて
+[Atomic Design | Brad Frost](https://bradfrost.com/blog/post/atomic-web-design/) : アトミックデザインというデザインパターンについて。
 
 [Dan Abramov - Live React: Hot Reloading with Time Travel at react-europe 2015 - YouTube](https://www.youtube.com/watch?v=xsSnOQynTHs) : 動画だが。Redux 発表セッション。
+
+[React Fiberアーキテクチャについて | POSTD](https://postd.cc/react-fiber-architecture/) : React 16.0 から採用されたレンダリングのためのアーキテクチャ。
+
+[sagas.pdf](https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf) : Saga パターンについての論文。
+
+[Micro Frontends](https://www.martinfowler.com/articles/micro-frontends.html) : マイクロフロントエンド(マイクロサービスアーキテクチャのフロントエンド版のようなもの)
+
+[我々向けの Algebraic Effects 入門 — Overreacted](https://overreacted.io/ja/algebraic-effects-for-the-rest-of-us/) : Suspense の Promise Boundary はここから着想を得たらしい。
+
+[パフォーマンスの監査](https://web.dev/lighthouse-performance/) : Web パフォーマンス計測の指標
 
 ## React Router
 
@@ -163,6 +173,8 @@ AOTコンパイル = Ahead-of-time Compilation : アプリケーション実行�
 
 [Style Guide | Redux](https://redux.js.org/style-guide/) : Redux のスタイルガイド
 
+[Ecosystem | Redux](https://redux.js.org/introduction/ecosystem/) : Redux のエコシステム
+
 ### Redux 推奨ツール
 
 [Introduction to Immer | Immer](https://immerjs.github.io/immer/) : イミュータブルな更新を簡単にする
@@ -171,6 +183,47 @@ AOTコンパイル = Ahead-of-time Compilation : アプリケーション実行�
 
 [Redux DevTools extensions](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=ja) : タイムトラベルデバッギング。
 
-## React 関連ライブラリ
+[Thunks in Redux: The Basics. What Thunks Are, What They Solve, &… | by Gabriel Lebec | Fullstack Academy | Medium](https://medium.com/fullstack-academy/thunks-in-redux-the-basics-85e538a3fe60) : 非同期処理ライブラリ (りあクト作者非推奨)
+
+### Redux 関連ツール
+
+[Redux-Saga - An intuitive Redux side effect manager. | Redux-Saga](https://redux-saga.js.org/) : 非同期処理ライブラリ
+
+## React
+
+[useEffect完全ガイド — Overreacted](https://overreacted.io/ja/a-complete-guide-to-useeffect/) : `useEffect` のガイド。
+
+[Error Boundary – React](https://ja.reactjs.org/docs/error-boundaries.html) : 子孫コンポーネントで throw された例外を補足出来るようにしておき、例外発生時は通常のコンポーネントツリーの代わりに fallback のUIを表示してくれるコンポーネントのこと。
+
+[プロファイラ API – React](https://ja.reactjs.org/docs/profiler.html) : パフォーマンスの計測に使える。
+
+### テスト
+
+[テストユーティリティ – React](https://ja.reactjs.org/docs/test-utils.html) : テスト用ユーティリティ
+
+[テストのレシピ集 – React](https://ja.reactjs.org/docs/testing-recipes.html) : テストのレシピ
+
+## React ライブラリ
 
 [ホーム | React Hook Form - Simple React forms validation](https://react-hook-form.com/jp/) : フォーム管理ライブラリ
+
+[Introduction to Apollo Client - Apollo GraphQL Docs](https://www.apollographql.com/docs/react/) : Micro Frontends の思想に合った GraphQL クライアント。
+
+[Recoil](https://recoiljs.org/) : Facebook製の状態管理ライブラリ
+
+[FormidableLabs/urql: The highly customizable and versatile GraphQL client with which you add on features like normalized caching as you grow.](https://github.com/FormidableLabs/urql) : Suspense に対応している GraphQL クライアント。おすすめ。
+
+[Getting Started – SWR](https://swr.vercel.app/docs/getting-started) : Suspense による宣言的UIを実現するために欲しい機能(Promise を throw したりする辺りをラップしてくれる、キャッシュ機能を持つ)を持つライブラリ。Vercel社製。
+
+[TanStack/query - github](https://github.com/TanStack/query) / [TanStack Query | React Query, Solid Query, Svelte Query, Vue Query](https://tanstack.com/query/v4) : Suspense による宣言的UIを実現するために欲しい機能を持つもう1つのライブラリ。より多機能な方。りあクト作者のおすすめはこちら。
+
+  [useQuery | TanStack Query Docs](https://tanstack.com/query/v4/docs/reference/useQuery?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useQuery)
+
+  [useMutation | TanStack Query Docs](https://tanstack.com/query/v4/docs/reference/useMutation?from=reactQueryV3&original=https://react-query-v3.tanstack.com/reference/useMutation)
+
+
+[sindresorhus/ky: 🌳 Tiny & elegant JavaScript HTTP client based on the browser Fetch API](https://github.com/sindresorhus/ky) React 用ではないが。ブラウザ標準の `fetch` よりもモダンな実装をしている。Nuxt.js で公式モジュールとして採用されるなど、いい感じのライブラリ。
+
+## GraphQL
+
+[How to GraphQL - The Fullstack Tutorial for GraphQL](https://www.howtographql.com/) : GraphQL の有名なチュートリアルサイト
