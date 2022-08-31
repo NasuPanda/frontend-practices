@@ -74,3 +74,9 @@ const CssModulesComponent: React.VFC = () => (
 
 export default CssModulesComponent;
 ```
+
+## StyledJSX
+
+### Error: `Property 'jsx' does not exist on type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>`
+
+[Typescript typings · Issue #90 · vercel/styled-jsx](https://github.com/vercel/styled-jsx/issues/90)
