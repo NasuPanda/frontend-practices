@@ -1,12 +1,14 @@
 import InlineStyleComponent from './inlineStyle';
 import CssModulesComponent from './CssModules';
 import StyledJsxComponent from './StyledJsx';
+import StyledComponentsComponent from './StyledComponents';
 
-const App: React.VFC = () => (
+const App: React.FC = () => (
   <div>
     <InlineStyleComponent />
     <CssModulesComponent />
     <StyledJsxComponent />
+    <StyledComponentsComponent />
   </div>
 );
 
