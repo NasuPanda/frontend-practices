@@ -12,16 +12,16 @@ const StyledJsxComponent: React.FC = () => (
         justify-content: space-around;
       }
       .foo {
-        width: '80%';
-        color: 'red';
-        border-radius: '20px';
+        width: 80%;
+        color: red;
+        border-radius: 20px;
       }
       .submit-button {
-        padding: '8px';
-        margin: '8px';
-        color: 'fff';
-        background-color: '#6ce';
-        border-radius: '20px';
+        padding: 8px;
+        margin: 8px;
+        color: fff;
+        background-color: #6ce;
+        border-radius: 20px;
       }
     `}</style>
   </>
