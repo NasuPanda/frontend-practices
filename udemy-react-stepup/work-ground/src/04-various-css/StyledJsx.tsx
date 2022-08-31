@@ -6,7 +6,7 @@ const StyledJsxComponent: React.FC = () => (
         This is a button
       </button>
     </div>
-    <style jsx>{`
+    {/* <style jsx>{`
       .container {
         display: flex;
         justify-content: space-around;
@@ -23,7 +23,7 @@ const StyledJsxComponent: React.FC = () => (
         background-color: #6ce;
         border-radius: 20px;
       }
-    `}</style>
+    `}</style> */}
   </>
 );
 
