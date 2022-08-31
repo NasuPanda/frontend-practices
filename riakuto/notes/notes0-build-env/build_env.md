@@ -416,6 +416,37 @@ npx create-react-app <project-name> --template typescript
 yarn create react-app <project-name> --template typescript
 ```
 
+### CRA で React 18 をインストール後 17 に変更
+
+参考 : [Create React AppのプロジェクトをReact17にダウングレードする - Qiita](https://qiita.com/kabosu3d/items/674e287dd068322ca7cf)
+
+```zsh
+# 依存関係を React 17 系にする
+npm install --save react@17.0.2 react-dom@17.0.2 @testing-library/react@12.1.5
+```
+
+`index.tsx` を以下に。
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById("root")
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+```
+
 ### デフォルトで使用されるパッケージマネージャ
 
 Create React App 5.00 以降は `npm` `npx` から実行されれば npm を、 `yarn` から実行されれば yarn をパッケージマネージャとして使用するように変更されている。
@@ -426,6 +457,8 @@ yarn を強制的に使うには `yarn create react-app <project-name>` とす�
 ### バージョン指定して実行
 
 `npx create-react-app@4.0.3 hello-world --template typescript` のようにする。
+
+※ 2022年 8月 現在、過去のバージョンを指定して実行出来ない。
 
 ## ESLint
 
