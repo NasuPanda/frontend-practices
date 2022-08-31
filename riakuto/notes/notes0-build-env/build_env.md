@@ -1,9 +1,11 @@
 # React 環境構築手順
-
+Environment Setup Procedures and Project Template
 ## 前提
 
 - macOS Monterey 12.5.1
 - 2022年8月現在の手順
+
+`my-project-react-17` の `package.json` を使って　`yarn install` or `npm install` すれば、ひとまず React 17 (TypeScript) + 下に示すリンターやフォーマッタが入った環境ができる。
 
 ## 設定ファイル
 
