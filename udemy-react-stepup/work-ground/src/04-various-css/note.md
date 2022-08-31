@@ -32,3 +32,45 @@ const InlineStyleComponent: React.VFC = () => {
   );
 };
 ```
+
+## CSS Modules
+
+"node-sass" のインストールが必要。
+
+```zsh
+yarn add node-sass
+```
+
+- ファイル名を `対応するコンポーネント.module.scss` とする。
+- 使用する側では、 `importした変数名.クラス名` という形で使用する。
+
+```scss
+// CssModules.module.scss
+.container {
+  display: flex;
+  justify-content: space-around;
+}
+.title {
+  color: 'red';
+};
+.button {
+  color: 'fff';
+}
+
+```
+
+```tsx
+// CssModules.tsx
+import classes from './CssModules.module.scss';
+
+const CssModulesComponent: React.VFC = () => (
+  <div className={classes.container}>
+    <h1 className={classes.title}>CSS Modules</h1>
+    <button type="button" className={classes.button}>
+      This is a button
+    </button>
+  </div>
+);
+
+export default CssModulesComponent;
+```
