@@ -182,6 +182,7 @@ export default StyledComponentsComponent;
 yarn add @emotion/react @emotion/styled && typesync && yarn
 ```
 
+コードの先頭に `/** @jsx jsx */` と記述。(環境によってはその上の `/** @jsxRuntime classic */` も必要)
 StyledComponents ライクな記述、インラインライクな記述、CSS そのままなど。
 
 ```tsx
