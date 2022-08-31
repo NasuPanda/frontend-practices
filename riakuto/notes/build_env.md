@@ -1,3 +1,542 @@
+# React 環境構築手順
+
+## 前提
+
+- macOS Monterey 12.5.1
+- 2022年8月現在の手順
+
+## 設定ファイル
+
+随時更新。
+
+### `package.json`
+
+```json
+{
+  "name": "theme-context",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^12.1.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.9.1",
+    "@types/react": "^17.0.21",
+    "@types/react-dom": "^17.0.9",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^2.0.3",
+    "typescript": "^4.4.3",
+    "web-vitals": "^2.1.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "fix": "npm run -s format && npm run -s lint:fix",
+    "format": "prettier --write --loglevel=warn '{public,src}/**/*.{js,jsx,ts,tsx,html,gql,graphql,json}'",
+    "lint": "npm run -s lint:style; npm run -s lint:es",
+    "lint:fix": "npm run -s lint:style:fix && npm run -s lint:es:fix",
+    "lint:es": "eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:es:fix": "eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:conflict": "eslint-config-prettier 'src/**/*.{js,jsx,ts,tsx}'",
+    "lint:style": "stylelint 'src/**/*.{css,less,sass,scss}'",
+    "lint:style:fix": "stylelint --fix 'src/**/*.{css,less,sass,scss}'",
+    "preinstall": "typesync || :",
+    "prepare": "simple-git-hooks > /dev/null"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/prettier": "^2.3.2",
+    "@types/stylelint": "^13.13.2",
+    "@types/testing-library__jest-dom": "^5.14.1",
+    "@types/testing-library__user-event": "^4.2.0",
+    "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "@typescript-eslint/parser": "^4.31.1",
+    "eslint-config-airbnb": "18.2.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-react": "^7.25.1",
+    "eslint-plugin-react-hooks": "4.2.0",
+    "lint-staged": "^11.1.2",
+    "prettier": "^2.4.0",
+    "simple-git-hooks": "^2.6.1",
+    "stylelint": "^13.13.1",
+    "stylelint-config-recess-order": "^2.5.0",
+    "stylelint-config-standard": "^22.0.0",
+    "stylelint-order": "^4.1.0",
+    "typesync": "^0.8.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": ". ./udemy-react-stepup/lint-staged-around"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write --loglevel=error",
+      "eslint --fix --quiet"
+    ],
+    "src/**/*.{css,less,sass,scss}": [
+      "stylelint --fix --quiet"
+    ],
+    "{public,src}/**/*.{html,gql,graphql,json}": [
+      "prettier --write --loglevel=error"
+    ]
+  }
+}
+```
+
+### `eslint.js`
+
+```js:eslint.js
+module.exports = {
+  env: {
+    browser: true,
+    es2021: true,
+  },
+  extends: [
+    "plugin:react/recommended",
+    "airbnb",
+    "airbnb/hooks",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "prettier",
+  ],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaFeatures: {
+      jsx: true,
+    },
+    ecmaVersion: 12,
+    project: "./tsconfig.eslint.json",
+    sourceType: "module",
+    tsconfigRootDir: __dirname,
+  },
+  plugins: [
+    "@typescript-eslint",
+    "import",
+    "jsx-a11y",
+    "prefer-arrow",
+    "react",
+    "react-hooks",
+  ],
+  root: true,
+  rules: {
+    // occur error in `import React from 'react'` with react-scripts 4.0.1
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error"],
+    "lines-between-class-members": [
+      "error",
+      "always",
+      {
+        exceptAfterSingleLine: true,
+      },
+    ],
+    "no-void": [
+      "error",
+      {
+        allowAsStatement: true,
+      },
+    ],
+    "padding-line-between-statements": [
+      "error",
+      {
+        blankLine: "always",
+        prev: "*",
+        next: "return",
+      },
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        vars: "all",
+        args: "after-used",
+        argsIgnorePattern: "_",
+        ignoreRestSiblings: false,
+        varsIgnorePattern: "_",
+      },
+    ],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        js: "never",
+        jsx: "never",
+        ts: "never",
+        tsx: "never",
+      },
+    ],
+    "prefer-arrow/prefer-arrow-functions": [
+      "error",
+      {
+        disallowPrototype: true,
+        singleReturnOnly: false,
+        classPropertiesAllowed: false,
+      },
+    ],
+    "react/jsx-filename-extension": [
+      "error",
+      {
+        extensions: [".jsx", ".tsx"],
+      },
+    ],
+    "react/jsx-props-no-spreading": [
+      "error",
+      {
+        html: "enforce",
+        custom: "enforce",
+        explicitSpread: "ignore",
+      },
+    ],
+    "react/react-in-jsx-scope": "off",
+  },
+  overrides: [
+    {
+      files: ["*.tsx"],
+      rules: {
+        "react/prop-types": "off",
+      },
+    },
+  ],
+  settings: {
+    "import/resolver": {
+      node: {
+        paths: ["src"],
+      },
+    },
+  },
+};
+```
+
+### `.eslint.ignore`
+
+```shell:.eslint.ignore
+build/
+public/
+**/coverage/
+**/node_modules/
+**/*.min.js
+*.config.js
+```
+
+### `.prettier.rc`
+
+```json:.prettier.rc
+{
+  "bracketSpacing": true,
+  "printWidth": 80,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "useTabs": false
+}
+```
+
+### `.stylelintrc.js`
+
+```js:.stylelintrc.js
+module.exports = {
+  extends: ['stylelint-config-standard', 'stylelint-config-recess-order'],
+  plugins: ['stylelint-order'],
+  ignoreFiles: ['**/node_modules/**'],
+  rules: {
+    'string-quotes': 'single',
+  },
+};
+```
+
+### `.tsconfig.json`
+
+```json:.tsconfig.json
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "src",
+    "downlevelIteration": true
+  },
+  "include": [
+    "src"
+  ]
+}
+```
+
+### `tsconfig.eslint.json`
+
+```json:tsconfig.eslint.json
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+```
+
+
+### Git-hooks
+
+#### `lint-staged-around`
+
+```shell
+#!/bin/sh
+
+# lint-staged-around
+#   execute each lint-staged entry in sub-directories projects recursively
+#
+#   Riakuto! Project by Klemiwary Books
+
+fileTypes="js|jsx|ts|tsx|html|css|less|sass|scss|gql|graphql|json"
+target="src|public"
+
+# detect git against tag
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+  against=HEAD
+else
+  # Initial commit: diff against an empty tree object
+  against=$(git hash-object -t tree /dev/null)
+fi
+
+if [ "$(uname)" == "Darwin" ]; then
+  sedOption='-E'
+else
+  sedOption='-r'
+fi
+
+# pick staged projects
+stagedProjects=$( \
+  git diff --cached --name-only --diff-filter=AM $against | \
+  grep -E ".*($target)\/" | \
+  grep -E "^.*\/.*\.($fileTypes)$" | \
+  grep -vE "(package|tsconfig).*\.json" | \
+  sed $sedOption "s/($target)\/.*$//g" | \
+  uniq \
+)
+
+# execute each lint-staged
+rootDir=$(pwd | sed $sedOption "s/\/\.git\/hooks//")
+
+for project in ${stagedProjects[@]}; do
+  echo "Executing $project lint-staged entry..."
+  cd "$rootDir/$project"
+  npx lint-staged 2>/dev/null
+done
+```
+
+#### `test-around`
+
+```shell
+#!/bin/sh
+
+# test-around
+#   execute each test in sub-directories projects recursively
+#
+#   Riakuto! Project by Klemiwary Books
+
+# put target project dirs
+targetProjects=(
+  "06-lint/04-advanced"
+  "08-component/02-props"
+  "08-component/03-state/01-class"
+  "08-component/03-state/02-state"
+  "08-component/04-lifecycle"
+  "09-hooks/03-effect"
+  "09-hooks/02-state"
+  "09-hooks/03-effect"
+  "09-hooks/04-memoize"
+  "09-hooks/05-custom"
+)
+
+# execute each test
+rootDir=$(pwd | sed -r "s/\/\.git\/hooks//")
+
+for project in ${targetProjects[@]}; do
+  cd "$rootDir/$project"
+  CI=true npm test
+done
+```
+
+## Create React App
+
+```zsh
+# npm
+npx create-react-app <project-name> --template typescript
+
+# yarn
+yarn create react-app <project-name> --template typescript
+```
+
+### デフォルトで使用されるパッケージマネージャ
+
+Create React App 5.00 以降は `npm` `npx` から実行されれば npm を、 `yarn` から実行されれば yarn をパッケージマネージャとして使用するように変更されている。
+
+yarn を強制的に使うには `yarn create react-app <project-name>` とする。
+`yarn create-react-app` ではなく `yarn create react-app` なので注意。
+
+### バージョン指定して実行
+
+`npx create-react-app@4.0.3 hello-world --template typescript` のようにする。
+
+## ESLint
+
+```zsh
+# Create React App を実行した場合最初から入っているのでバージョン確認
+$ yarn list eslint
+yarn list v1.22.19
+warning Filtering by arguments is deprecated. Please use the pattern option instead.
+└─ eslint@8.23.0
+✨  Done in 0.83s.
+
+$ yarn eslint --init
+
+# only~ ではなく、全てを包括するオプションを選ぶ
+✔ How would you like to use ESLint? · style
+# JavaScript を選ぶ
+✔ What type of modules does your project use? · esm
+# React
+✔ Which framework does your project use? · react
+# TypeScript を使う場合 yes
+✔ Does your project use TypeScript? · No / Yes
+# Browser でOK
+✔ Where does your code run? · browser
+# ガイド を選ぶ
+✔ How would you like to define a style for your project? · guide
+# Airbnb があればそれを、無ければ他を
+✔ Which style guide do you want to follow? · standard-with-typescript
+# 設定ファイルのフォーマット
+✔ What format do you want your config file to be in? · JavaScript
+# Yes でいい
+✔ Would you like to install them now? · No / Yes
+# 使いたいパッケージマネージャを選ぶ
+✔ Which package manager do you want to use? · yarn
+```
+
+追加で色々インストール。
+
+```zsh
+# Airbnb (eslint init でインストールしなかった場合)
+yarn add -D eslint-config-airbnb eslint-plugin-import eslint-plugin-jsx-a11y \
+ eslint-plugin-react eslint-plugin-react-hooks
+
+# prefer-arrow プラグインインストール
+yarn -D add eslint-plugin-prefer-arrow
+```
+
+### リファレンス
+
+設定のリファレンス。
+
+[Rules - ESLint - Pluggable JavaScript Linter](https://eslint.org/docs/latest/rules/)
+[typescript-eslint/packages/eslint-plugin at main · typescript-eslint/typescript-eslint](https://github.com/typescript-eslint/typescript-eslint/tree/main/packages/eslint-plugin#supported-rules)
+
+各種プラグインはプロジェクトページやnpmのページを見に行く。
+
+## Prettier
+
+```zsh
+yarn add -D prettier eslint-config-prettier
+```
+
+### ESLint と Prettier 間でルールの競合がないか確認
+
+次のような出力なら問題なし。
+
+```zsh
+$ npx eslint-config-prettier 'src/**/*.{js,jsx,ts,tsx}'
+No rules that are unnecessary or conflict with Prettier were found.
+```
+
+衝突がある場合次のような出力になる。
+
+```zhs
+The following rules are unnecessary or might conflict with Prettier:
+- @typescript-eslint/indent
+- @typescript-eslint/no-extra-semi
+```
+
+この場合は `@typescript-eslint/indent` の設定が不要だということなので、 `eslintrc.js` からそれを削除する。
+
+### リファレンス
+
+[Options · Prettier](https://prettier.io/docs/en/options.html)
+
+## stylelint
+
+```zsh
+$ yarn add -D stylelint stylelint-config-standard stylelint-order stylelint-config-recess-order
+```
+
+## simple-git-hooks
+
+```zsh
+yarn add -D simple-git-hooks lint-staged
+
+# package.json に pre-** を書いた後実行する
+$ npx simple-git-hooks
+[INFO] Successfully set the pre-commit with command: . ./lint-staged-around
+[INFO] Successfully set the pre-push with command: . ./test-around
+[INFO] Successfully set all git hooks
+```
+
+***
+
+## `typesync` : インストール後に実行
+
+`typesync` は `package.json` を見て足りない型定義パッケージがあれば自動で追加してくれるやつ。
+
+```zsh
+typesync
+yarn
+```
+
 # anyenv + nodenv による npm インストール
 
 ## anyenv インストール
@@ -60,6 +599,7 @@ v14.17.0
 ## ESLintの導入
 
 CRA で作成したプロジェクトにはデフォルトで ESLint が入っている。
+
 react-scripts との相性の問題があるので、ESLintのバージョンはデフォルトのものが推奨。
 
 ```zsh
@@ -86,10 +626,12 @@ ESLint本体を除くと以下のインストールが必要。
 
 ## ESLintの環境を作る
 
-ESLintについては CRA で作成したプロジェクトには最初からパッケージがインストールされている。
-別途最新のESLintをインストールし直す事もできるが、react-scriptsのバージョンとの相性があるため、インストール済のものを使っておいたほうが無難。
-
 ```shell
+# - - - - - - - - - - -
+# CRA 実行済とする
+# - - - - - - - - - - -
+
+# 確認
 yarn list eslint
 
 # 各種パッケージのアップデート
@@ -100,7 +642,7 @@ $ yarn eslint --init
 
 ✔ How would you like to use ESLint? · style
 # JavaScript を選択
-✔ What type of modules does your project use? · esm
+✔ What type of modules does your project use? · JavaScript modules
 ✔ Which framework does your project use? · react
 ✔ Does your project use TypeScript? · Yes
 ✔ Where does your code run? · browser
@@ -161,6 +703,13 @@ $ yarn
 ### Airbnb
 
 Airbnb JavaScript Style Guide に準拠するESLintの共有設定 eslint-config-airbnb が有名。
+
+既存のプロジェクトに組み込みたい場合は以下のようにして依存するパッケージも含めてダウンロードする。
+
+```zsh
+yarn add -D eslint-config-airbnb eslint-plugin-import eslint-plugin-jsx-a11y \
+ eslint-plugin-react eslint-plugin-react-hooks
+```
 
 ### `extends` による各プラグイン推奨ルールの共有設定
 
@@ -390,12 +939,14 @@ public/
 `setting.json` に以下を追加しておく。
 
 ```json
-"editor.codeActionsOnSave": {
+{
+  "editor.codeActionsOnSave": {
   "source.fixAll.eslint": true
 },
 "editor.formatOnSave": false,
 "eslint.packageManager": "yarn",
 "typescript.enablePromptUseWorkspaceTsdk": true
+}
 ```
 
 最後の行は、プロジェクトにTypeScriptがインストールされている場合、VSCode内蔵のTypeScriptとプロジェクトのTypeScriptどちらを使うか尋ねさせる設定。
@@ -771,7 +1322,7 @@ module.exports = {
     "scss.validate": false,
 ```
 
-# 6更に進んだ設定
+# 更に進んだ設定
 
 ## ESLintのプラグイン
 
