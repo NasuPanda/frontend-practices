@@ -256,6 +256,37 @@ const UrlParameter: React.FC = () => {
 export default UrlParameter;
 ```
 
+### クエリパラメータ : `useLocation`
+
+`useLocation` を使うことでクエリパラメータを取得出来る。
+
+```tsx
+{
+    "pathname": "/page2/100",
+    "search": "?name=foo",
+    "hash": ""
+}
+```
+
+JS の `URLSearchParams` を使うと良い。
+
+```tsx
+const UrlParameter: React.FC = () => {
+  const { id } = useParams();
+  const { search } = useLocation();
+  const query = new URLSearchParams(search);
+
+  return (
+    <div>
+      <h2>URL Parameter</h2>
+      <p>パラメータは {id} です</p>
+      <h2>Query Parameter</h2>
+      <p>クエリパラメータは {query.get('name')} です</p>
+    </div>
+  );
+};
+```
+
 ## エラー対処
 
 ### React Router のコンポーネントでオーバーロードエラー
