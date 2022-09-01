@@ -43,7 +43,7 @@ const App: React.FC = () => (
 
 ### ネストしたルート
 
-`render` 関数を使う。
+`render` を使う。
 
 ```tsx
   <Route
@@ -64,6 +64,32 @@ const App: React.FC = () => (
       </Switch>
     )}
 />
+```
+
+ただし、↑だと `/page1` に重複がある。
+
+`render` にはデフォルトで `props` が渡されていて、 history や match を受け取る事ができる。
+それを利用してみる。
+
+```tsx
+  <Route
+    path="/page1"
+    render={({ match: { url } }) => (
+      <Switch>
+        <Route exact path="/page1">
+          <Page1 />
+        </Route>
+
+        <Route exact path={`${url}/detailA`}>
+          <Page1DetailA />
+        </Route>
+
+        <Route exact path={`${url}/detailB`}>
+          <Page1DetailB />
+        </Route>
+      </Switch>
+    )}
+  />
 ```
 
 ## エラー対処

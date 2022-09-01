@@ -28,17 +28,17 @@ const App: React.FC = () => (
       {/* ネストしたルート */}
       <Route
         path="/page1"
-        render={() => (
+        render={({ match: { url } }) => (
           <Switch>
             <Route exact path="/page1">
               <Page1 />
             </Route>
 
-            <Route exact path="/page1/detailA">
+            <Route exact path={`${url}/detailA`}>
               <Page1DetailA />
             </Route>
 
-            <Route exact path="/page1/detailB">
+            <Route exact path={`${url}/detailB`}>
               <Page1DetailB />
             </Route>
           </Switch>
