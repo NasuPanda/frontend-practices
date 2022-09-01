@@ -210,6 +210,52 @@ const Router: React.FC = () => (
 );
 ```
 
+### パラメータ : `useParams`
+
+次のようなルーティングの定義があったとする。
+
+```tsx
+// Page2Router.tsx
+const page2Routes: Route[] = [
+  {
+    path: '/',
+    exact: true,
+    children: <Page2 />,
+  },
+  {
+    // URL パラメータに当たる
+    path: '/:id',
+    exact: false,
+    children: <UrlParameter />,
+  },
+];
+```
+
+2つ目のオブジェクトの `path` を見ると、 `/:id` という記述がある。
+このように `:` を使うと、その箇所でURLパラメータを受け取る事ができる。
+
+受け取る側では、 `useParams` という Hooks を使う。
+
+`path` で URL パラメータを `id` として受け取っているので、 `useParams` でも `id` という名前の変数として受け取る。
+なお、 `useParams` の返り値は `{id: "params"}` という形式のオブジェクト。
+
+```tsx
+import { useParams } from 'react-router-dom';
+
+const UrlParameter: React.FC = () => {
+  const { id } = useParams();
+
+  return (
+    <div>
+      <h2>URL Parameter</h2>
+      <p>パラメータは {id} です</p>
+    </div>
+  );
+};
+
+export default UrlParameter;
+```
+
 ## エラー対処
 
 ### React Router のコンポーネントでオーバーロードエラー
