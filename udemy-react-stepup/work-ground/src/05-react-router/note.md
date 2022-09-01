@@ -360,6 +360,9 @@ const Page1DetailA: React.FC = () => {
 export default Page1DetailA;
 ```
 
+### 404 ページ
+
+
 
 ## エラー対処
 
