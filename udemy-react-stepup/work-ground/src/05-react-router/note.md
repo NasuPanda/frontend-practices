@@ -314,6 +314,53 @@ export default Page1;
 
 受け取る側では `useLocation` を使う。
 
+### `Link` を使わない画面遷移
+
+`Link` のクリックだけでなく、JavaScript側で画面遷移を制御したい場合。
+
+history の `push` メソッドを使う。
+
+```tsx
+import { Link, useHistory } from 'react-router-dom';
+
+const Page1: React.FC = () => {
+  // 省略...
+  const history = useHistory();
+  const onClickDetailA = () => history.push(paths.detailA);
+
+  return (
+    <div>
+      {/* Link 以外の画面遷移 */}
+      <button type="button" onClick={onClickDetailA}>
+        Detail A from Button (not Link)
+      </button>
+    </div>
+  );
+};
+```
+
+「戻る」を実装したい時は `history.goBack` を使う。
+
+```tsx
+import { useHistory } from 'react-router-dom';
+
+const Page1DetailA: React.FC = () => {
+  const history = useHistory();
+  const onClickBack = () => history.goBack();
+
+  return (
+    <div>
+      <button onClick={onClickBack} type="button">
+        戻る
+      </button>
+    </div>
+  );
+};
+
+export default Page1DetailA;
+```
+
+
 ## エラー対処
 
 ### React Router のコンポーネントでオーバーロードエラー

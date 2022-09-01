@@ -1,8 +1,9 @@
-import { useParams, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useMemo } from 'react';
 
 const UrlParameter: React.FC = () => {
-  const { id } = useParams();
+  // const { id } = useParams();
+  const id = '100';
 
   const { search } = useLocation();
   const query = new URLSearchParams(search);
