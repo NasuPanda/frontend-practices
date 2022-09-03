@@ -1,6 +1,9 @@
 import { FC } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import SearchInput from './components/molecules/SearchInput';
 import UserCard from './components/organisms/user/UserCard';
+// import HeaderOnly from './components/templates/HeaderOnly';
+import DefaultLayout from './components/templates/DefaultLayout';
 import './App.css';
 
 const user = {
@@ -13,14 +16,16 @@ const user = {
 };
 
 const App: FC = () => (
-  <div className="App">
-    <br />
-    <h2>Molecules</h2>
-    <SearchInput />
-    <br />
-    <h2>Organisms</h2>
-    <UserCard user={user} />
-  </div>
+  <BrowserRouter>
+    <DefaultLayout>
+      <br />
+      <h2>Molecules</h2>
+      <SearchInput />
+      <br />
+      <h2>Organisms</h2>
+      <UserCard user={user} />
+    </DefaultLayout>
+  </BrowserRouter>
 );
 
 export default App;

@@ -171,4 +171,78 @@ atoms, molecules を組み合わせて作る。
 
 ## Templates の例
 
+ヘッダー / ページ要素 / フッターという構成にしてみる。
+
+![template-header-and-footer](../../images/117e057da8c382f5b039be3791e0774eb3d465f3d7d8afc3c7976e1e82792515.png)
+
+`atoms/layout/` の配下に `Footer.tsx` と `Header.tsx` をそれぞれ作り、それを呼び出す形。
+
+```tsx
+// DefaultLayout.tsx
+import Header from '../atoms/layout/Header';
+import Footer from '../atoms/layout/Footer';
+
+const DefaultLayout: React.FC = ({ children }) => (
+  <>
+    <Header />
+    {children}
+    <Footer />
+  </>
+);
+
+export default DefaultLayout;
+```
+
+```tsx
+// Header.tsx
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+
+const SHeader = styled.header`
+  background-color: #11999e;
+  color: #fff;
+  text-align: center;
+  padding: 8px 0;
+`;
+
+const SLink = styled(Link)`
+  margin: 0px 8px;
+`;
+
+const Header: React.VFC = () => (
+  <SHeader>
+    <SLink to="/">HOME</SLink>
+    <SLink to="/users">Users</SLink>
+  </SHeader>
+);
+
+export default Header;
+```
+
+### フッター
+
+- 全体のレイアウトで `min-height: 100vh;` を指定しておく
+- `position` で固定位置に
+- `bottom` で画面の下端に
+- `width` で画面いっぱいに広がるように
+
+```tsx
+// Footer.tsx
+import styled from 'styled-components';
+
+const SFooter = styled.footer`
+  background-color: #11999e;
+  color: #fff;
+  text-align: center;
+  padding: 8px 0;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+`;
+
+const Footer: React.VFC = () => <SFooter>&copy; 2022 test Inc.</SFooter>;
+
+export default Footer
+```
+
 ## Pages の例
