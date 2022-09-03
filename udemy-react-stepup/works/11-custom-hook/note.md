@@ -1,3 +1,12 @@
+# カスタムフック
+
+## 使わずにデータ取得を書く
+
+1. axios でAPIからデータ取得
+2. `isLoading` , `hasLoadingError` という state を用意、 `onClickFetchUser` 実行時に結果に応じて更新する
+3. `isLoading` `hadLoadingError` の状態を元にコンポーネントを出し分ける
+
+```tsx
 import './App.css';
 import axios from 'axios';
 import { useState } from 'react';
@@ -56,3 +65,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+```
