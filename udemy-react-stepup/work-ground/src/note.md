@@ -54,3 +54,51 @@ import { UserContext } from '../../../providers/UserProvider';
   const context = useContext(UserContext);
   console.log(context); // => { "contextName": "ユーザ名" }
 ```
+
+## Recoil による状態管理
+
+[Getting Started | Recoil](https://recoiljs.org/docs/introduction/getting-started/#atom)
+
+`useContext` と似ていて扱いやすいインターフェース、不要な再レンダリングの管理を勝手にやってくれる、などの特徴を持つ。
+
+### `atom` による宣言
+
+[Getting Started | Recoil](https://recoiljs.org/docs/introduction/getting-started/#atom)
+
+```ts
+import { atom } from 'recoil';
+
+const userState = atom({
+  key: 'userState',
+  default: { isAdmin: false },
+});
+
+export default userState;
+```
+
+### `RecoilRoute`
+
+```tsx
+import { RecoilRoot } from 'recoil';
+import Router from './router/Router';
+import './App.css';
+
+const App: React.FC = () => (
+  <RecoilRoot>
+      <Router />
+  </RecoilRoot>
+);
+
+export default App;
+```
+
+### state, state 更新関数の参照
+
+値のみ参照する場合は `useRecoilValue` を、更新関数のみを参照する場合は `useSetRecoilState` を使えばいい。
+
+```tsx
+import { useRecoilState, useRecoilValue } from 'recoil';
+
+const userInfo = useRecoilValue(userState);
+const [userInfo, setUserInfo] = useRecoilState(userState);
+```

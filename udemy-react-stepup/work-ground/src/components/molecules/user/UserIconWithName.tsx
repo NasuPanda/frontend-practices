@@ -1,7 +1,9 @@
-import { useContext } from 'react';
 import styled from 'styled-components';
-import { UserContext } from '../../../providers/UserProvider';
+import { useRecoilValue } from 'recoil';
 import DefaultLink from '../../atoms/link/DefaultLink';
+import userState from '../../../store/userState';
+// import { useContext } from 'react';
+// import { UserContext } from '../../../providers/UserProvider';
 
 type Props = {
   image: string;
@@ -24,7 +26,8 @@ const SName = styled.p`
 `;
 
 const UserIconWithName: React.FC<Props> = ({ image, userName }) => {
-  const userInfo = useContext(UserContext)?.userInfo;
+  // const userInfo = useContext(UserContext)?.userInfo;
+  const userInfo = useRecoilValue(userState);
 
   return (
     <SContainer>

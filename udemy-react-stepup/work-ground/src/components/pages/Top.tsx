@@ -1,8 +1,10 @@
-import { useContext } from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
-import { UserContext } from '../../providers/UserProvider';
+import { useSetRecoilState } from 'recoil';
 import SecondaryButton from '../atoms/button/SecondaryButton';
+import userState from '../../store/userState';
+// import { useContext } from 'react';
+// import { UserContext } from '../../providers/UserProvider';
 
 const SContainer = styled.div`
   text-align: center;
@@ -14,7 +16,8 @@ const SButtonWrapper = styled.div`
 
 const TopPage: React.FC = () => {
   const history = useHistory();
-  const setUserInfo = useContext(UserContext)?.setUserInfo;
+  // const setUserInfo = useContext(UserContext)?.setUserInfo;
+  const setUserInfo = useSetRecoilState(userState);
 
   const onClickAdmin = () => {
     if (setUserInfo) {
