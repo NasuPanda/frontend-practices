@@ -18,16 +18,9 @@ const SDl = styled.dl`
   }
 `;
 
-const UserCard: React.FC<{ user: User; isAdmin: boolean }> = ({
-  user,
-  isAdmin,
-}) => (
+const UserCard: React.FC<{ user: User }> = ({ user }) => (
   <Card>
-    <UserIconWithName
-      userName={user.name}
-      image={user.image}
-      isAdmin={isAdmin}
-    />
+    <UserIconWithName userName={user.name} image={user.image} />
     <SDl>
       <dt>メール</dt>
       <dd>{user.emailAddress}</dd>
