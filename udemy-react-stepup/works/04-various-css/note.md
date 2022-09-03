@@ -174,6 +174,43 @@ export default StyledComponentsComponent;
 
 ```
 
+### 既存スタイルの拡張
+
+`styled(OtherComponentStyle)` とすることで、既存スタイルを拡張することが出来る。
+
+```tsx
+import styled from 'styled-components';
+
+// 共通部分を切り出したベースとなるボタン
+const BaseButton = styled.button`
+  color: #fff;
+  padding: 6px 24px;
+  border: none;
+  border-radius: 100px;
+  outline: none;
+  &:hover {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+`;
+
+export default BaseButton;
+```
+
+```tsx
+import styled from 'styled-components';
+import BaseButton from './BaseButton';
+
+const SButton = styled(BaseButton)`
+  background-color: #40514e;
+`;
+
+const PrimaryButton: React.FC = ({ children }) => (
+  <SButton type="button">{children}</SButton>
+);
+```
+
+
 ## Emotion
 
 多機能なライブラリ。
