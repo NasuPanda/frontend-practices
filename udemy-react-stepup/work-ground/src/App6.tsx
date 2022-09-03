@@ -1,18 +1,15 @@
 import { FC } from 'react';
 import './App.css';
 import PrimaryButton from './components/atoms/button/PrimaryButton';
-import SecondaryButton from './components/atoms/button/SecondaryButton';
+import SearchInput from './components/molecules/SearchInput';
 
 const App: FC = () => (
   <div className="App">
-    <h1>Hello</h1>
-    <div>
-      <PrimaryButton>Children</PrimaryButton>
-      <PrimaryButton>検索</PrimaryButton>
-    </div>
-    <div>
-      <SecondaryButton>Secondary</SecondaryButton>
-    </div>
+    <h2>Atoms</h2>
+    <PrimaryButton>PrimaryButton</PrimaryButton>
+    <br />
+    <h2>Molecules</h2>
+    <SearchInput />
   </div>
 );
 

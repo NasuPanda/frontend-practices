@@ -116,3 +116,48 @@ const SButton = styled(BaseButton)`
 const SecondaryButton: React.FC = ({ children }) => (
   <SButton type="button">{children}</SButton>
 );
+```
+
+## Molecules の例
+
+検索ボックス + 検索ボタンを作ってみる。
+
+atoms で /button と /input を用意。
+
+```tsx
+import styled from 'styled-components';
+import Input from '../atoms/input/Input';
+import PrimaryButton from '../atoms/button/PrimaryButton';
+
+const SContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const SButtonWrapper = styled.div`
+  padding-left: 8px;
+`;
+
+const SearchInput: React.FC = () => (
+  <SContainer>
+    <Input placeholder="検索条件を入力" />
+    <SButtonWrapper>
+      <PrimaryButton>検索</PrimaryButton>
+    </SButtonWrapper>
+  </SContainer>
+);
+
+export default SearchInput;
+```
+
+`SButtonWrapper` で `PrimaryButton` ⇔ `Input` 間に `padding` を挿入。
+
+`SContainer` で要素を横並びにしている。
+
+![molecules-search-input](../../images/66649447b88a4adce4a2b0ea71261e6703cd598b8504942a7b243773464e54b7.png)
+
+## Organisms の例
+
+## Templates の例
+
+## Pages の例
