@@ -1,5 +1,12 @@
 # Atomic Design
 
+## 開発の進め方
+
+1. 必要となる atoms から作る
+2. いくつか atoms が出来たらそれを組み合わせて出来る molecules を作る
+3. atoms, molecules を複数作ったらそれを組み合わせて organisms を作る
+4. organisms を作る中で共通化できそうな箇所、使いまわせそうな箇所があれば atoms, molecules として切り出していく
+
 ## 概要
 
 コンポーネントを適切な粒度で分割するための手法の一種。
@@ -157,6 +164,10 @@ export default SearchInput;
 ![molecules-search-input](../../images/66649447b88a4adce4a2b0ea71261e6703cd598b8504942a7b243773464e54b7.png)
 
 ## Organisms の例
+
+atoms, molecules を組み合わせて作る。
+
+![organisms-user-card](../../images/5892b64da6fee6668269fa81f28b01ed7913d817a094e07306eb22c8528bfd71.png)
 
 ## Templates の例
 
