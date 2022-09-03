@@ -1,19 +1,7 @@
 import styled from 'styled-components';
 import Card from '../../atoms/card/Card';
 import UserIconWithName from '../../molecules/user/UserIconWithName';
-
-type Company = {
-  name: string;
-};
-
-type User = {
-  name: string;
-  image: string;
-  emailAddress: string;
-  phoneNumber: string;
-  company: Company;
-  webSite: string;
-};
+import User from '../../../data/User';
 
 // text-align : 文字の左寄せ
 // float : 要素の左寄せ

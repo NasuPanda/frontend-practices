@@ -2,6 +2,8 @@
 
 ## 開発の進め方
 
+- どの階層でも共通して、ドメインや役割ごとにディレクトリを分ける ( ユーザに関連するコンポーネントは `atoms/user` 配下、など )
+
 1. 必要となる atoms から作る
 2. いくつか atoms が出来たらそれを組み合わせて出来る molecules を作る
 3. atoms, molecules を複数作ったらそれを組み合わせて organisms を作る
@@ -43,6 +45,10 @@ Atoms や Molecules の組み合わせからなる、単体で意味を持つ要
 ### Pages
 
 1つのページ。
+
+## 最終的な成果物
+
+![deliverables-this-section](../../images/a702c7021c50dca1461be5f265eb5aa5c33854f6170069b9faff8e6cd7c20efc.png)
 
 ## Atoms の例
 
@@ -246,3 +252,75 @@ export default Footer
 ```
 
 ## Pages の例
+
+### 各ページの定義
+
+`grid` 部分に注目。
+
+```tsx
+import styled from 'styled-components';
+import SearchInput from '../molecules/SearchInput';
+import UserCard from '../organisms/user/UserCard';
+import users from '../../data/testData';
+
+const SContainer = styled.div`
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+`;
+
+const SUserArea = styled.div`
+  padding-top: 40px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 20px;
+`;
+
+const UsersPage: React.FC = () => (
+  <SContainer>
+    <h2>User一覧です</h2>
+    <SearchInput />
+    <SUserArea>
+      {users.map((user) => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </SUserArea>
+  </SContainer>
+);
+
+export default UsersPage;
+```
+
+### ルーティングの切り出し
+
+`router/Router.tsx` にルーティングを切り出す。
+
+```tsx
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import TopPage from '../components/pages/Top';
+import UsersPage from '../components/pages/Users';
+import DefaultLayout from '../components/templates/DefaultLayout';
+import HeaderOnly from '../components/templates/HeaderOnly';
+
+const Router: React.FC = () => (
+  <BrowserRouter>
+    <Switch>
+      <Route exact path="/">
+        <DefaultLayout>
+          <TopPage />
+        </DefaultLayout>
+      </Route>
+      <Route path="/users">
+        <HeaderOnly>
+          <UsersPage />
+        </HeaderOnly>
+      </Route>
+    </Switch>
+  </BrowserRouter>
+);
+
+export default Router;
+```
