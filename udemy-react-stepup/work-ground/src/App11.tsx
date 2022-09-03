@@ -1,37 +1,13 @@
 import './App.css';
-import axios from 'axios';
-import { useState } from 'react';
 import UserCard from './components/UserCard';
-import { User } from './types/api/user';
-import { UserProfile } from './types/userProfile';
+import useAllUsers from './hooks/useAllUsers';
 
 const API_URL = 'https://jsonplaceholder.typicode.com/users';
 
 const App: React.FC = () => {
-  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasLoadingError, setHasLoadingError] = useState(false);
-
-  const onClickFetchUser = () => {
-    setIsLoading(true);
-    setHasLoadingError(false);
-
-    axios
-      .get<User[]>(API_URL)
-      .then((res) => {
-        const formattedUserProfiles = res.data.map((user) => ({
-          id: user.id,
-          name: `${user.username} (${user.name})`,
-          email: user.email,
-          address: `${user.address.city} ${user.address.suite} ${user.address.street}`,
-        }));
-        setUserProfiles(formattedUserProfiles);
-      })
-      .catch(() => setHasLoadingError(true))
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
+  const { fetchUsers, userProfiles, isLoading, hasLoadingError } =
+    useAllUsers();
+  const onClickFetchUser = () => fetchUsers(API_URL);
 
   return (
     <div>
