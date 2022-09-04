@@ -16,7 +16,17 @@ Chakra UI は UI コンポーネントライブラリの一種。勢いがある
 ### リファレンス
 
 - [Chakra UI](https://chakra-ui.com/)
-- テーマカラー : [Default Theme - Chakra UI](https://v1.chakra-ui.com/docs/styled-system/theming/theme)
+- [Default Theme - Chakra UI](https://v1.chakra-ui.com/docs/styled-system/theming/theme) : カラーなどを探すときに
+
+レイアウト系
+
+- [Box - Chakra UI](https://chakra-ui.com/docs/components/box) : `div` タグ的な
+- [Flex - Chakra UI](https://chakra-ui.com/docs/components/flex) : `display: flex` なコンテナとして
+- [SimpleGrid - Chakra UI](https://chakra-ui.com/docs/components/simple-grid) : [Grid - Chakra UI](https://chakra-ui.com/docs/components/grid/usage) もあるが、よりユーザフレンドリーなインターフェイスを提供してくれている
+- [Stack - Chakra UI](https://chakra-ui.com/docs/components/stack/usage) : 要素のグループ化、間隔開けに
+- [Wrap - Chakra UI](https://chakra-ui.com/docs/components/wrap) : 要素を等間隔に並べる。レスポンシブ対応もしてくれる
+- [Center - Chakra UI](https://chakra-ui.com/docs/components/center/usage) : 中央寄せ
+
 
 ### クイックスタート
 

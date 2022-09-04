@@ -2,10 +2,9 @@ import axios from 'axios';
 import { useCallback, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { USER_API_URL } from '../config/api';
 import { User } from '../types/user';
 import useMessage from './useMessage';
-
-const API_URL = 'https://jsonplaceholder.typicode.com/users';
 
 const useAuth = () => {
   const history = useHistory();
@@ -17,7 +16,7 @@ const useAuth = () => {
       setIsLoading(true);
 
       axios
-        .get<User>(`${API_URL}/${id}`)
+        .get<User>(`${USER_API_URL}/${id}`)
         .then((_) => {
           showMessage({ title: 'ログインしました', status: 'success' });
           history.push('/home');
