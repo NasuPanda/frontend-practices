@@ -3,18 +3,17 @@ import { useCallback, useState } from 'react';
 
 import { USER_API_URL } from '../config/api';
 import { User } from '../types/user';
-import { UserProfile } from '../types/userProfile';
 import useMessage from './useMessage';
 
 type useAllUsersReturnsType = {
-  users: UserProfile[];
+  users: User[];
   fetchUsers: () => void;
   isLoading: boolean;
 };
 
 const useAllUsers: () => useAllUsersReturnsType = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const { showMessage } = useMessage();
 
   const fetchUsers = useCallback(() => {
@@ -22,14 +21,7 @@ const useAllUsers: () => useAllUsersReturnsType = () => {
 
     axios
       .get<User[]>(USER_API_URL)
-      .then((res) => {
-        const formattedUserProfiles = res.data.map((user) => ({
-          id: user.id,
-          username: user.username,
-          fullName: user.name,
-        }));
-        setUsers(formattedUserProfiles);
-      })
+      .then((res) => setUsers(res.data))
       .catch((_) => {
         showMessage({ title: 'ユーザ取得に失敗しました', status: 'error' });
       })
