@@ -290,3 +290,48 @@ const useMessage: () => { showMessage: (props: Props) => void } = () => {
 
 export default useMessage;
 ```
+
+## Context によるログイン機能
+
+### 雛形
+
+```tsx
+import { createContext, Dispatch, FC, SetStateAction, useState } from 'react';
+
+import { User } from '../types/user';
+
+type LoginUserContextType = {
+  loginUser: User | null;
+  setLoginUser: Dispatch<SetStateAction<User | null>>;
+};
+
+const LoginUserContext = createContext<LoginUserContextType>(
+  {} as LoginUserContextType,
+);
+
+const LoginUserProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [loginUser, setLoginUser] = useState<User | null>(null);
+
+  return (
+    <LoginUserContext.Provider value={{ loginUser, setLoginUser }}>
+      {children}
+    </LoginUserContext.Provider>
+  );
+};
+
+export default LoginUserProvider;
+```
+
+### カスタムフック化
+
+```ts
+import { useContext } from 'react';
+import {
+  LoginUserContext,
+  LoginUserContextType,
+} from '../providers/LoginUserProvider';
+
+const useLoginUser = (): LoginUserContextType => useContext(LoginUserContext);
+
+export default useLoginUser;
+```
