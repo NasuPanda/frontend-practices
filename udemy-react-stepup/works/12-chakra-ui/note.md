@@ -2,7 +2,15 @@
 
 # UI コンポーネントライブラリ
 
-Chakra UI は UI コンポーネントライブラリの一種。勢いがある。
+Chakra UI は UI コンポーネントライブラリの一種。勢いがあるらしい。
+
+![compare-ui-libs](../../images/compare-ui-libs.png)
+
+最終的には使い勝手で選ぶべきだが、star数を見ると MaterialUI, AntDesign が圧倒的。
+
+Qiita の記事数で見てみると、MUI > tailwindcss > その他 と言った感じ。
+
+日本でのシェア、Githubのスター数で考えるとMUIが頭1つ抜けている印象。
 
 - [MUI](https://mui.com/)
 - [React-Bootstrap](https://react-bootstrap.github.io/?ref=morioh.com&utm_source=morioh.com)
