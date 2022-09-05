@@ -19,7 +19,6 @@ const UserManagement: VFC = memo(() => {
   const { fetchUsers, users, isLoading } = useAllUsers();
   const { findUserById, selectedUser } = useSelectUser();
   const { loginUser } = useLoginUser();
-  console.log(loginUser);
 
   useEffect(() => fetchUsers(), [fetchUsers]);
 
@@ -51,7 +50,12 @@ const UserManagement: VFC = memo(() => {
           ))}
         </Wrap>
       )}
-      <UserDetailModal user={selectedUser} isOpen={isOpen} onClose={onClose} />
+      <UserDetailModal
+        user={selectedUser}
+        isOpen={isOpen}
+        onClose={onClose}
+        isAdmin={loginUser?.isAdmin}
+      />
     </>
   );
 });
