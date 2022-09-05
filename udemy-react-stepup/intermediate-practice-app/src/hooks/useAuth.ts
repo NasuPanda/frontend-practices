@@ -26,7 +26,9 @@ const useAuth = (): useAuthReturnsType => {
       axios
         .get<User>(`${USER_API_URL}/${id}`)
         .then((res) => {
-          setLoginUser(res.data);
+          // 模擬的に id=10 のユーザを管理者とする
+          const isAdmin = res.data.id === 10;
+          setLoginUser({ ...res.data, isAdmin });
           showMessage({ title: 'ログインしました', status: 'success' });
           setIsLoading(false);
           history.push('/home');
