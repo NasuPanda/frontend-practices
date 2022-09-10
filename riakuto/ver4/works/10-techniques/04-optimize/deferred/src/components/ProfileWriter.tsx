@@ -5,8 +5,8 @@ import Users from './Users';
 
 const ProfileWriter: FC<{ count?: number }> = ({ count = 1 }) => {
   const [username, setUsername] = useState('');
-  const [enableDeferred, seteEableDeferred] = useState(false);
-  const deferedUsename = useDeferredValue(username);
+  const [enableDeferred, setEnableDeferred] = useState(false);
+  const deferredUsername = useDeferredValue(username);
 
   const changeUsername = (event: SyntheticEvent) => {
     const target = event.target as HTMLInputElement;
@@ -14,12 +14,12 @@ const ProfileWriter: FC<{ count?: number }> = ({ count = 1 }) => {
   };
   const changeEnableDeferred = (event: SyntheticEvent) => {
     const target = event.target as HTMLInputElement;
-    seteEableDeferred(target?.checked);
+    setEnableDeferred(target?.checked);
   };
 
   const deferredUsers = useMemo(
-    () => <Users username={deferedUsename} count={count} />,
-    [deferedUsename, count]
+    () => <Users username={deferredUsername} count={count} />,
+    [deferredUsername, count]
   );
 
   return (
@@ -45,7 +45,7 @@ const ProfileWriter: FC<{ count?: number }> = ({ count = 1 }) => {
       {enableDeferred ? (
         deferredUsers
       ) : (
-        <Users username={deferedUsename} count={count} />
+        <Users username={deferredUsername} count={count} />
       )}
     </Container>
   );

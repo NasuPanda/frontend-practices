@@ -42,6 +42,7 @@ const RegistrationForm: FC = () => {
       event.target.type === 'checkbox'
         ? (event.target as HTMLInputElement).checked
         : event.target.value;
+    console.log(name, value);
     setFormData((state) => ({ ...state, [name]: value }));
   };
 
