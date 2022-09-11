@@ -27,3 +27,14 @@
 ### ベストプラクティス集
 
 [alan2207/bulletproof-react: 🛡️ ⚛️ A simple, scalable, and powerful architecture for building production ready React applications.](https://github.com/alan2207/bulletproof-react)
+
+## react helmet async
+
+SPA は JavaScript で HTML の特定の要素を動的に書き換えているだけなので、 `title` タグを編集しないと全てのページでタイトルが同じになってしまう、などの問題がある。
+
+[staylor/react-helmet-async: Thread-safe Helmet for React 16+ and friends](https://github.com/staylor/react-helmet-async)
+
+ドキュメントヘッダにおけるものは何でも書ける。(`title` など)
+
+React Helmet が本家だが、更新が止まっているので注意。
+
