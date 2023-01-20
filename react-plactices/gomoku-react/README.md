@@ -57,7 +57,7 @@
 
 - [x] ResetButton
 - [x] WinnerIndicator
-- [ ] PlayerIndicator
-- [ ] Stone
+- [x] PlayerIndicator
+- [x] Stone
 - [ ] Square
 - [ ] Board
