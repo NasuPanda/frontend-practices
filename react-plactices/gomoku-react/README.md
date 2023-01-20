@@ -50,3 +50,14 @@
 - 各マスが持つ白/黒の情報
 - 現在操作しているプレイヤー
 - ゲーム終了フラグ
+
+## 実装
+
+### presentational
+
+- [x] ResetButton
+- [x] WinnerIndicator
+- [ ] PlayerIndicator
+- [ ] Stone
+- [ ] Square
+- [ ] Board

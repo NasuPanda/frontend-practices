@@ -1,7 +1,8 @@
 import { FC } from "react";
+import Button from "@mui/material/Button";
 
-const WinnerIndicator: FC = () => {
-  return <div />;
+const ResetButton: FC = () => {
+  return <Button variant="contained">リセット</Button>;
 };
 
-export default WinnerIndicator;
+export default ResetButton;

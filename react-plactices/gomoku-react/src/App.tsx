@@ -1,10 +1,11 @@
 import "./styles.css";
+import Board from "./components/presentational/Board";
+import WinnerIndicator from "./components/presentational/WinnerIndicator";
 
 export default function App() {
   return (
     <div className="App">
-      <h1>Hello CodeSandbox</h1>
-      <h2>Start editing to see some magic happen!</h2>
+      <WinnerIndicator winner={"プレイヤー白"} />
     </div>
   );
 }

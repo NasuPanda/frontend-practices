@@ -1,7 +1,7 @@
 import { FC } from "react";
 
-const WinnerIndicator: FC = () => {
+const Square: FC = () => {
   return <div />;
 };
 
-export default WinnerIndicator;
+export default Square;
