@@ -59,5 +59,5 @@
 - [x] WinnerIndicator
 - [x] PlayerIndicator
 - [x] Stone
-- [ ] Square
-- [ ] Board
+- [x] Square
+- [x] Board

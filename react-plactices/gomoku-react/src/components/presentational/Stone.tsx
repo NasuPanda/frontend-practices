@@ -1,8 +1,9 @@
 import { FC } from "react";
 import Box from "@mui/material/Box";
+import { players } from "../../types";
 
 type Props = {
-  color: "w" | "b";
+  color: players;
 };
 const stoneStyles = {
   borderRadius: "50%",

@@ -1,8 +1,8 @@
 import { FC } from "react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { players } from "../../types";
 
-type players = "w" | "b";
 type Props = {
   currentPlayer: players;
 };
